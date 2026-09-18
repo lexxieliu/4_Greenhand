@@ -18,7 +18,7 @@ Greenhand aims to make urban and backyard farming accessible to everyone, regard
 
 ## Team
 
-Team Greenhand — Team 4
+Greenhand — Team 4
 
 All team members are equal contributors.
 
