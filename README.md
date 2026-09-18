@@ -24,4 +24,4 @@ All team members are equal contributors.
 
 ---
 
-Made with 🌱 by Greenhand
+Developed by Team Greenhand 🌱
