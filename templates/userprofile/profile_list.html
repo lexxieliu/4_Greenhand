@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profiles{% endblock %}
+
+{% block content %}
+  <h2>User Profiles List</h2>
+  <ul>
+    {% for profile in profiles %}
+      <li>
+        <strong><a href="{% url 'profile-cbv-generic-detail' profile.pk %}">{{ profile.user.username }}</a></strong>
+        {% if profile.pronouns %}
+          ({{ profile.pronouns }})
+        {% endif %}
+        <br>
+        {% if profile.birthdate %}
+          <small>Birthdate: {{ profile.birthdate }}</small><br>
+        {% endif %}
+        <p>Bio: {{ profile.bio|default:"No bio provided." }}</p>
+      </li>
+    {% empty %}
+      <li>No profiles available.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
