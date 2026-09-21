@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Post List{% endblock %}
+
+{% block content %}
+  <h2>Posts</h2>
+  <ul>
+    {% for post in posts %}
+      <li>{{ post.post_content}} - {{ post.created_at }}</li>
+    {% empty %}
+      <li>No posts available.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
