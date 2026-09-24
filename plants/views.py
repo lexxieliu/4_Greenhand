@@ -3,7 +3,7 @@ from .models import Plant
 from django.views import View
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
-
+from garden.models import Garden
 
 
 # Create your views here.
@@ -28,6 +28,31 @@ class PlantListView(ListView):
         context['q'] = self.request.GET.get('q', '')
         context['selected_category'] = self.request.POST.get('category', '')
         context['categories'] = Plant.objects.values_list('category', flat=True).distinct()
+        from django.db.models import Count
+
+        # ...inside get_context_data():
+
+        # Relationship-spanning query:
+        # filter Plants by an attribute of their related Garden entries
+        # (Plant --> garden_instances --> progress), same shape as
+        # "students filtered by section name" in the assignment example
+        stage = self.request.GET.get('stage')
+        context['stage'] = stage
+        if stage:
+            context['plants_list'] = context['plants_list'].filter(garden_instances__progress=stage)
+        context['stages'] = Garden.objects.values_list('progress', flat=True).distinct()
+
+        # Aggregations:
+        # 1) a total count
+        context['total_plants'] = Plant.objects.count()
+
+        # 2) a grouped summary (annotate + count)
+        context['plants_per_category'] = (
+            Plant.objects
+            .values('category')
+            .annotate(n_plants=Count('plant_id'))
+            .order_by('category')
+        )
         return context
 
     def post(self, request, *args, **kwargs):

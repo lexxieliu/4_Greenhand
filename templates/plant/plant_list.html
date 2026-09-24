@@ -22,6 +22,16 @@
   <button type="submit">Filter</button>
 </form>
 
+    <form method="get" class="mb-3">
+  <input type="hidden" name="q" value="{{ q }}">
+  <select name="stage" onchange="this.form.submit()">
+    <option value="">All growth stages</option>
+    {% for s in stages %}
+      <option value="{{ s }}" {% if s == stage %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+</form>
+
   <ul>
     {% for plant in plants_list %}
         <li><a href="{{ plant.get_absolute_url }}"> {{ plant.plant_name }} </a></li>
@@ -33,4 +43,18 @@
       {% endif %}
     {% endfor %}
   </ul>
+
+    <hr>
+<p>Total plants: {{ total_plants }}</p>
+
+<h4>Plants per Category</h4>
+<table>
+  <tr><th>Category</th><th>Count</th></tr>
+  {% for row in plants_per_category %}
+    <tr><td>{{ row.category }}</td><td>{{ row.n_plants }}</td></tr>
+  {% empty %}
+    <tr><td colspan="2">No category data.</td></tr>
+  {% endfor %}
+</table>
+
 {% endblock %}
