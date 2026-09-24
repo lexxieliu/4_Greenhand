@@ -4,11 +4,22 @@
 
 {% block content %}
   <h2>List of Plants</h2>
+
+  <form method="get" class="mb-3">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by plant name">
+    <button type="submit">Search</button>
+    {% if q %}<a href="{% url 'plants_list' %}">Clear</a>{% endif %}
+  </form>
+
   <ul>
     {% for plant in plants_list %}
         <li><a href="{{ plant.get_absolute_url }}"> {{ plant.plant_name }} </a></li>
     {% empty %}
-      <li>No plants available.</li>
+      {% if q %}
+        <li>No plants found for "{{ q }}".</li>
+      {% else %}
+        <li>No plants available.</li>
+      {% endif %}
     {% endfor %}
   </ul>
 {% endblock %}
