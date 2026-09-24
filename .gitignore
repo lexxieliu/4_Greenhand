@@ -2,4 +2,6 @@
 .DS_Store
 *.pyc
 __pycache__/
-data/db.sqlite3
+#Keep this for now, for others to download 
+#After everyone has this sample db locally, it is recommended to be deleted to not be tracked
+#data/db.sqlite3
