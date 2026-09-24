@@ -17,12 +17,23 @@ class PlantListView(ListView):
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(plant_name__icontains=query)
+
+        category = self.request.POST.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get('q', '')
+        context['selected_category'] = self.request.POST.get('category', '')
+        context['categories'] = Plant.objects.values_list('category', flat=True).distinct()
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
 class PlantDetailView(View):
 

@@ -11,6 +11,17 @@
     {% if q %}<a href="{% url 'plants_list' %}">Clear</a>{% endif %}
   </form>
 
+    <form method="post" class="mb-3">
+  {% csrf_token %}
+  <select name="category">
+    <option value="">All categories</option>
+    {% for c in categories %}
+      <option value="{{ c }}" {% if c == selected_category %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Filter</button>
+</form>
+
   <ul>
     {% for plant in plants_list %}
         <li><a href="{{ plant.get_absolute_url }}"> {{ plant.plant_name }} </a></li>
