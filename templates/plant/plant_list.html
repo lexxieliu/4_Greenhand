@@ -56,5 +56,8 @@
     <tr><td colspan="2">No category data.</td></tr>
   {% endfor %}
 </table>
+    <h4>Chart: Plants per Category</h4>
+<img src="{% url 'plants-chart' %}" alt="Bar chart showing number of plants per category" style="max-width: 480px;">
+<p class="text-muted small">Figure: distribution of plant species across categories, generated server-side from live data.</p>
 
 {% endblock %}
