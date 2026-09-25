@@ -2,60 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>
-        {% block title %}
-            GreenHand App
-        {% endblock %}
-    </title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>{% block title %}My Project{% endblock %}</title>
 </head>
-<body class="bg-light">
-<header class="bg-success text-white mb-4">
-    <div class="container d-flex align-items-center flex-wrap py-3">
-        <div class="me-4">
-            <h1 class="h3 mb-0">
-                GreenHand App
-            </h1>
-            <p class="mb-0 small">Your personal urban-farming assistant</p>
-        </div>
+<body>
+    <header>
+        <h1>My App Header</h1>
+    </header>
 
-        <nav class="navbar navbar-expand-lg p-0">
-            <ul class="navbar-nav flex-row gap-3">
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'plants_list' %}">Plants</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-manual' %}">Posts Manual</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-render' %}">Posts Render</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'profile-cbv-base' %}">Profile</a></li>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
-            </ul>
-        </nav>
-    </div>
-</header>
-
-<main class="container mb-5">
-    {% block content %}
-        <p class="text-muted">Test content</p>
-    {% endblock %}
-</main>
-
-<footer class="bg-dark text-white py-3">
-    <div class="container text-center small">
-        <p class="mb-1">GreenHand App</p>
-        <p class="mb-1">Your personal urban-farming assistant</p>
-        <p class="mb-0">
-            Licensed under a
-            <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="text-white">
-                Creative Commons Attribution-ShareAlike 4.0 International License
-            </a>
-        </p>
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
-        integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y"
-        crossorigin="anonymous"></script>
+    <footer>
+        <p>&copy; 2026 Team Greenhand</p>
+    </footer>
 </body>
 </html>

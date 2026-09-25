@@ -16,13 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from greenhand.views import redirect_to_home
-
 urlpatterns = [
-    path('', redirect_to_home),
     path('admin/', admin.site.urls),
     path('profiles/', include('userprofile.urls')),
     path('posts/', include('post.urls')),
-    path('', include('plants.urls')),
 ]
 

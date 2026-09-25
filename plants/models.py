@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 
 # Create your models here.
 class Plant(models.Model):
@@ -11,11 +10,6 @@ class Plant(models.Model):
     scientific_name = models.CharField(max_length=100, blank=True)
     category = models.CharField(max_length=30)
     usage_type = models.CharField(max_length=60, blank=True)
-
-    def get_absolute_url(self):
-        return reverse('plants_detail',
-                       kwargs={'primary_key': self.pk}
-                       )
 
     class Meta:
         ordering = ['plant_name']
