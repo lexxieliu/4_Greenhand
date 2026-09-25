@@ -4,7 +4,12 @@ from django.views import View
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
-
+from io import BytesIO
+from django.http import HttpResponse
+from django.db.models import Count
+import matplotlib
+matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
+import matplotlib.pyplot as plt
 
 # Create your views here.
 class PlantListView(ListView):
@@ -73,3 +78,26 @@ class PlantDetailView(View):
             },
         )
 
+def plant_category_chart(request):
+    data = (
+        Plant.objects
+        .values('category')
+        .annotate(n_plants=Count('plant_id'))
+        .order_by('category')
+    )
+    labels = [row['category'] for row in data]
+    counts = [row['n_plants'] for row in data]
+
+    fig, ax = plt.subplots(figsize=(6, 3), dpi=150)
+    ax.bar(labels, counts, color="#4CAF50")     # matches your green palette from style.css
+    ax.set_title("Plants per Category")
+    ax.set_xlabel("Category")
+    ax.set_ylabel("Number of Plants")
+    ax.tick_params(axis="x", rotation=30)
+    fig.tight_layout()
+
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    plt.close(fig)          # frees the figure from memory — this is the "Memory Awareness" requirement
+    buf.seek(0)
+    return HttpResponse(buf.getvalue(), content_type="image/png")
