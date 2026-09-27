@@ -14,7 +14,11 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="/opt/miniconda3/envs/greenhand" jdkType="Python SDK" />
+=======
+    <orderEntry type="jdk" jdkName="/opt/anaconda3/envs/myenv-django" jdkType="Python SDK" />
+>>>>>>> 3c11ffaf86a42f938307c171e1a491891e07ed1a
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">
