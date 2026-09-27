@@ -5,11 +5,8 @@ from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
 from io import BytesIO
-<<<<<<< HEAD
 from django.http import HttpResponse, JsonResponse
-=======
-from django.http import HttpResponse,JsonResponse
->>>>>>> 3c11ffaf86a42f938307c171e1a491891e07ed1a
+
 from django.db.models import Count
 import matplotlib
 import json
@@ -107,7 +104,7 @@ def plant_category_chart(request):
     buf.seek(0)
     return HttpResponse(buf.getvalue(), content_type="image/png")
 
-<<<<<<< HEAD
+
 class PlantsAPIView(View):
     def get(self, request):
         q = (request.GET.get('q') or '').strip()
@@ -118,7 +115,7 @@ class PlantsAPIView(View):
         data = list(qs.values('plant_name','scientific_name','category','usage_type').order_by('plant_name'))
         status_message = "ok"
         return HttpResponse( json.dumps({"status_message":status_message,"count": len(data), "plants_list": data}), content_type="application/json")
-=======
+
 def plant_api(request):
     q=(request.GET.get('q')or '').strip()
     plant_list = Plant.objects.all().values('plant_id','plant_name', 'category','usage_type')
@@ -128,4 +125,4 @@ def plant_api(request):
     data=list(plant_list.order_by('plant_id'))
     return JsonResponse({"count":len(data), "result":data})
 
->>>>>>> 3c11ffaf86a42f938307c171e1a491891e07ed1a
+
