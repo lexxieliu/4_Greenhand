@@ -5,9 +5,10 @@ from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
 from io import BytesIO
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 import matplotlib
+import json
 matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
 import matplotlib.pyplot as plt
 
@@ -101,3 +102,14 @@ def plant_category_chart(request):
     plt.close(fig)          # frees the figure from memory — this is the "Memory Awareness" requirement
     buf.seek(0)
     return HttpResponse(buf.getvalue(), content_type="image/png")
+
+class PlantsAPIView(View):
+    def get(self, request):
+        q = (request.GET.get('q') or '').strip()
+        qs = Plant.objects.all()
+        if q:
+            qs = qs.filter(plant_name__icontains=q)
+
+        data = list(qs.values('plant_name','scientific_name','category','usage_type').order_by('plant_name'))
+        status_message = "ok"
+        return HttpResponse( json.dumps({"status_message":status_message,"count": len(data), "plants_list": data}), content_type="application/json")
