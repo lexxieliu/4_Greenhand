@@ -1,7 +1,7 @@
 
 from .views import PlantListView, PlantDetailView, plant_category_chart, PlantsAPIView
 
-from .views import PlantListView, PlantDetailView, plant_category_chart, plant_api
+from .views import PlantListView, PlantDetailView, plant_category_chart, plant_api, api_summary
 
 from django.urls import path
 
@@ -13,5 +13,5 @@ urlpatterns = [
     path('api/plants/', PlantsAPIView.as_view(), name='plants_api'),
 
     path('api/plants_fbv/', plant_api, name='api_fbv'),
-
+    path('api/summary/', api_summary, name='api_summary'),
 ]

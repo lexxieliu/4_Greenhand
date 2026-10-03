@@ -126,3 +126,21 @@ def plant_api(request):
     return JsonResponse({"count":len(data), "result":data})
 
 
+def api_summary(request):
+
+    summary_data = (
+        Plant.objects
+        .values('category')
+        .annotate(value=Count('plant_id'))
+        .order_by('category')
+    )
+
+    formatted_data = [
+        {
+            "category": item['category'] or "Uncategorized",
+            "value": item['value']
+        }
+        for item in summary_data
+    ]
+
+    return JsonResponse(formatted_data, safe=False)
