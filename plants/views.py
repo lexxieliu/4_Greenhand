@@ -212,25 +212,13 @@ def export_csv(request):
 
     # First row: Column headers
     writer.writerow(
-        ["plant ID", "Name", "Category", "Created At"]
+        ["plant ID", "Name", "Category", "Scientific Name", "Usage Type"]
     )
 
     # Data rows from DB (ordered by name)
-    plants = Plant.objects.all().order_by("name")
+    plants = Plant.objects.values_list("plant_id", "plant_name", "scientific_name", "category", "usage_type").order_by("plant_name")
     for plant in plants:
-        writer.writerow(
-            [
-                plant.id,
-                plant.name,
-                getattr(plant, "category", "N/A"),
-                (
-                    plant.created_at.strftime("%Y-%m-%d %H:%M")
-                    if hasattr(plant, "created_at") and plant.created_at
-                    else "N/A"
-                ),
-            ]
-        )
-
+        writer.writerow(plant)
     return response
 
 
@@ -239,26 +227,17 @@ def export_json(request):
     timestamp_str = timezone.now().strftime("%Y-%m-%d_%H-%M")
     filename = f"plants_{timestamp_str}.json"
 
-    plants = Plant.objects.all().order_by("plant_id")
-
-    plants_data = [
-        {
-            "plant_id": plant.id,
-            "name": plant.name,
-            "category": getattr(plant, "category", "N/A"),
-
-        }
-        for plant in plants
-    ]
+    plants = list(Plant.objects.values("plant_id", "plant_name", "scientific_name", "category", "usage_type").order_by("plant_id"))
 
     # Required structured metadata + record list
     payload = {
         "generated_at": timezone.now().isoformat(),
-        "record_count": plants.count(),
-        "plants": plants_data,
+        "record_count": len(plants),
+        "plants": plants,
     }
 
     response = JsonResponse(payload, json_dumps_params={"indent": 2})
+    filename = f"plants_{timestamp_str}.json"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
 
