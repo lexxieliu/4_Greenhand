@@ -251,6 +251,9 @@ def reports_view(request):
         .order_by("-total")
     )
 
+    usage_type_summary = (
+        Plant.objects.values("usage_type").annotate(total=Count("usage_type")).order_by("-total")
+    )
 
 
     # Overall Total
@@ -258,6 +261,7 @@ def reports_view(request):
 
     context = {
         "category_summary": category_summary,
+        "usage_type_summary": usage_type_summary,
         "total_plants": total_plants,
     }
     return render(request, "reports.html", context)
