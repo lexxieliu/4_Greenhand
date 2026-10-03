@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from .models import Plant
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
 from io import BytesIO
 from django.http import HttpResponse, JsonResponse
-
+from django.urls import reverse
 from django.db.models import Count
+import urllib.request
 import matplotlib
 import json
 matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
@@ -144,3 +145,53 @@ def api_summary(request):
     ]
 
     return JsonResponse(formatted_data, safe=False)
+
+def vegalitechart(request):
+    api_url = request.build_absolute_uri(reverse("api_summary"))
+    with urllib.request.urlopen(api_url) as resp:
+        payload = json.load(resp)
+
+    base_encoding = {
+        "x": {
+            "field": "category",
+            "type": "nominal",
+            "title": "Category",
+            "sort": None,
+            "axis": {"labelAngle": -30},
+        },
+        "y": {
+            "field": "value",
+            "type": "quantitative",
+            "title": "Count",
+            "axis": {"tickMinStep": 1},
+        },
+        "tooltip": [
+            {"field": "category", "type": "nominal", "title": "Category"},
+            {"field": "value", "type": "quantitative", "title": "Count"},
+        ],
+    }
+
+    bar_spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Plants by category (bar)",
+        "width": "container",
+        "height": 300,
+        "data": {"values": payload},
+        "mark": {"type": "bar", "cornerRadiusEnd": 3},
+        "encoding": base_encoding,
+    }
+
+    line_spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Plants by category (line)",
+        "width": "container",
+        "height": 300,
+        "data": {"values": payload},
+        "mark": {"type": "line", "point": True},
+        "encoding": base_encoding,
+    }
+
+    return render(request, "plant/plant_charts.html", {
+        "bar_spec": bar_spec,
+        "line_spec": line_spec,
+    })

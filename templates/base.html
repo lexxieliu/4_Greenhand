@@ -13,6 +13,9 @@
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ ts }}">
     <link rel="icon" href="{% static 'img/logo.png' %}">
+    {% block stylesheets %}
+
+    {% endblock %}
 </head>
 <body class="bg-light">
 <header class="bg-success text-white mb-4">
@@ -35,6 +38,9 @@
 <main class="container mb-5">
     {% block content %}
         <p class="text-muted">Test content</p>
+    {% endblock %}
+    {% block vega-lite-main %}
+
     {% endblock %}
 </main>
 

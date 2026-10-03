@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Vega Lite Charts{% endblock %}
+
+{% block stylesheets %}
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.17.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@4.17.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.12.2"></script>
+
+    <style media="screen">
+      /* Add space between Vega-Embed links  */
+      .vega-actions a {
+        margin-right: 5px;
+      }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+  <div class="container py-4">
+  <h1 class="h3 mb-4">Plants by category</h1>
+
+  <div id="bar-chart" class="mb-5" style="width: 100%;"></div>
+  <div id="line-chart" class="mb-5" style="width: 100%;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+{{ bar_spec|json_script:"bar-spec" }}
+{{ line_spec|json_script:"line-spec" }}
+<script>
+  const read = id => JSON.parse(document.getElementById(id).textContent);
+  vegaEmbed("#bar-chart", read("bar-spec"), { actions: false }).catch(console.error);
+  vegaEmbed("#line-chart", read("line-spec"), { actions: false }).catch(console.error);
+</script>
+
+{% endblock %}
