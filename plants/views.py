@@ -11,6 +11,9 @@ from django.db.models import Count
 import urllib.request
 import matplotlib
 import json
+import csv
+from datetime import datetime
+from django.utils import timezone
 matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
 import matplotlib.pyplot as plt
 
@@ -195,3 +198,86 @@ def vegalitechart(request):
         "bar_spec": bar_spec,
         "line_spec": line_spec,
     })
+
+def export_csv(request):
+    """Generates and streams a downloadable CSV file containing all Plant records."""
+    # Format timestamp for filename: YYYY-MM-DD_HH-MM
+    timestamp = timezone.now().strftime("%Y-%m-%d_%H-%M")
+    filename = f"plants_{timestamp}.csv"
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+
+    # First row: Column headers
+    writer.writerow(
+        ["plant ID", "Name", "Category", "Created At"]
+    )
+
+    # Data rows from DB (ordered by name)
+    plants = Plant.objects.all().order_by("name")
+    for plant in plants:
+        writer.writerow(
+            [
+                plant.id,
+                plant.name,
+                getattr(plant, "category", "N/A"),
+                (
+                    plant.created_at.strftime("%Y-%m-%d %H:%M")
+                    if hasattr(plant, "created_at") and plant.created_at
+                    else "N/A"
+                ),
+            ]
+        )
+
+    return response
+
+
+def export_json(request):
+    """Returns a downloadable formatted JSON file with metadata and model records."""
+    timestamp_str = timezone.now().strftime("%Y-%m-%d_%H-%M")
+    filename = f"plants_{timestamp_str}.json"
+
+    plants = Plant.objects.all().order_by("plant_id")
+
+    plants_data = [
+        {
+            "plant_id": plant.id,
+            "name": plant.name,
+            "category": getattr(plant, "category", "N/A"),
+
+        }
+        for plant in plants
+    ]
+
+    # Required structured metadata + record list
+    payload = {
+        "generated_at": timezone.now().isoformat(),
+        "record_count": plants.count(),
+        "plants": plants_data,
+    }
+
+    response = JsonResponse(payload, json_dumps_params={"indent": 2})
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+def reports_view(request):
+    """Renders the HTML reports page with grouped summaries and totals."""
+    # Summary 1: Plants per Category
+    category_summary = (
+        Plant.objects.values("category")
+        .annotate(total=Count("plant_id"))
+        .order_by("-total")
+    )
+
+
+
+    # Overall Total
+    total_plants = Plant.objects.count()
+
+    context = {
+        "category_summary": category_summary,
+        "total_plants": total_plants,
+    }
+    return render(request, "reports.html", context)

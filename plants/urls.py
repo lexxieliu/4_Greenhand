@@ -17,4 +17,7 @@ urlpatterns = [
     path('api/plants_fbv/', plant_api, name='api_fbv'),
     path('api/summary/', api_summary, name='api_summary'),
     path('plants/vega/', views.vegalitechart, name='vega_chart' ),
+    path("reports/", views.reports_view, name="reports"),
+    path("export/csv/", views.export_csv, name="export_csv"),
+    path("export/json/", views.export_json, name="export_json"),
 ]

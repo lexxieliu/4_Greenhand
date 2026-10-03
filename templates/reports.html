@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Plant Collection Summary Reports</h2>
+        <!-- 导出按钮 -->
+        <div>
+            <a href="{% url 'export_csv' %}" class="btn btn-success me-2">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Download CSV
+            </a>
+            <a href="{% url 'export_json' %}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-code"></i> Download JSON
+            </a>
+        </div>
+    </div>
+
+    <!-- 总数汇总行 -->
+    <div class="alert alert-info fw-bold">
+        Total Plants in Database: {{ total_plants }}
+    </div>
+
+    <div class="row">
+        <!-- 分组 1: 按 Category 统计 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white fw-bold">
+                    Plants per Category
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Plant Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in category_summary %}
+                            <tr>
+                                <td>{{ item.category|default:"Uncategorized" }}</td>
+                                <td>{{ item.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">No category data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分组 2: 按 Usage Type 统计 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white fw-bold">
+                    Plants per Usage Type
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Usage Type</th>
+                                <th>Plant Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in usage_summary %}
+                            <tr>
+                                <td>{{ item.usage_type|default:"Not Specified" }}</td>
+                                <td>{{ item.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">No usage type data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
