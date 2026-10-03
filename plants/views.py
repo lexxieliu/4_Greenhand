@@ -7,7 +7,8 @@ from garden.models import Garden
 from io import BytesIO
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
-from django.db.models import Count
+from django.db.models import Count, Q
+import requests
 import urllib.request
 import matplotlib
 import json
@@ -260,3 +261,128 @@ def reports_view(request):
         "total_plants": total_plants,
     }
     return render(request, "reports.html", context)
+
+def external_plant_api(request):
+    """Fetch plant entries from Wikipedia API, combine with local DB Plant data,
+
+    and expose as an aggregated API endpoint or HTML search view.
+    """
+    query = request.GET.get("q", "").strip()
+
+    if not query:
+        if request.GET.get("format") == "json":
+            return JsonResponse(
+                {
+                    "error": "Query parameter 'q' is required. Example: /api/external-plant/?q=tomato"
+                },
+                status=400,
+            )
+        return render(
+            request,
+            "external_search.html",
+            {"query": "", "result": None, "error": None},
+        )
+
+    # 1. Local DB Query (using exact fields from your Plant model)
+    local_plants_qs = Plant.objects.filter(
+        Q(plant_name__icontains=query)
+        | Q(scientific_name__icontains=query)
+        | Q(category__icontains=query)
+    )
+
+    local_plants = [
+        {
+            "plant_id": p.plant_id,
+            "plant_name": p.plant_name,
+            "scientific_name": getattr(p, "scientific_name", "N/A"),
+            "category": getattr(p, "category", "N/A"),
+            "usage_type": getattr(p, "usage_type", "N/A"),
+        }
+        for p in local_plants_qs
+    ]
+
+    # 2. Call external keyless API (Wikipedia Opensearch API)
+    external_data = []
+    api_status = "success"
+    error_message = None
+
+    try:
+        url = "https://en.wikipedia.org/w/api.php"
+        params = {
+            "action": "opensearch",
+            "search": query,
+            "limit": 3,
+            "namespace": 0,
+            "format": "json",
+        }
+        headers = {"User-Agent": "DjangoPlantApp/1.0 (educational use)"}
+
+        # Strict Assignment Requirements: params=..., timeout=5, .raise_for_status()
+        response = requests.get(
+            url, params=params, headers=headers, timeout=5
+        )
+        response.raise_for_status()
+
+        wiki_json = response.json()
+        if len(wiki_json) >= 4:
+            titles = wiki_json[1]
+            descriptions = wiki_json[2]
+            links = wiki_json[3]
+
+            for i in range(len(titles)):
+                external_data.append(
+                    {
+                        "title": titles[i],
+                        "snippet": (
+                            descriptions[i]
+                            if descriptions[i]
+                            else "Wikipedia entry available."
+                        ),
+                        "url": links[i],
+                    }
+                )
+
+    except requests.exceptions.Timeout:
+        api_status = "timeout_error"
+        error_message = "The external Wikipedia API request timed out."
+    except requests.exceptions.RequestException as e:
+        api_status = "request_error"
+        error_message = f"Failed to fetch external data: {str(e)}"
+
+    # 3. Analytics & Triangulation (Combining Local + External Data)
+    has_local = len(local_plants) > 0
+    has_external = len(external_data) > 0
+
+    combined_result = {
+        "query": query,
+        "api_status": api_status,
+        "analytics": {
+            "local_matches_count": len(local_plants),
+            "external_matches_count": len(external_data),
+            "data_coverage": (
+                "Complete (Both Local DB & External API)"
+                if (has_local and has_external)
+                else (
+                    "Local Only"
+                    if has_local
+                    else ("External Only" if has_external else "No Coverage")
+                )
+            ),
+        },
+        "local_plants": local_plants,
+        "external_wikipedia_results": external_data,
+        "error_message": error_message,
+    }
+
+    # Return clean JSON API if requested, otherwise render HTML template
+    if (
+        request.GET.get("format") == "json"
+        or request.headers.get("x-requested-with") == "XMLHttpRequest"
+    ):
+        return JsonResponse(combined_result)
+
+    return render(
+        request,
+        "external_search.html",
+        {"query": query, "result": combined_result, "error": error_message},
+    )

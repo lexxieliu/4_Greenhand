@@ -20,4 +20,5 @@ urlpatterns = [
     path("reports/", views.reports_view, name="reports"),
     path("export/csv/", views.export_csv, name="export_csv"),
     path("export/json/", views.export_json, name="export_json"),
+    path("api/external-plant/", views.external_plant_api, name="external_plant_api"),
 ]

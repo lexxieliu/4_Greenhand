@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-3">Plant Knowledge Aggregator</h2>
+    <p class="text-muted">Combines local database plant records with real-time Wikipedia botanical entries.</p>
+
+    <!-- Search Input Form -->
+    <form method="GET" action="{% url 'external_plant_api' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control form-control-lg" placeholder="Search plant (e.g. tomato, mint, basil)" value="{{ query }}">
+            <button type="submit" class="btn btn-primary btn-lg">Search Aggregator</button>
+        </div>
+    </form>
+
+    {% if error %}
+    <div class="alert alert-warning">
+        <strong>API Warning:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if result %}
+    <!-- Summary Analytics Header -->
+    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Data Coverage:</strong> {{ result.analytics.data_coverage }}
+        </div>
+        <div>
+            <span class="badge bg-success">Local Matches: {{ result.analytics.local_matches_count }}</span>
+            <span class="badge bg-info text-dark">External Entries: {{ result.analytics.external_matches_count }}</span>
+        </div>
+        <a href="{% url 'external_plant_api' %}?q={{ query }}&format=json" target="_blank" class="btn btn-sm btn-outline-dark">
+            View Raw JSON API
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Local DB Column -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white fw-bold">
+                    Local Database Plants
+                </div>
+                <div class="card-body">
+                    {% if result.local_plants %}
+                    <div class="list-group">
+                        {% for plant in result.local_plants %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1 fw-bold">{{ plant.plant_name }} <small class="text-muted">({{ plant.scientific_name }})</small></h6>
+                            <p class="mb-1 small"><strong>Category:</strong> {{ plant.category }}</p>
+                            <p class="mb-0 small"><strong>Usage Type:</strong> {{ plant.usage_type }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted my-3">No matching records found in local database for "{{ query }}".</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- External Wikipedia API Column -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-dark fw-bold">
+                    External Wikipedia Entries
+                </div>
+                <div class="card-body">
+                    {% if result.external_wikipedia_results %}
+                        {% for entry in result.external_wikipedia_results %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <h6 class="fw-bold">
+                                <a href="{{ entry.url }}" target="_blank" class="text-decoration-none">{{ entry.title }}</a>
+                            </h6>
+                            <p class="small text-muted mb-2">{{ entry.snippet }}</p>
+                            <a href="{{ entry.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Read Wikipedia Article &rarr;</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <p class="text-muted my-3">No external Wikipedia entry returned for "{{ query }}".</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
