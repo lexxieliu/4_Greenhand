@@ -5,7 +5,8 @@ from django.views.generic import ListView, TemplateView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
 from io import BytesIO
-from django.http import HttpResponse, JsonResponse
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse, FileResponse, Http404
 from django.urls import reverse
 from django.db.models import Count, Q
 import requests
@@ -151,50 +152,42 @@ def api_summary(request):
     return JsonResponse(formatted_data, safe=False)
 
 def vegalitechart(request):
-    api_url = request.build_absolute_uri(reverse("api_summary"))
-    with urllib.request.urlopen(api_url) as resp:
-        payload = json.load(resp)
-
-    base_encoding = {
-        "x": {
-            "field": "category",
-            "type": "nominal",
-            "title": "Category",
-            "sort": None,
-            "axis": {"labelAngle": -30},
-        },
-        "y": {
-            "field": "value",
-            "type": "quantitative",
-            "title": "Count",
-            "axis": {"tickMinStep": 1},
-        },
-        "tooltip": [
-            {"field": "category", "type": "nominal", "title": "Category"},
-            {"field": "value", "type": "quantitative", "title": "Count"},
-        ],
-    }
-
     bar_spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "title": "Plants by category (bar)",
+        "title": "Plants per category",
         "width": "container",
         "height": 300,
-        "data": {"values": payload},
+        "data": {"url": reverse("api_summary")},
         "mark": {"type": "bar", "cornerRadiusEnd": 3},
-        "encoding": base_encoding,
+        "encoding": {
+            "x": {"field": "category", "type": "nominal", "title": "Category",
+                  "axis": {"labelAngle": -30}},
+            "y": {"field": "value", "type": "quantitative", "title": "Plants",
+                  "axis": {"tickMinStep": 1}},
+            "tooltip": [
+                {"field": "category", "type": "nominal"},
+                {"field": "value", "type": "quantitative", "title": "Plants"},
+            ],
+        },
     }
-
     line_spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "title": "Plants by category (line)",
+        "title": "Garden entries over time (cumulative)",
         "width": "container",
         "height": 300,
-        "data": {"values": payload},
+        "data": {"url": reverse("api_garden_timeline")},
         "mark": {"type": "line", "point": True},
-        "encoding": base_encoding,
+        "encoding": {
+            "x": {"field": "added_at", "type": "temporal", "title": "Added to a garden"},
+            "y": {"field": "total", "type": "quantitative", "title": "Total entries",
+                  "axis": {"tickMinStep": 1}},
+            "tooltip": [
+                {"field": "added_at", "type": "temporal"},
+                {"field": "progress", "type": "nominal"},
+                {"field": "total", "type": "quantitative"},
+            ],
+        },
     }
-
     return render(request, "plant/plant_charts.html", {
         "bar_spec": bar_spec,
         "line_spec": line_spec,
@@ -212,9 +205,7 @@ def export_csv(request):
     writer = csv.writer(response)
 
     # First row: Column headers
-    writer.writerow(
-        ["plant ID", "Name", "Category", "Scientific Name", "Usage Type"]
-    )
+    writer.writerow(["Plant ID", "Name", "Scientific Name", "Category", "Usage Type"])
 
     # Data rows from DB (ordered by name)
     plants = Plant.objects.values_list("plant_id", "plant_name", "scientific_name", "category", "usage_type").order_by("plant_name")
@@ -238,7 +229,6 @@ def export_json(request):
     }
 
     response = JsonResponse(payload, json_dumps_params={"indent": 2})
-    filename = f"plants_{timestamp_str}.json"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
 
@@ -390,3 +380,21 @@ def external_plant_api(request):
         "external_search.html",
         {"query": query, "result": combined_result, "error": error_message},
     )
+
+def api_garden_timeline(request):
+    """Cumulative count of Garden entries over time (chart-ready JSON)."""
+    entries = Garden.objects.order_by('added_at').values('added_at', 'progress')
+    data = [
+        {"added_at": e['added_at'].isoformat(), "progress": e['progress'], "total": i}
+        for i, e in enumerate(entries, start=1)
+    ]
+    return JsonResponse(data, safe=False)
+
+def vega_chart_image(request, name):
+    """Serve the saved Vega-Lite chart screenshots at /vega-lite/chart1.png and chart2.png."""
+    if name not in ("chart1", "chart2"):
+        raise Http404
+    path = settings.BASE_DIR / "static" / "vega-lite" / f"{name}.png"
+    if not path.exists():
+        raise Http404
+    return FileResponse(open(path, "rb"), content_type="image/png")
