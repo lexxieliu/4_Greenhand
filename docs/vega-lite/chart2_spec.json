@@ -1,0 +1,18 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Garden entries over time (cumulative)",
+  "width": 600,
+  "height": 300,
+  "data": { "url": "https://lexxieliu.pythonanywhere.com/api/garden-timeline/" },
+  "mark": { "type": "line", "point": true },
+  "encoding": {
+    "x": { "field": "added_at", "type": "temporal", "title": "Added to a garden" },
+    "y": { "field": "total", "type": "quantitative", "title": "Total entries",
+           "axis": { "tickMinStep": 1 } },
+    "tooltip": [
+      { "field": "added_at", "type": "temporal" },
+      { "field": "progress", "type": "nominal" },
+      { "field": "total", "type": "quantitative" }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .models import Plant
 from django.views import View
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 from garden.models import Garden
 from io import BytesIO
@@ -10,11 +10,9 @@ from django.http import HttpResponse, JsonResponse, FileResponse, Http404
 from django.urls import reverse
 from django.db.models import Count, Q
 import requests
-import urllib.request
 import matplotlib
 import json
 import csv
-from datetime import datetime
 from django.utils import timezone
 matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
 import matplotlib.pyplot as plt
@@ -41,9 +39,6 @@ class PlantListView(ListView):
         context['q'] = self.request.GET.get('q', '')
         context['selected_category'] = self.request.POST.get('category', '')
         context['categories'] = Plant.objects.values_list('category', flat=True).distinct()
-        from django.db.models import Count
-
-        # ...inside get_context_data():
 
         # Relationship-spanning query:
         # filter Plants by an attribute of their related Garden entries
