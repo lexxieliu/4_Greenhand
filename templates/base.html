@@ -19,25 +19,46 @@
 </head>
 <body class="bg-light">
 <header class="bg-success text-white mb-4">
-    <div class="container d-flex align-items-center flex-wrap py-3">
-        <a href="{% url 'plants_list' %}" class="d-flex align-items-center text-white text-decoration-none me-4">
-            <img src="{% static 'img/logo_icon.png' %}" alt="GreenHand logo" class="brand-logo">
-        </a>
+    <div class="container d-flex align-items-center justify-content-between flex-wrap py-3">
 
-        <nav class="navbar navbar-expand-lg p-0">
-            <ul class="navbar-nav flex-row gap-3">
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'plants_list' %}">Plants</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-manual' %}">Posts Manual</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-render' %}">Posts Render</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'profile-cbv-base' %}">Profile</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'reports' %}">Reports</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'vega_chart' %}">Charts</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="{% url 'external_plant_api' %}">Plant Search</a></li>
-            </ul>
-        </nav>
+        <div class="d-flex align-items-center">
+            <a href="{% url 'plants_list' %}" class="d-flex align-items-center text-white text-decoration-none me-4">
+                <img src="{% static 'img/logo_icon.png' %}" alt="GreenHand logo" class="brand-logo">
+            </a>
+
+            <nav class="navbar navbar-expand-lg p-0">
+                <ul class="navbar-nav flex-row gap-3">
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'plants_list' %}">Plants</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-manual' %}">Posts Manual</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'post-render' %}">Posts Render</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'profile-cbv-base' %}">Profile</a></li>
+
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link text-white" href="{% url 'reports' %}">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="{% url 'vega_chart' %}">Charts</a></li>
+                    {% endif %}
+
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'external_plant_api' %}">Plant Search</a></li>
+                </ul>
+            </nav>
+        </div>
+
+
+        <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+                <span class="text-white small me-2">Hi, {{ user.username }}</span>
+                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm">Log Out</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-light btn-sm text-success fw-bold">Log In</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-light btn-sm">Sign Up</a>
+            {% endif %}
+        </div>
     </div>
 </header>
-
 <main class="container mb-5">
     {% block content %}
         <p class="text-muted">Test content</p>

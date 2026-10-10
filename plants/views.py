@@ -13,6 +13,9 @@ import requests
 import matplotlib
 import json
 import csv
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 from django.utils import timezone
 matplotlib.use("Agg")          # non-interactive backend — required, since Django has no display/screen
 import matplotlib.pyplot as plt
@@ -145,7 +148,7 @@ def api_summary(request):
     ]
 
     return JsonResponse(formatted_data, safe=False)
-
+@login_required
 def vegalitechart(request):
     bar_spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -188,6 +191,7 @@ def vegalitechart(request):
         "line_spec": line_spec,
     })
 
+
 def export_csv(request):
     """Generates and streams a downloadable CSV file containing all Plant records."""
     # Format timestamp for filename: YYYY-MM-DD_HH-MM
@@ -226,7 +230,7 @@ def export_json(request):
     response = JsonResponse(payload, json_dumps_params={"indent": 2})
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
-
+@login_required
 def reports_view(request):
     """Renders the HTML reports page with grouped summaries and totals."""
     # Summary 1: Plants per Category
@@ -393,3 +397,13 @@ def vega_chart_image(request, name):
     if not path.exists():
         raise Http404
     return FileResponse(open(path, "rb"), content_type="image/png")
+
+def signup_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login")
+    else:
+        form = UserCreationForm()
+    return render(request, "registration/signup.html", {"form": form})

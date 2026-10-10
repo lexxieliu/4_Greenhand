@@ -1,6 +1,6 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
-
+from django.contrib.auth import views as auth_views
 urlpatterns = [
     # Pages
     path('plants/', views.PlantListView.as_view(), name='plants_list'),
@@ -22,4 +22,15 @@ urlpatterns = [
 
     # External API (Wikipedia) combined with local data
     path('api/external-plant/', views.external_plant_api, name='external_plant_api'),
+
+    path("signup/", views.signup_view, name="signup"),
+    # Django login
+    path(
+        "login/",
+        auth_views.LoginView.as_view(template_name="registration/login.html"),
+        name="login",
+    ),
+
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+
 ]
