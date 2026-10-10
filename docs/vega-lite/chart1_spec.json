@@ -1,0 +1,18 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Plants per category",
+  "width": 600,
+  "height": 300,
+  "data": { "url": "https://lexxieliu.pythonanywhere.com/api/summary/" },
+  "mark": { "type": "bar", "cornerRadiusEnd": 3 },
+  "encoding": {
+    "x": { "field": "category", "type": "nominal", "title": "Category",
+           "axis": { "labelAngle": -30 } },
+    "y": { "field": "value", "type": "quantitative", "title": "Plants",
+           "axis": { "tickMinStep": 1 } },
+    "tooltip": [
+      { "field": "category", "type": "nominal" },
+      { "field": "value", "type": "quantitative", "title": "Plants" }
+    ]
+  }
+}

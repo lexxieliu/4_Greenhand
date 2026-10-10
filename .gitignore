@@ -1,8 +1,15 @@
+# secrets / OS / IDE
 .env
 .DS_Store
+.idea/
+
+# python
+venv/
+.venv/
 *.pyc
 __pycache__/
-.idea/
-#Keep this for now, for others to download 
-#After everyone has this sample db locally, it is recommended to be deleted to not be tracked
-#data/db.sqlite3
+
+# django (collectstatic output is rebuilt on the server)
+staticfiles/
+
+# NOTE: do NOT ignore data/db.sqlite3. A4 requires it to be committed.

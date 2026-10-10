@@ -1,24 +1,25 @@
-
-from .views import PlantListView, PlantDetailView, plant_category_chart, PlantsAPIView
-
-from .views import PlantListView, PlantDetailView, plant_category_chart, plant_api, api_summary
-
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
-    path('plants/', PlantListView.as_view(), name='plants_list'),
-    path('plants/<int:primary_key>', PlantDetailView.as_view(), name='plants_detail'),
-    path('plants/chart.png', plant_category_chart, name='plants-chart'),
+    # Pages
+    path('plants/', views.PlantListView.as_view(), name='plants_list'),
+    path('plants/<int:primary_key>', views.PlantDetailView.as_view(), name='plants_detail'),
+    path('plants/chart.png', views.plant_category_chart, name='plants-chart'),
+    path('plants/vega/', views.vegalitechart, name='vega_chart'),
+    path('vega-lite/<str:name>.png', views.vega_chart_image, name='vega_chart_image'),
+    path('reports/', views.reports_view, name='reports'),
 
-    path('api/plants/', PlantsAPIView.as_view(), name='plants_api'),
+    # Exports
+    path('export/csv/', views.export_csv, name='export_csv'),
+    path('export/json/', views.export_json, name='export_json'),
 
-    path('api/plants_fbv/', plant_api, name='api_fbv'),
-    path('api/summary/', api_summary, name='api_summary'),
-    path('plants/vega/', views.vegalitechart, name='vega_chart' ),
-    path("reports/", views.reports_view, name="reports"),
-    path("export/csv/", views.export_csv, name="export_csv"),
-    path("export/json/", views.export_json, name="export_json"),
-    path("api/external-plant/", views.external_plant_api, name="external_plant_api"),
+    # Internal JSON API
+    path('api/plants/', views.PlantsAPIView.as_view(), name='plants_api'),
+    path('api/plants_fbv/', views.plant_api, name='api_fbv'),
+    path('api/summary/', views.api_summary, name='api_summary'),
+    path('api/garden-timeline/', views.api_garden_timeline, name='api_garden_timeline'),
+
+    # External API (Wikipedia) combined with local data
+    path('api/external-plant/', views.external_plant_api, name='external_plant_api'),
 ]
