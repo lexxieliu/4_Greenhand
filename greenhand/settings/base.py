@@ -24,6 +24,8 @@ SECRET_KEY = env('SECRET_KEY')
 
 # Application definition
 
+SITE_ID = 1
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,10 +37,22 @@ INSTALLED_APPS = [
     'garden',
     'tutor',
     'plants',
-    'post'
+    'post',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
 MIDDLEWARE = [
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,3 +123,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGIN_REDIRECT_URL = "plants_list"
 LOGOUT_REDIRECT_URL = "login"
 LOGIN_URL = "login"
+
+SOCIALACCOUNT_LOGIN_ON_GET = True

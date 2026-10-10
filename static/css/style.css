@@ -46,3 +46,31 @@ table th {
   width: 64px;
   margin-right: 0.75rem;
 }
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ddd;
+
+    padding: 10px;
+    border-radius: 5px;
+
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.google-btn:hover {
+    background-color: #f7f7f7;
+    border-color: #ccc;
+    color: #000;
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+}
