@@ -13,3 +13,9 @@ __pycache__/
 staticfiles/
 
 # NOTE: do NOT ignore data/db.sqlite3. A4 requires it to be committed.
+# model weights / notebooks
+*.bin
+*.safetensors
+*.pt
+*.gguf
+.ipynb_checkpoints/
