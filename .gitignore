@@ -13,3 +13,4 @@ __pycache__/
 staticfiles/
 
 # NOTE: do NOT ignore data/db.sqlite3. A4 requires it to be committed.
+data/
