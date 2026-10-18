@@ -1,0 +1,7 @@
+{"model": "google/flan-t5-large", "category": "2 Tiny (0.5-1B)", "params_b": 0.78, "kind": "seq2seq", "load_s": 6.0, "mem_gb": 3.13, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "Qwen/Qwen2.5-1.5B-Instruct", "category": "3 Small (1-3B)", "params_b": 1.5, "kind": "chat", "load_s": 5.3, "mem_gb": 3.11, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "nvidia/AceInstruct-1.5B", "category": "3 Small (1-3B)", "params_b": 1.5, "kind": "chat", "load_s": 5.3, "mem_gb": 3.11, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "microsoft/Phi-4-mini-instruct", "category": "4 Medium (3-5B)", "params_b": 3.8, "kind": "chat", "load_s": 18.3, "mem_gb": 7.68, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "nvidia/Minitron-4B-Base", "category": "4 Medium (3-5B)", "params_b": 4.0, "kind": "base", "load_s": 326.1, "mem_gb": 8.39, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "microsoft/Phi-4-mini-instruct", "category": "4 Medium (3-5B)", "params_b": 3.8, "kind": "chat", "load_s": 28.8, "mem_gb": 7.68, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
+{"model": "Qwen/Qwen2.5-1.5B-Instruct", "category": "3 Small (1-3B)", "params_b": 1.5, "kind": "chat", "load_s": 3.5, "mem_gb": 3.11, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "3", "status": "ok"}
