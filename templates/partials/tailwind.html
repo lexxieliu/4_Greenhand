@@ -1,0 +1,28 @@
+{# Tailwind Play CDN + Greenhand theme. For production, replace with a compiled build (django-tailwind or the Tailwind CLI) using the same theme values. #}
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          display: ['"Inter Tight"', 'Inter', 'ui-sans-serif', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          ink: '#0b1a10',
+          muted: '#5b6b60',
+          line: '#e4e9e4',
+          mist: '#f6f8f5',
+          forest: { DEFAULT: '#14532d', 900: '#0b2416' },
+          leaf: { DEFAULT: '#16a34a', soft: '#dcfce7' },
+        },
+        letterSpacing: { tightest: '-0.035em' },
+        boxShadow: {
+          card: '0 1px 2px rgba(11,26,16,.06), 0 0 0 1px rgba(11,26,16,.06)',
+          float: '0 24px 60px -20px rgba(11,36,22,.35), 0 0 0 1px rgba(11,26,16,.06)',
+        },
+      },
+    },
+  };
+</script>

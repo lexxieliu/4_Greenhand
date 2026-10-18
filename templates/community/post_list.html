@@ -1,0 +1,218 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+
+{% block title %}Posts — Greenhand{% endblock %}
+{% block description %}Share progress, harvests, tips, and questions with growers who grow what you grow.{% endblock %}
+
+{% block breadcrumb %}{% url 'garden:dashboard' as dash_url %}{% include "partials/breadcrumb.html" with parent="Community" parent_url=dash_url current="Posts" %}{% endblock %}
+{% block page_title %}Posts{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">Learn from growers with the same plants as you</p>{% endblock %}
+{% block page_actions %}
+  <a href="#composer" data-focus-composer class="inline-flex h-10 items-center gap-2 rounded-lg bg-forest px-4 text-[14px] font-medium text-white shadow-sm hover:bg-forest-900"><svg class="ic h-4 w-4"><use href="#i-plus"/></svg>New post</a>
+{% endblock %}
+
+{% block content %}
+{% url 'community:feed' as feed_url %}
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
+  <div class="min-w-0 space-y-5 xl:col-span-8">
+
+    <!-- Composer (FR-50, FR-51) -->
+    <section id="composer" class="scroll-mt-24 rounded-2xl bg-white shadow-card" aria-labelledby="composer-title">
+      <h2 id="composer-title" class="sr-only">Create a post</h2>
+      <form method="post" action="{% url 'community:create' %}" enctype="multipart/form-data" class="p-4">
+        {% csrf_token %}
+        <div class="flex gap-3">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[14px] font-semibold text-forest">{{ gh_user.initial }}</span>
+          <div class="min-w-0 flex-1">
+            <label for="postBody" class="sr-only">What's growing?</label>
+            <textarea id="postBody" name="body" rows="2" maxlength="2000" required placeholder="Share progress, a harvest, a tip, or ask a question…" class="w-full resize-none rounded-xl border border-line px-3.5 py-2.5 text-[14.5px] placeholder:text-muted/70 focus:border-leaf focus:outline-none focus:ring-4 focus:ring-leaf/15"></textarea>
+            <div id="imagePreview" class="mt-2 hidden grid-cols-4 gap-2"></div>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2 pl-0 sm:pl-[52px]">
+          <fieldset class="flex flex-wrap gap-1.5 text-[12.5px]">
+            <legend class="sr-only">Post type</legend>
+            {% for value, t in post_types.items %}
+              <label class="filter-pill"><input type="radio" name="post_type" value="{{ value }}" {% if forloop.first %}checked{% endif %} /><span>{{ t.label }}</span></label>
+            {% endfor %}
+          </fieldset>
+          <label for="userPlant" class="sr-only">Link a plant</label>
+          <select id="userPlant" name="user_plant" class="dash-input !h-9 !w-auto py-0 text-[13px]">
+            <option value="">No plant linked</option>
+            {% for p in my_plants %}<option value="{{ p.id }}">{{ p.nickname }}</option>{% endfor %}
+          </select>
+          <label class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] text-muted hover:bg-mist">
+            <svg class="ic h-4 w-4"><use href="#i-image"/></svg>Photos
+            <input id="postImages" type="file" name="images" accept="image/*" multiple class="sr-only" />
+          </label>
+          <span id="charCount" class="ml-auto text-[12px] text-muted">0 / 2000</span>
+          <button type="submit" class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-4 text-[13.5px] font-medium text-white hover:bg-forest-900"><svg class="ic h-4 w-4"><use href="#i-send"/></svg>Post</button>
+        </div>
+        <p class="mt-2 pl-0 text-[11.5px] text-muted sm:pl-[52px]">Up to 4 photos. Location data is removed from photos. Questions get a labeled AI suggestion.</p>
+      </form>
+    </section>
+
+    <!-- Feed filters (FR-53) -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <nav class="flex gap-1 rounded-xl bg-white p-1 text-[13.5px] shadow-card" aria-label="Feed">
+        <a href="{{ feed_url }}?feed=latest{% if post_type %}&type={{ post_type }}{% endif %}" {% if feed == 'latest' %}aria-current="page"{% endif %} class="pill-tab rounded-lg px-3 py-1.5">Latest</a>
+        <a href="{{ feed_url }}?feed=same{% if post_type %}&type={{ post_type }}{% endif %}" {% if feed == 'same' %}aria-current="page"{% endif %} class="pill-tab rounded-lg px-3 py-1.5">Same plants as me</a>
+        <a href="{{ feed_url }}?feed=saved{% if post_type %}&type={{ post_type }}{% endif %}" {% if feed == 'saved' %}aria-current="page"{% endif %} class="pill-tab rounded-lg px-3 py-1.5">Saved</a>
+      </nav>
+      <nav class="scroll-thin flex gap-1.5 overflow-x-auto text-[12.5px]" aria-label="Post type">
+        <a href="{{ feed_url }}?feed={{ feed }}" {% if not post_type %}aria-current="page"{% endif %} class="pill-tab rounded-full border border-line bg-white px-3 py-1">All</a>
+        {% for value, t in post_types.items %}
+          <a href="{{ feed_url }}?feed={{ feed }}&type={{ value }}" {% if post_type == value %}aria-current="page"{% endif %} class="pill-tab rounded-full border border-line bg-white px-3 py-1">{{ t.label }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+
+    <!-- Feed -->
+    {% for post in posts %}
+      <article id="post-{{ post.id }}" class="post-card scroll-mt-24 rounded-2xl bg-white shadow-card" data-post="{{ post.id }}">
+        <header class="flex items-start gap-3 p-4 pb-0">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br {{ post.author_info.grad }} text-[13px] font-semibold">{{ post.author_info.initials }}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-x-2 text-[14px]">
+              <span class="font-medium">{{ post.author }}</span>{% if post.mine %}<span class="rounded bg-mist px-1.5 text-[10.5px] text-muted">You</span>{% endif %}
+              <span class="text-[12.5px] text-muted">· {{ post.created }}{% if post.created != "now" %} ago{% endif %}</span>
+            </div>
+            {% if post.plant_name %}
+              <a href="{% url 'plants:detail' post.plant_slug %}" class="mt-0.5 inline-flex items-center gap-1 text-[12.5px] text-forest hover:text-leaf"><svg class="ic h-3.5 w-3.5"><use href="#{{ post.plant_icon }}"/></svg>{{ post.plant_name }}</a>
+            {% endif %}
+          </div>
+          <span class="shrink-0 rounded-full px-2 py-0.5 text-[11.5px] font-medium {{ post.type_info.cls }}">{{ post.type_info.label }}</span>
+          <div class="relative" data-popover>
+            <button type="button" class="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-mist hover:text-ink" data-popover-trigger aria-expanded="false" aria-label="More options"><svg class="ic h-4 w-4"><use href="#i-more"/></svg></button>
+            <div class="popover absolute right-0 top-full z-10 mt-1 hidden w-44 rounded-xl bg-white p-1.5 text-[13.5px] shadow-float" role="menu">
+              <button type="button" data-copy-link role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-share"/></svg>Copy link</button>
+              {% if not post.mine %}<button type="button" data-report="{% url 'community:report' post.id %}" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-rose-700 hover:bg-rose-50"><svg class="ic h-4 w-4"><use href="#i-flag"/></svg>Report post</button>{% endif %}
+            </div>
+          </div>
+        </header>
+
+        <div class="px-4 pt-3">
+          <p class="whitespace-pre-line text-[14.5px] leading-relaxed">{{ post.body }}</p>
+          {% if post.images %}
+            <div class="mt-3 grid gap-2 {% if post.images == 1 %}grid-cols-1{% elif post.images == 3 %}grid-cols-3{% else %}grid-cols-2{% endif %}">
+              {% for img in "xxxx"|make_list|slice:post.images %}
+                <span class="img-ph grid {% if post.images == 1 %}h-56{% else %}h-36{% endif %} place-items-center rounded-xl text-forest/50" role="img" aria-label="Photo {{ forloop.counter }} of {{ post.images }}"><svg class="ic h-7 w-7"><use href="#i-image"/></svg></span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if post.ai_suggestion %}
+            {# FR-54: AI suggestion on Question posts, clearly labeled #}
+            <div class="mt-3 rounded-xl border border-line bg-mist p-3.5">
+              <div class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-forest"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg>AI suggestion</div>
+              <p class="text-[13.5px] leading-relaxed">{{ post.ai_suggestion }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Interactions (FR-52) -->
+        <div class="mt-3 flex items-center gap-1 border-t border-line px-2 py-1.5 text-[13px] text-muted">
+          <button type="button" class="like-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 hover:bg-mist" data-toggle-url="{% url 'community:like' post.id %}" aria-pressed="{{ post.liked|yesno:'true,false' }}" aria-label="Like">
+            <svg class="ic h-[18px] w-[18px]"><use href="#i-heart"/></svg><span data-count>{{ post.likes }}</span>
+          </button>
+          <button type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 hover:bg-mist" data-toggle-comments aria-expanded="false" aria-controls="comments-{{ post.id }}">
+            <svg class="ic h-[18px] w-[18px]"><use href="#i-post"/></svg>{{ post.comments|length }}<span class="hidden sm:inline">&nbsp;comment{{ post.comments|length|pluralize }}</span>
+          </button>
+          <button type="button" class="save-btn ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 hover:bg-mist" data-toggle-url="{% url 'community:save' post.id %}" aria-pressed="{{ post.saved|yesno:'true,false' }}" aria-label="Save">
+            <svg class="ic h-[18px] w-[18px]"><use href="#i-bookmark"/></svg><span class="hidden sm:inline">Save</span>
+          </button>
+        </div>
+
+        <!-- Comments -->
+        <div id="comments-{{ post.id }}" class="comments hidden border-t border-line bg-mist/50 px-4 py-3">
+          <ul class="space-y-3">
+            {% for c in post.comments %}
+              <li class="flex gap-2.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br {{ c.author_info.grad }} text-[11px] font-semibold">{{ c.author_info.initials }}</span>
+                <div class="rounded-xl bg-white px-3 py-2 shadow-card"><div class="text-[12.5px]"><span class="font-medium">{{ c.author }}</span> <span class="text-muted">· {{ c.created }}</span></div><p class="text-[13.5px]">{{ c.body }}</p></div>
+              </li>
+            {% empty %}
+              <li class="text-[13px] text-muted">No comments yet. Be the first to help.</li>
+            {% endfor %}
+          </ul>
+          <form method="post" action="{% url 'community:comment' post.id %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="mt-3 flex items-center gap-2">
+            {% csrf_token %}
+            <label for="comment-{{ post.id }}" class="sr-only">Write a comment</label>
+            <input id="comment-{{ post.id }}" name="body" type="text" maxlength="1000" required placeholder="Write a comment…" class="dash-input !h-10 flex-1" />
+            <button type="submit" class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-ink text-white hover:bg-forest-900" aria-label="Send comment"><svg class="ic h-4 w-4"><use href="#i-send"/></svg></button>
+          </form>
+        </div>
+      </article>
+    {% empty %}
+      <div class="flex flex-col items-center rounded-2xl border border-dashed border-[#cfd8cf] bg-white px-6 py-14 text-center">
+        <span class="grid h-12 w-12 place-items-center rounded-full bg-mist text-forest"><svg class="ic h-6 w-6"><use href="#i-post"/></svg></span>
+        <p class="mt-3 text-[15px] font-medium">{% if feed == 'saved' %}No saved posts yet{% else %}No posts here yet{% endif %}</p>
+        <p class="mt-1 text-[13px] text-muted">{% if feed == 'saved' %}Tap Save on a post to keep it for later.{% else %}Share your progress to get the conversation started.{% endif %}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="min-w-0 space-y-5 xl:col-span-4">
+    <section class="stat-card rounded-2xl bg-forest p-5 text-white">
+      <span class="orb orb-a bg-[#0f3f22]"></span><span class="orb orb-b bg-[#1f7a43]"></span>
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#0f3f22] text-lime-300"><svg class="ic h-5 w-5"><use href="#i-users"/></svg></span>
+      <h2 class="mt-4 text-[15px] font-medium">Growers like you</h2>
+      <p class="mt-1 text-[13px] text-lime-100/75">&ldquo;Same plants as me&rdquo; shows posts about what&rsquo;s in your garden:</p>
+      <div class="mt-3 flex flex-wrap gap-1.5 text-[12px]">{% for p in my_plants %}<span class="rounded-full bg-white/10 px-2.5 py-1">{{ p.nickname }}</span>{% endfor %}</div>
+    </section>
+
+    <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="trending-title">
+      <h2 id="trending-title" class="font-display text-[17px] font-semibold tracking-tight">Popular plants</h2>
+      <ul class="mt-3 divide-y divide-line text-[14px]">
+        {% for t in trending %}
+          <li><a href="{% url 'plants:detail' t.slug %}" class="flex items-center justify-between py-2.5 hover:text-forest"><span>{{ t.name }}</span><span class="text-[12.5px] text-muted">{{ t.count }} post{{ t.count|pluralize }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <a href="{% url 'garden:dashboard' %}#tutor" class="flex items-center gap-3 rounded-2xl bg-[#0d1f14] p-4 text-emerald-50 hover:bg-forest-900">
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-lime-300"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg></span>
+      <span class="flex-1"><span class="block text-[14px] font-medium text-white">Need an answer now?</span><span class="block text-[12.5px] text-emerald-50/60">Your tutor knows your plants and weather</span></span>
+      <svg class="ic h-4 w-4 text-lime-300"><use href="#i-chev-right"/></svg>
+    </a>
+
+    <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="rules-title">
+      <h2 id="rules-title" class="flex items-center gap-2 font-display text-[17px] font-semibold tracking-tight"><svg class="ic h-4 w-4 text-forest"><use href="#i-shield"/></svg>Community guidelines</h2>
+      <ul class="mt-3 space-y-2 text-[13px] text-muted">
+        <li class="flex gap-2"><svg class="ic mt-0.5 h-3.5 w-3.5 shrink-0 text-leaf"><use href="#i-check"/></svg>Be kind — everyone was a beginner once.</li>
+        <li class="flex gap-2"><svg class="ic mt-0.5 h-3.5 w-3.5 shrink-0 text-leaf"><use href="#i-check"/></svg>Share what worked for you and where you grow.</li>
+        <li class="flex gap-2"><svg class="ic mt-0.5 h-3.5 w-3.5 shrink-0 text-leaf"><use href="#i-check"/></svg>No advice on eating plants you&rsquo;re unsure are safe.</li>
+        <li class="flex gap-2"><svg class="ic mt-0.5 h-3.5 w-3.5 shrink-0 text-leaf"><use href="#i-check"/></svg>Report spam or harmful advice — moderators review every report.</li>
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block modals %}
+  {# Report (FR-56). JS sets the form action to the post's report URL. #}
+  <dialog id="reportDialog" class="sheet" aria-labelledby="report-title">
+    <form method="post" action="" class="sheet-panel m-4 w-[min(440px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float">
+      {% csrf_token %}
+      <div class="flex items-center justify-between border-b border-line px-5 py-4">
+        <h2 id="report-title" class="font-display text-[19px] font-semibold tracking-tight">Report post</h2>
+        <button type="button" data-close class="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-mist hover:text-ink" aria-label="Close"><svg class="ic h-4 w-4"><use href="#i-x"/></svg></button>
+      </div>
+      <fieldset class="space-y-2 px-5 py-5">
+        <legend class="mb-2 text-[13.5px] text-muted">Why are you reporting this post?</legend>
+        {% for value, label in report_reasons.items %}
+          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-line p-3 text-[14px] hover:bg-mist has-[:checked]:border-forest has-[:checked]:bg-leaf-soft/40">
+            <input type="radio" name="reason" value="{{ value }}" required class="h-4 w-4 accent-[#14532d]" />{{ label }}
+          </label>
+        {% endfor %}
+      </fieldset>
+      <div class="flex justify-end gap-2 border-t border-line px-5 py-4">
+        <button type="button" data-close class="h-10 rounded-lg border border-line px-4 text-[14px] font-medium hover:bg-mist">Cancel</button>
+        <button type="submit" class="h-10 rounded-lg bg-rose-600 px-4 text-[14px] font-medium text-white hover:bg-rose-700">Send report</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block page_js %}<script src="{% static 'js/community.js' %}"></script>{% endblock %}

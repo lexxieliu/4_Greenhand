@@ -1,0 +1,74 @@
+{# App header: menu toggle, search, weather chip, notifications (PRD 3.7), account menu. #}
+<header class="app-header fixed inset-x-0 top-0 z-50 flex items-center gap-3 bg-white px-4 sm:px-5">
+  <div class="flex items-center gap-3 lg:w-[236px] lg:justify-between">
+    <a href="{% url 'garden:dashboard' %}" class="flex items-center gap-2" aria-label="Greenhand — Dashboard">
+      <span class="grid h-8 w-8 place-items-center rounded-lg bg-forest text-lime-300">
+        <svg class="ic h-[18px] w-[18px]"><use href="#i-sprout"/></svg>
+      </span>
+      <span class="hidden font-display text-[21px] font-semibold tracking-tight sm:inline">greenhand</span>
+    </a>
+    <button id="sidebarToggle" type="button" class="order-first grid h-9 w-9 place-items-center rounded-lg bg-leaf-soft text-forest transition hover:bg-forest hover:text-lime-300 lg:order-none" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle menu">
+      <svg class="ic h-[18px] w-[18px]"><use href="#i-menu"/></svg>
+    </button>
+  </div>
+
+  {# Global search goes to the plant database (plants:list ?q=). #}
+  <form id="searchForm" role="search" action="{% url 'plants:list' %}" method="get" class="ml-2 hidden w-full max-w-[420px] items-center gap-2 rounded-xl border border-line px-3 py-1.5 focus-within:border-leaf focus-within:ring-4 focus-within:ring-leaf/15 md:flex">
+    <svg class="ic h-4 w-4 text-muted"><use href="#i-search"/></svg>
+    <label for="searchInput" class="sr-only">Search</label>
+    <input id="searchInput" name="q" type="search" placeholder="Search plants…" autocomplete="off" class="min-w-0 flex-1 bg-transparent py-1 text-[14px] placeholder:text-muted/70 focus:outline-none" />
+    <span class="grid h-8 w-8 place-items-center rounded-lg bg-leaf-soft text-forest" aria-hidden="true"><svg class="ic h-4 w-4"><use href="#i-sliders"/></svg></span>
+  </form>
+
+  <div class="ml-auto flex items-center gap-2.5">
+    <a href="{% url 'weather:index' %}" class="hidden items-center gap-1.5 rounded-lg bg-mist px-2.5 py-2 text-[13px] text-muted ring-1 ring-line hover:text-forest xl:inline-flex">
+      <svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#{{ gh_weather_now.icon }}"/></svg>{{ gh_weather_now.temp_c }}&deg;C · {{ gh_location.label }}
+    </a>
+
+    <!-- Notifications -->
+    <div class="relative" data-popover>
+      <button class="relative grid h-9 w-9 place-items-center rounded-lg bg-lime-100 text-forest transition hover:bg-forest hover:text-lime-300" data-popover-trigger aria-expanded="false" aria-controls="notifPanel" aria-label="Notifications{% if gh_unread %}, {{ gh_unread }} unread{% endif %}">
+        <svg class="ic h-[18px] w-[18px]"><use href="#i-bell"/></svg>
+        {% if gh_unread %}<span id="notifBadge" class="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white ring-2 ring-white">{{ gh_unread }}</span>{% endif %}
+      </button>
+      <div id="notifPanel" class="popover absolute right-0 top-full mt-3 hidden w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-float" role="dialog" aria-label="Notifications">
+        <div class="flex items-center justify-between border-b border-line px-4 py-3">
+          <span class="text-[14px] font-medium">Notifications</span>
+          <button id="markAllRead" class="text-[12.5px] font-medium text-forest hover:text-leaf">Mark all as read</button>
+        </div>
+        <ul class="scroll-thin max-h-[360px] divide-y divide-line overflow-y-auto text-[13px]">
+          {% for n in gh_notifications %}
+            <li class="notif flex gap-3 px-4 py-3 {% if n.unread %}bg-leaf-soft/40{% endif %}" data-unread="{{ n.unread|yesno:'true,false' }}">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg {{ n.tint }}"><svg class="ic h-4 w-4"><use href="#{{ n.icon }}"/></svg></span>
+              <div class="flex-1"><div class="font-medium">{{ n.title }}</div><div class="text-muted">{{ n.body }}</div></div>
+              {% if n.unread %}<span class="notif-dot mt-1.5 h-2 w-2 rounded-full bg-leaf"></span>{% endif %}
+            </li>
+          {% empty %}
+            <li class="px-4 py-6 text-center text-muted">You’re all caught up.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div class="relative" data-popover>
+      <button class="flex items-center gap-2 rounded-full bg-leaf-soft p-1 pr-2.5 text-forest transition hover:bg-forest hover:text-lime-300" data-popover-trigger aria-expanded="false" aria-controls="accountPanel" aria-label="Account menu">
+        <span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[13px] font-semibold text-forest ring-2 ring-white">{{ gh_user.initial }}</span>
+        <svg class="ic h-[18px] w-[18px]"><use href="#i-settings"/></svg>
+      </button>
+      <div id="accountPanel" class="popover absolute right-0 top-full mt-3 hidden w-64 rounded-2xl bg-white p-1.5 shadow-float" role="menu" aria-label="Account">
+        <div class="border-b border-line px-3 pb-3 pt-2">
+          <div class="text-[15px]"><span id="greeting">Hello</span>, <span class="font-semibold">{{ gh_user.display_name }}</span></div>
+          <div class="text-[12.5px] text-muted">@{{ gh_user.username }} · {{ gh_user.experience_level }} · {{ gh_user.space_type }}</div>
+        </div>
+        <a href="#" role="menuitem" class="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-user"/></svg>Profile</a>
+        <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-pin"/></svg>Location &amp; growing space</a>
+        <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-settings"/></svg>Notification settings</a>
+        <form method="post" action="{% url 'userprofile:logout' %}">
+          {% csrf_token %}
+          <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[14px] text-rose-700 hover:bg-rose-50"><svg class="ic h-4 w-4"><use href="#i-logout"/></svg>Sign out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>

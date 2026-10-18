@@ -1,0 +1,213 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+
+{% block title %}{{ plant.common_name }} — Pick a Plant — Greenhand{% endblock %}
+{% block description %}How to grow {{ plant.common_name|lower }}: sunlight, watering, spacing, timeline, common problems, and whether it suits your garden now.{% endblock %}
+
+{% block breadcrumb %}{% url 'plants:list' as list_url %}{% include "partials/breadcrumb.html" with parent="Pick a Plant" parent_url=list_url current=plant.common_name %}{% endblock %}
+{% block page_title %}{{ plant.common_name }}{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'plants:list' %}" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-arrow-left"/></svg>All plants</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
+  <div class="min-w-0 space-y-5 xl:col-span-8">
+
+    <!-- Overview -->
+    <section class="overflow-hidden rounded-2xl bg-white shadow-card" aria-labelledby="overview-title">
+      <div class="canvas-gradient flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
+        <span class="grid h-24 w-24 shrink-0 place-items-center rounded-2xl bg-gradient-to-br {{ plant.grad }}"><svg class="ic h-11 w-11"><use href="#{{ plant.icon }}"/></svg></span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 id="overview-title" class="font-display text-[26px] font-semibold leading-tight tracking-tight">{{ plant.common_name }}</h2>
+            <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium {{ plant.suitability.cls }}"><svg class="ic h-3.5 w-3.5"><use href="#{{ plant.suitability.icon }}"/></svg>{{ plant.suitability.label }}</span>
+          </div>
+          <p class="text-[13px] italic text-forest/75">{{ plant.scientific_name }}</p>
+          <p class="mt-2 max-w-2xl text-[14.5px] leading-relaxed text-ink/85">{{ plant.description }}</p>
+          <div class="mt-3 flex flex-wrap gap-1.5 text-[12px]">
+            <span class="rounded-full bg-white/80 px-2.5 py-1">{{ plant.category_label }}</span>
+            <span class="rounded-full bg-white/80 px-2.5 py-1">{{ plant.difficulty_label }}</span>
+            <span class="rounded-full bg-white/80 px-2.5 py-1">Plant in {{ plant.seasons|join:", " }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 border-t border-line px-5 py-3 text-[13px]">
+        <svg class="ic h-4 w-4 {% if plant.suitability.level == 'great' %}text-emerald-600{% elif plant.suitability.level == 'care' %}text-amber-600{% else %}text-rose-600{% endif %}"><use href="#{{ plant.suitability.icon }}"/></svg>
+        <span><span class="font-medium">For your {{ gh_user.space_type|lower }} in {{ gh_location.label }}:</span> {{ plant.suitability.reason }}.</span>
+        {% if plant.in_garden %}<span class="ml-auto rounded-full bg-leaf-soft px-2.5 py-0.5 text-[12px] font-medium text-forest">Growing: {{ plant.in_garden|join:", " }}</span>{% endif %}
+      </div>
+    </section>
+
+    <!-- Care requirements (FR-11) -->
+    <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="facts-title">
+      <h2 id="facts-title" class="font-display text-[17px] font-semibold tracking-tight">Care at a glance</h2>
+      <dl class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-amber-500"><use href="#i-sun"/></svg>Sunlight</dt><dd class="mt-1 text-[14.5px] font-medium">{{ plant.sunlight_label }}</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-sky-600"><use href="#i-drop"/></svg>Watering</dt><dd class="mt-1 text-[14.5px] font-medium">Every {{ plant.watering_interval_days }} day{{ plant.watering_interval_days|pluralize }}</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-forest"><use href="#i-ruler"/></svg>Spacing</dt><dd class="mt-1 text-[14.5px] font-medium">{{ plant.spacing_cm }} cm</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-indigo-600"><use href="#i-thermo"/></svg>Temperature</dt><dd class="mt-1 text-[14.5px] font-medium">{{ plant.min_temp_c }}–{{ plant.max_temp_c }} &deg;C</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-lime-700"><use href="#i-sprout"/></svg>Germination</dt><dd class="mt-1 text-[14.5px] font-medium">{{ plant.days_to_germination.0 }}–{{ plant.days_to_germination.1 }} days</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-amber-600"><use href="#i-basket"/></svg>Harvest</dt><dd class="mt-1 text-[14.5px] font-medium">{{ plant.days_to_harvest.0 }}–{{ plant.days_to_harvest.1 }} days</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-indigo-600"><use href="#i-snow"/></svg>Frost</dt><dd class="mt-1 text-[14.5px] font-medium">{% if plant.frost_tolerant %}Tolerates light frost{% else %}Protect below 2 &deg;C{% endif %}</dd></div>
+        <div class="rounded-xl bg-mist p-3.5"><dt class="flex items-center gap-1.5 text-[12px] text-muted"><svg class="ic h-4 w-4 text-forest"><use href="#i-pot"/></svg>Where</dt><dd class="mt-1 text-[14.5px] font-medium">{% if plant.container_friendly %}Containers{% else %}In the ground{% endif %}{% if plant.indoor_friendly %} · indoors{% endif %}</dd></div>
+      </dl>
+    </section>
+
+    <!-- Timeline + planting calendar -->
+    <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="timeline-title">
+      <h2 id="timeline-title" class="font-display text-[17px] font-semibold tracking-tight">From seed to harvest</h2>
+      <p class="text-[13px] text-muted">Typical days after sowing</p>
+      {% with g0=plant.days_to_germination.0 g1=plant.days_to_germination.1 h0=plant.days_to_harvest.0 h1=plant.days_to_harvest.1 %}
+      <div class="mt-5" aria-hidden="true">
+        <div class="flex h-3 gap-0.5 overflow-hidden rounded-full">
+          <span class="bg-lime-300" style="width: {{ plant.timeline_pct.germination }}%"></span>
+          <span class="bg-emerald-400" style="width: {{ plant.timeline_pct.growing }}%"></span>
+          <span class="bg-amber-400" style="width: {{ plant.timeline_pct.harvest }}%"></span>
+        </div>
+      </div>
+      <ol class="mt-3 grid grid-cols-3 gap-3 text-[13px]">
+        <li><div class="flex items-center gap-1.5 font-medium"><i class="block h-2.5 w-2.5 rounded-full bg-lime-300"></i>Germination</div><div class="text-muted">Day {{ g0 }}–{{ g1 }}</div></li>
+        <li><div class="flex items-center gap-1.5 font-medium"><i class="block h-2.5 w-2.5 rounded-full bg-emerald-400"></i>Growing</div><div class="text-muted">Until day {{ h0 }}</div></li>
+        <li><div class="flex items-center gap-1.5 font-medium"><i class="block h-2.5 w-2.5 rounded-full bg-amber-400"></i>Harvest window</div><div class="text-muted">Day {{ h0 }}–{{ h1 }}</div></li>
+      </ol>
+      {% endwith %}
+
+      <h3 class="mt-6 text-[14px] font-medium">When to plant in zone {{ gh_location.hardiness_zone }}</h3>
+      <ol class="mt-2 grid grid-cols-12 gap-1 text-center text-[11px]" aria-label="Planting months">
+        {% for m in plant.months %}
+          <li class="rounded-md py-2 {% if m.plant %}bg-leaf text-white{% else %}bg-mist text-muted{% endif %} {% if m.current %}ring-2 ring-ink ring-offset-1{% endif %}" title="{{ m.name }}{% if m.plant %} · good time to plant{% endif %}{% if m.current %} · now{% endif %}">
+            <span aria-hidden="true">{{ m.abbr }}</span><span class="sr-only">{{ m.name }}: {% if m.plant %}plant{% else %}not ideal{% endif %}{% if m.current %} (current month){% endif %}</span>
+          </li>
+        {% endfor %}
+      </ol>
+      <p class="mt-2 flex flex-wrap gap-x-4 text-[11.5px] text-muted"><span class="flex items-center gap-1"><i class="block h-2.5 w-2.5 rounded bg-leaf"></i>Good time to plant</span><span class="flex items-center gap-1"><i class="block h-2.5 w-2.5 rounded ring-2 ring-ink"></i>This month</span></p>
+    </section>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <!-- Care guide -->
+      <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="guide-title">
+        <h2 id="guide-title" class="font-display text-[17px] font-semibold tracking-tight">Care guide</h2>
+        <ul class="mt-3 space-y-2.5 text-[14px]">
+          {% for tip in plant.care %}<li class="flex gap-2.5"><svg class="ic mt-0.5 h-4 w-4 shrink-0 text-leaf"><use href="#i-check"/></svg>{{ tip }}</li>{% endfor %}
+        </ul>
+      </section>
+
+      <!-- Common problems (FR-14, AI-summarized) -->
+      <section class="rounded-2xl bg-[#0d1f14] p-5 text-emerald-50" aria-labelledby="problems-title">
+        <div class="flex items-center justify-between">
+          <h2 id="problems-title" class="font-display text-[17px] font-semibold tracking-tight text-white">Common problems</h2>
+          <span class="rounded bg-white/10 px-1.5 py-px text-[10px] uppercase tracking-wide text-emerald-50/70">AI summary</span>
+        </div>
+        <ul class="mt-3 space-y-3">
+          {% for prob in plant.problems %}
+            <li class="rounded-xl bg-white/[0.06] p-3">
+              <div class="flex items-center justify-between gap-2"><span class="text-[14px] font-medium text-white">{{ prob.name }}</span><span class="text-[11px] text-emerald-50/50">{{ prob.source_count }} reports</span></div>
+              <p class="mt-0.5 text-[12.5px] text-emerald-50/60">{{ prob.symptoms }}</p>
+              <p class="mt-1.5 text-[13px] text-emerald-50/85">{{ prob.solution }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="mt-3 text-[11px] text-emerald-50/45">Summarized from community posts and garden problem logs.</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <aside class="min-w-0 space-y-5 xl:col-span-4">
+    <!-- Start growing (FR-13) -->
+    <section id="start" class="scroll-mt-24 rounded-2xl bg-white shadow-card" aria-labelledby="start-title">
+      <div class="border-b border-line px-5 py-4">
+        <h2 id="start-title" class="font-display text-[17px] font-semibold tracking-tight">Start growing</h2>
+        <p class="text-[12.5px] text-muted">Adds it to My Garden with a care schedule.</p>
+      </div>
+      <form method="post" action="{% url 'plants:start' plant.slug %}" class="space-y-4 p-5">
+        {% csrf_token %}
+        {% if plant.suitability.level == "no" %}
+          <div class="flex gap-2 rounded-xl bg-rose-50 p-3 text-[12.5px] text-rose-800"><svg class="ic mt-0.5 h-4 w-4 shrink-0"><use href="#i-alert"/></svg><span>{{ plant.suitability.reason }}. You can still plan it for later by choosing a future date.</span></div>
+        {% elif plant.suitability.level == "care" %}
+          <div class="flex gap-2 rounded-xl bg-amber-50 p-3 text-[12.5px] text-amber-900"><svg class="ic mt-0.5 h-4 w-4 shrink-0"><use href="#i-alert"/></svg><span>{{ plant.suitability.reason }}.</span></div>
+        {% endif %}
+        <div>
+          <label for="nickname" class="mb-1.5 block text-[13px] font-medium">Nickname <span class="font-normal text-muted">(optional)</span></label>
+          <input id="nickname" name="nickname" type="text" maxlength="60" placeholder="e.g. Balcony {{ plant.common_name }}" class="dash-input" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="planted_on" class="mb-1.5 block text-[13px] font-medium">Date</label>
+            <input id="planted_on" name="planted_on" type="date" value="{{ today|date:'Y-m-d' }}" required class="dash-input" />
+          </div>
+          <div>
+            <label for="quantity" class="mb-1.5 block text-[13px] font-medium">Quantity</label>
+            <input id="quantity" name="quantity" type="number" min="1" value="1" class="dash-input" />
+          </div>
+        </div>
+        <fieldset>
+          <legend class="mb-1.5 block text-[13px] font-medium">Starting from</legend>
+          <div class="seg grid grid-cols-3 gap-2 text-[12.5px]">
+            <div class="relative"><input type="radio" name="start_method" id="m-seed" value="seed" checked /><label for="m-seed" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-seed"/></svg>Seed</label></div>
+            <div class="relative"><input type="radio" name="start_method" id="m-seedling" value="seedling" /><label for="m-seedling" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-sprout"/></svg>Seedling</label></div>
+            <div class="relative"><input type="radio" name="start_method" id="m-cutting" value="cutting" /><label for="m-cutting" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-scissors"/></svg>Cutting</label></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="mb-1.5 block text-[13px] font-medium">Where?</legend>
+          <div class="seg grid grid-cols-3 gap-2 text-[12.5px]">
+            <div class="relative"><input type="radio" name="setting" id="s-out" value="outdoor" {% if not plant.indoor_friendly or plant.suitability.level == 'great' %}checked{% endif %} /><label for="s-out" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-sun"/></svg>Outdoor</label></div>
+            <div class="relative"><input type="radio" name="setting" id="s-in" value="indoor" {% if plant.indoor_friendly and plant.suitability.level != 'great' %}checked{% endif %} /><label for="s-in" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-home"/></svg>Indoor</label></div>
+            <div class="relative"><input type="radio" name="setting" id="s-gh" value="greenhouse" /><label for="s-gh" class="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#i-pot"/></svg>Greenhouse</label></div>
+          </div>
+        </fieldset>
+        <div>
+          <label for="container" class="mb-1.5 block text-[13px] font-medium">Container <span class="font-normal text-muted">(optional)</span></label>
+          <input id="container" name="container" type="text" maxlength="50" placeholder="Pot, raised bed, ground…" class="dash-input" />
+        </div>
+        <button type="submit" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-forest text-[14.5px] font-medium text-white hover:bg-forest-900"><svg class="ic h-4 w-4"><use href="#i-sprout"/></svg>Add to My Garden</button>
+        <p class="text-center text-[12px] text-muted">Watering reminder every {{ plant.watering_interval_days }} day{{ plant.watering_interval_days|pluralize }}{% if not plant.frost_tolerant %} · frost alerts on{% endif %}</p>
+      </form>
+    </section>
+
+    <a href="{% url 'garden:dashboard' %}#tutor" class="flex items-center gap-3 rounded-2xl bg-[#0d1f14] p-4 text-emerald-50 hover:bg-forest-900">
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-lime-300"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg></span>
+      <span class="flex-1"><span class="block text-[14px] font-medium text-white">Ask the tutor about {{ plant.common_name|lower }}</span><span class="block text-[12.5px] text-emerald-50/60">Answers use your space and local weather</span></span>
+      <svg class="ic h-4 w-4 text-lime-300"><use href="#i-chev-right"/></svg>
+    </a>
+
+    {% if posts %}
+    <section class="rounded-2xl bg-white shadow-card" aria-labelledby="posts-title">
+      <div class="flex items-center justify-between border-b border-line px-5 py-4">
+        <h2 id="posts-title" class="font-display text-[17px] font-semibold tracking-tight">From the community</h2>
+        <a href="{% url 'community:feed' %}" class="text-[13px] font-medium text-forest hover:text-leaf">Posts</a>
+      </div>
+      <ul class="divide-y divide-line">
+        {% for post in posts %}
+          <li class="px-5 py-4">
+            <div class="flex items-center gap-2 text-[12.5px]">
+              <span class="grid h-6 w-6 place-items-center rounded-full bg-gradient-to-br {{ post.author_info.grad }} text-[10px] font-semibold">{{ post.author_info.initials }}</span>
+              <span class="font-medium">{{ post.author }}</span>
+              <span class="ml-auto rounded-full px-2 py-0.5 text-[10.5px] {{ post.type_info.cls }}">{{ post.type_info.label }}</span>
+            </div>
+            <a href="{% url 'community:feed' %}#post-{{ post.id }}" class="mt-2 block text-[13.5px] hover:text-forest">{{ post.body|truncatechars:110 }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if related %}
+    <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="related-title">
+      <h2 id="related-title" class="font-display text-[17px] font-semibold tracking-tight">Also try</h2>
+      <ul class="mt-3 space-y-2">
+        {% for r in related %}
+          <li><a href="{% url 'plants:detail' r.slug %}" class="flex items-center gap-3 rounded-xl p-2 hover:bg-mist">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br {{ r.grad }}"><svg class="ic h-5 w-5"><use href="#{{ r.icon }}"/></svg></span>
+            <span class="flex-1"><span class="block text-[14px] font-medium">{{ r.common_name }}</span><span class="block text-[12px] {% if r.suitability.level == 'great' %}text-emerald-700{% elif r.suitability.level == 'care' %}text-amber-700{% else %}text-rose-700{% endif %}">{{ r.suitability.label }}</span></span>
+            <svg class="ic h-4 w-4 text-muted"><use href="#i-chev-right"/></svg>
+          </a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

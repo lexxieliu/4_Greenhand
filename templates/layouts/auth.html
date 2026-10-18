@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{# Split-screen auth layout: form on the left, product showcase on the right. #}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}" />{% endblock %}
+
+{% block body %}
+  <header class="border-b border-line bg-white/85 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <a href="{% url 'landing' %}" class="flex items-center gap-2" aria-label="Greenhand home">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-forest text-lime-300"><svg class="ic h-[18px] w-[18px]"><use href="#i-sprout"/></svg></span>
+        <span class="font-display text-[21px] font-semibold tracking-tight">greenhand</span>
+      </a>
+      <p class="text-[14px] text-muted">{% block header_cta %}{% endblock %}</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="frame frame-bottom auth-shell grid lg:grid-cols-2">
+        <span class="corner bl"></span><span class="corner br"></span>
+
+        <section class="relative flex items-center justify-center px-2 py-14 sm:px-10 lg:border-r lg:border-line">
+          <div class="dot-grid pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(60%_50%_at_50%_0%,#000,transparent)]"></div>
+          <div class="relative w-full max-w-[400px]">
+            <a href="{% url 'landing' %}" class="mb-8 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
+              <svg class="ic h-3.5 w-3.5"><use href="#i-arrow-left"/></svg> Back to home
+            </a>
+
+            {% for message in messages %}
+              <div class="mb-6 flex items-start gap-2.5 rounded-xl border {% if message.level_tag == 'error' %}border-rose-200 bg-rose-50 text-rose-900{% else %}border-emerald-200 bg-emerald-50 text-emerald-900{% endif %} p-3.5 text-[13.5px]" role="status">
+                <svg class="ic mt-0.5 h-4 w-4 {% if message.level_tag == 'error' %}text-rose-600{% else %}text-leaf{% endif %}"><use href="#{% if message.level_tag == 'error' %}i-alert-circle{% else %}i-check-circle{% endif %}"/></svg>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+
+            {% block form_column %}{% endblock %}
+          </div>
+        </section>
+
+        <aside class="hidden p-4 lg:block" aria-hidden="true">
+          <div class="canvas-gradient relative flex h-full flex-col justify-between overflow-hidden rounded-2xl p-10">
+            {% block showcase %}{% endblock %}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="frame flex flex-col items-center justify-between gap-2 px-4 py-6 text-[13px] text-muted sm:flex-row sm:px-10">
+      <span>&copy; {{ gh_today|date:"Y" }} Greenhand · Team 4</span>
+      <span class="flex gap-4"><a href="#" class="hover:text-ink">Privacy</a><a href="#" class="hover:text-ink">Terms</a></span>
+    </div>
+  </footer>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/auth.js' %}"></script>{% endblock %}

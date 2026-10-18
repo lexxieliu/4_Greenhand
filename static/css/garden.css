@@ -1,0 +1,128 @@
+/* Greenhand "My Garden" page — builds on styles.css + dashboard.css (app shell). */
+
+/* Sidebar parent item when one of its children is the current page */
+.side-link.is-section { color: var(--gh-forest); font-weight: 500; }
+
+/* ---------- Filter chips ---------- */
+.status-chip { white-space: nowrap; transition: background .15s, color .15s, border-color .15s; }
+.status-chip[aria-pressed="true"] { background: var(--gh-ink); border-color: var(--gh-ink); color: #fff; }
+.status-chip[aria-pressed="true"] .chip-count { background: rgba(255,255,255,.18); color: #fff; }
+.set-chip[aria-pressed="true"] { background: #fff; color: var(--gh-forest); font-weight: 500; box-shadow: 0 1px 2px rgba(11,26,16,.08), 0 0 0 1px rgba(11,26,16,.06); }
+.set-chip[aria-pressed="false"] { color: #5b6b60; }
+
+/* ---------- Plant list ---------- */
+.plant-item { position: relative; transition: background .15s; }
+.plant-item:hover { background: #f6f8f5; }
+.plant-item[aria-current="true"] { background: #f0fdf4; }
+.plant-item[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--gh-forest);
+}
+
+/* ---------- Stage stepper ---------- */
+.stepper { counter-reset: step; }
+.step { position: relative; flex: 1 1 0; min-width: 0; text-align: center; }
+.step::before {
+  content: "";
+  position: absolute;
+  top: 17px; left: -50%; right: 50%;
+  height: 2px;
+  background: #e4e9e4;
+  z-index: 0;
+}
+.step:first-child::before { display: none; }
+.step.is-done::before, .step.is-current::before { background: var(--gh-leaf); }
+.step-dot {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #fff;
+  color: #9aa79e;
+  box-shadow: inset 0 0 0 2px #e4e9e4;
+}
+.step.is-done .step-dot { background: #dcfce7; color: var(--gh-forest); box-shadow: inset 0 0 0 2px #86efac; }
+.step.is-current .step-dot { background: var(--gh-forest); color: #bef264; box-shadow: 0 0 0 4px rgba(22,163,74,.18); }
+.step-label { margin-top: 6px; font-size: 11.5px; color: #8a978e; }
+.step.is-done .step-label, .step.is-current .step-label { color: var(--gh-ink); }
+.step.is-current .step-label { font-weight: 600; }
+
+@media (max-width: 640px) {
+  .step::before { top: 14px; }
+  .step-dot { width: 30px; height: 30px; }
+  .step-label { font-size: 10px; padding: 0 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* ---------- Detail tabs ---------- */
+.dtab { position: relative; white-space: nowrap; color: #5b6b60; transition: color .15s; }
+.dtab:hover { color: var(--gh-ink); }
+.dtab[aria-selected="true"] { color: var(--gh-forest); font-weight: 500; }
+.dtab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 10px; right: 10px; bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--gh-forest);
+}
+.tab-body { animation: tabIn .2s ease both; }
+@keyframes tabIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Timeline ---------- */
+.tl { position: relative; }
+.tl::before {
+  content: "";
+  position: absolute;
+  left: 17px; top: 12px; bottom: 12px;
+  width: 2px;
+  background: #e4e9e4;
+}
+
+/* Placeholder "photo" tile used where the demo has no real image */
+.photo-ph {
+  background:
+    radial-gradient(70% 90% at 20% 10%, rgba(217, 249, 157, .9), transparent 60%),
+    radial-gradient(70% 90% at 90% 90%, rgba(110, 231, 183, .8), transparent 60%),
+    #dcfce7;
+}
+
+/* ---------- Toggle switch ---------- */
+.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 34px; height: 20px;
+  border-radius: 999px;
+  background: #d4ddd5;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  transition: transform .15s;
+}
+.switch:checked { background: var(--gh-forest); }
+.switch:checked::after { transform: translateX(14px); }
+.switch:focus-visible { outline: 2px solid var(--gh-leaf); outline-offset: 2px; }
+
+/* ---------- Tutor drawer ---------- */
+.tutor-drawer { transform: translateX(100%); transition: transform .25s ease; visibility: hidden; }
+.tutor-drawer.is-open { transform: none; visibility: visible; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-body { animation: none; }
+  .tutor-drawer { transition: none; }
+}

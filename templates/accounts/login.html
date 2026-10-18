@@ -1,0 +1,97 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Sign in — Greenhand{% endblock %}
+{% block description %}Sign in to Greenhand, your personal AI gardening tutor.{% endblock %}
+
+{% block header_cta %}
+  <span class="hidden sm:inline">New to Greenhand?</span>
+  <a href="{% url 'userprofile:signup' %}" class="ml-1 inline-flex items-center gap-1 rounded-lg border border-line bg-white px-3 py-1.5 font-medium text-ink shadow-card hover:bg-mist">Create account</a>
+{% endblock %}
+
+{% block form_column %}
+  <h1 class="font-display text-[34px] font-semibold leading-tight tracking-tight sm:text-[40px]">Welcome back</h1>
+  <p class="mt-2 text-[15px] text-muted">Sign in to check on your garden and ask your tutor.</p>
+
+  {% include "partials/google_button.html" with label="Continue with Google" divider="or sign in with email" %}
+
+  {% if form.non_field_errors %}
+    <div class="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-[13.5px] text-rose-900" role="alert">
+      <svg class="ic mt-0.5 h-4 w-4 text-rose-600"><use href="#i-alert-circle"/></svg><span>{{ form.non_field_errors.0 }}</span>
+    </div>
+  {% endif %}
+
+  <form id="loginForm" action="{% url 'userprofile:login' %}" method="post" novalidate class="space-y-5" data-auth-form="login">
+    {% csrf_token %}
+    <div>
+      <label for="email" class="mb-1.5 block text-[13.5px] font-medium">Email</label>
+      <div class="relative">
+        <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-mail"/></svg>
+        <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" value="{{ form.email.value|default_if_none:'' }}"
+               class="field-input has-icon" required aria-describedby="email-error" {% if form.email.errors %}aria-invalid="true"{% endif %} />
+      </div>
+      {% include "partials/field_error.html" with id="email" field=form.email %}
+    </div>
+
+    <div>
+      <div class="mb-1.5 flex items-center justify-between">
+        <label for="password" class="block text-[13.5px] font-medium">Password</label>
+        <a href="#" class="text-[13px] font-medium text-forest hover:text-leaf">Forgot password?</a>
+      </div>
+      <div class="relative">
+        <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-lock"/></svg>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Your password"
+               class="field-input has-icon has-action" required aria-describedby="password-error" {% if form.password.errors %}aria-invalid="true"{% endif %} />
+        <button type="button" class="absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-mist hover:text-ink"
+                data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+          <svg class="ic h-4 w-4"><use href="#i-eye"/></svg>
+        </button>
+      </div>
+      {% include "partials/field_error.html" with id="password" field=form.password %}
+    </div>
+
+    <label class="flex cursor-pointer items-center gap-2.5 text-[14px] text-muted">
+      <input type="checkbox" name="remember" class="check" {% if form.remember.value or not form.is_bound %}checked{% endif %} />
+      Keep me signed in on this device
+    </label>
+
+    <button type="submit" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-ink text-[15px] font-medium text-white shadow-sm transition hover:bg-forest-900">
+      <span class="btn-label">Sign in</span>
+      <svg class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
+    </button>
+  </form>
+
+  <p class="mt-8 text-center text-[14px] text-muted">
+    Don&rsquo;t have an account?
+    <a href="{% url 'userprofile:signup' %}" class="font-medium text-forest hover:text-leaf">Start growing for free</a>
+  </p>
+{% endblock %}
+
+{% block showcase %}
+  <div>
+    <span class="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-[12.5px] font-medium text-forest shadow-card">
+      <span class="h-1.5 w-1.5 rounded-full bg-leaf"></span> While you were away
+    </span>
+    <h2 class="mt-5 max-w-sm font-display text-[34px] font-semibold leading-[1.08] tracking-tight">Your garden kept growing.</h2>
+    <p class="mt-3 max-w-sm text-[15px] text-forest/75">Weather checks, reminders, and your tutor&rsquo;s tips are waiting for you.</p>
+  </div>
+  <div class="mt-10 space-y-3">
+    <div class="float-slow rounded-xl bg-white p-4 shadow-float">
+      <div class="flex items-center gap-3">
+        <span class="grid h-10 w-10 place-items-center rounded-lg bg-sky-100 text-sky-700"><svg class="ic h-5 w-5"><use href="#i-rain"/></svg></span>
+        <div class="flex-1 text-[13.5px]"><div class="font-medium">Rain did the watering today</div><div class="text-muted">2 outdoor reminders skipped · 12&nbsp;mm</div></div>
+      </div>
+    </div>
+    <div class="rounded-xl bg-white p-4 shadow-float">
+      <div class="text-[11px] font-semibold uppercase tracking-wide text-muted">My Garden</div>
+      <ul class="mt-3 space-y-2.5 text-[13.5px]">
+        <li class="flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-lime-200 to-emerald-300 text-forest"><svg class="ic h-4 w-4"><use href="#i-leaf"/></svg></span><span class="flex-1">Balcony Basil</span><span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-800">Growing</span></li>
+        <li class="flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-orange-200 to-red-300 text-red-800"><svg class="ic h-4 w-4"><use href="#i-apple"/></svg></span><span class="flex-1">Cherry Tomato</span><span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] text-indigo-800"><svg class="ic h-3 w-3"><use href="#i-snow"/></svg>Frost Thu</span></li>
+        <li class="flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-green-100 to-lime-300 text-forest"><svg class="ic h-4 w-4"><use href="#i-sprout"/></svg></span><span class="flex-1">Butterhead Lettuce</span><span class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-800"><svg class="ic h-3 w-3"><use href="#i-drop"/></svg>Water today</span></li>
+      </ul>
+    </div>
+    <div class="float-slow delay rounded-xl bg-[#0d1f14] p-4 text-emerald-50 shadow-float">
+      <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-lime-300"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg> This week in your garden</div>
+      <p class="mt-2 text-[13.5px] leading-relaxed text-emerald-50/85">Your tomato is flowering. Gently shake the stems each morning to help pollination.</p>
+    </div>
+  </div>
+{% endblock %}

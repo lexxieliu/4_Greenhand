@@ -1,0 +1,8 @@
+{# Usage: {% include "partials/breadcrumb.html" with parent="Garden" parent_url=url current="My Garden" %} #}
+<nav aria-label="Breadcrumb" class="text-[12.5px] text-muted">
+  <ol class="flex items-center gap-1.5">
+    <li><a href="{{ parent_url }}" class="hover:text-forest">{{ parent }}</a></li>
+    <li aria-hidden="true"><svg class="ic h-3 w-3"><use href="#i-chev-right"/></svg></li>
+    <li aria-current="page" class="text-ink">{{ current }}</li>
+  </ol>
+</nav>

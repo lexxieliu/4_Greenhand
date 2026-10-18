@@ -1,0 +1,4 @@
+{# Inline field error. Rendered visible when the server returns an error; auth.js reuses it for client-side checks. #}
+<p id="{{ id }}-error" class="field-error {% if field.errors %}is-shown{% endif %} mt-1.5 items-center gap-1.5 text-[12.5px] text-rose-600">
+  <svg class="ic h-3.5 w-3.5"><use href="#i-alert-circle"/></svg><span>{% if field.errors %}{{ field.errors.0 }}{% endif %}</span>
+</p>

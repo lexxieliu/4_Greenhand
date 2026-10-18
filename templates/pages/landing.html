@@ -1,0 +1,991 @@
+{% extends "base.html" %}
+{% load static %}
+{# Public marketing page (PRD 4.1: Landing page -> Sign up). #}
+
+{% block title %}Greenhand — Your AI Gardening Tutor{% endblock %}
+{% block description %}Greenhand is a personal AI tutor for urban and backyard farming. It knows your plants, your space, and your local weather, and guides you from first seed to first harvest.{% endblock %}
+
+{% block body %}
+<!-- ================= Announcement bar ================= -->
+  <div class="announce-gradient border-b border-line">
+    <a href="#weather" class="mx-auto flex max-w-6xl items-center justify-center gap-2 px-4 py-2 text-center text-[13px] text-forest hover:text-ink">
+      <span class="hidden rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-leaf sm:inline">New</span>
+      <span><span class="font-medium">Weather-aware care:</span> Greenhand now skips watering after rain and warns you before frost.</span>
+      <svg class="ic h-3.5 w-3.5"><use href="#i-arrow-right"/></svg>
+    </a>
+  </div>
+
+  <!-- ================= Navigation ================= -->
+  <header id="top" class="sticky top-0 z-50 border-b border-line bg-white/85 backdrop-blur-md">
+    <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6" aria-label="Main">
+      <a href="#top" class="flex items-center gap-2" aria-label="Greenhand home">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-forest text-lime-300">
+          <svg class="ic h-[18px] w-[18px]"><use href="#i-sprout"/></svg>
+        </span>
+        <span class="font-display text-[21px] font-semibold tracking-tight">greenhand</span>
+      </a>
+
+      <ul class="hidden items-center gap-1 text-[14px] text-ink/80 lg:flex">
+        <li class="group relative">
+          <button class="flex items-center gap-1 rounded-md px-3 py-2 hover:text-ink" aria-haspopup="true">
+            Product <svg class="ic h-3.5 w-3.5 transition group-hover:rotate-180"><use href="#i-chev-down"/></svg>
+          </button>
+          <!-- Product dropdown -->
+          <div class="invisible absolute left-0 top-full w-[520px] translate-y-1 pt-2 opacity-0 transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div class="grid grid-cols-2 gap-1 rounded-2xl bg-white p-2 shadow-float">
+              <a href="#tutor" class="flex gap-3 rounded-xl p-3 hover:bg-mist">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-leaf-soft text-forest"><svg class="ic h-4 w-4"><use href="#i-sparkles"/></svg></span>
+                <span><span class="block font-medium text-ink">AI Gardening Tutor</span><span class="text-[13px] text-muted">Answers grounded in your garden</span></span>
+              </a>
+              <a href="#plants" class="flex gap-3 rounded-xl p-3 hover:bg-mist">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-lime-100 text-forest"><svg class="ic h-4 w-4"><use href="#i-search"/></svg></span>
+                <span><span class="block font-medium text-ink">Pick a Plant</span><span class="text-[13px] text-muted">What grows for you, right now</span></span>
+              </a>
+              <a href="#garden" class="flex gap-3 rounded-xl p-3 hover:bg-mist">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-100 text-forest"><svg class="ic h-4 w-4"><use href="#i-home"/></svg></span>
+                <span><span class="block font-medium text-ink">My Garden</span><span class="text-[13px] text-muted">Timeline, care log, calendar</span></span>
+              </a>
+              <a href="#weather" class="flex gap-3 rounded-xl p-3 hover:bg-mist">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sky-100 text-sky-700"><svg class="ic h-4 w-4"><use href="#i-rain"/></svg></span>
+                <span><span class="block font-medium text-ink">Weather-aware care</span><span class="text-[13px] text-muted">Rain skips &amp; frost alerts</span></span>
+              </a>
+            </div>
+          </div>
+        </li>
+        <li><a href="#how" class="rounded-md px-3 py-2 hover:text-ink">How it works</a></li>
+        <li><a href="#weather" class="rounded-md px-3 py-2 hover:text-ink">Weather</a></li>
+        <li><a href="#community" class="rounded-md px-3 py-2 hover:text-ink">Community</a></li>
+        <li><a href="#faq" class="rounded-md px-3 py-2 hover:text-ink">FAQ</a></li>
+      </ul>
+
+      <div class="hidden items-center gap-2 lg:flex">
+        <a href="{% url 'userprofile:login' %}" class="flex items-center gap-1 px-3 py-2 text-[14px] text-ink/80 hover:text-ink">Sign in <svg class="ic h-3.5 w-3.5"><use href="#i-chev-right"/></svg></a>
+        <a href="{% url 'userprofile:signup' %}" class="rounded-lg border border-line bg-white px-3.5 py-2 text-[14px] font-medium shadow-card hover:bg-mist">Start growing</a>
+        <a href="#demo" class="rounded-lg bg-forest px-3.5 py-2 text-[14px] font-medium text-white shadow-sm hover:bg-forest-900">Try the tutor</a>
+      </div>
+
+      <button id="menuBtn" class="grid h-10 w-10 place-items-center rounded-lg border border-line lg:hidden" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+        <svg class="ic h-5 w-5" id="menuIcon"><use href="#i-menu"/></svg>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden border-t border-line bg-white lg:hidden">
+      <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4 text-[15px]">
+        <a href="#tutor" class="rounded-lg px-3 py-2.5 hover:bg-mist">AI Gardening Tutor</a>
+        <a href="#plants" class="rounded-lg px-3 py-2.5 hover:bg-mist">Pick a Plant</a>
+        <a href="#garden" class="rounded-lg px-3 py-2.5 hover:bg-mist">My Garden</a>
+        <a href="#weather" class="rounded-lg px-3 py-2.5 hover:bg-mist">Weather-aware care</a>
+        <a href="#how" class="rounded-lg px-3 py-2.5 hover:bg-mist">How it works</a>
+        <a href="#community" class="rounded-lg px-3 py-2.5 hover:bg-mist">Community</a>
+        <a href="#faq" class="rounded-lg px-3 py-2.5 hover:bg-mist">FAQ</a>
+        <a href="{% url 'userprofile:login' %}" class="rounded-lg px-3 py-2.5 hover:bg-mist">Sign in</a>
+        <div class="mt-3 grid grid-cols-2 gap-2">
+          <a href="{% url 'userprofile:signup' %}" class="rounded-lg border border-line px-3 py-2.5 text-center font-medium">Start growing</a>
+          <a href="#demo" class="rounded-lg bg-forest px-3 py-2.5 text-center font-medium text-white">Try the tutor</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= Hero ================= -->
+    <section class="relative overflow-hidden">
+      <div class="dot-grid pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,#000,transparent)]"></div>
+
+      <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 pb-14 pt-16 sm:px-10 sm:pt-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+
+          <div class="mx-auto max-w-3xl text-center">
+            <a href="#how" class="mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-[13px] text-muted shadow-card hover:text-ink">
+              <span class="h-1.5 w-1.5 rounded-full bg-leaf"></span>
+              Your personal AI tutor for urban &amp; backyard farming
+              <svg class="ic h-3 w-3"><use href="#i-chev-right"/></svg>
+            </a>
+            <h1 class="font-display text-[44px] font-semibold leading-[1.02] tracking-tightest sm:text-6xl md:text-[76px]">
+              Make farming accessible to everyone
+            </h1>
+            <p class="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-muted">
+              Greenhand teaches you to grow your own food from seed to harvest. An AI tutor that knows
+              your plants, your space, and your local weather &mdash; on your balcony, backyard, or windowsill.
+            </p>
+            <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a href="#demo" class="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 text-[15px] font-medium text-white shadow-sm hover:bg-forest-900">
+                Try the tutor <svg class="ic h-4 w-4"><use href="#i-arrow-down"/></svg>
+              </a>
+              <a href="{% url 'userprofile:signup' %}" class="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-5 py-3 text-[15px] font-medium shadow-card hover:bg-mist">
+                Start your first plant
+              </a>
+            </div>
+          </div>
+
+          <!-- Product tabs -->
+          <div id="demo" class="mt-14 flex scroll-mt-28 justify-center">
+            <div role="tablist" aria-label="Product preview" class="inline-flex flex-wrap justify-center gap-1 rounded-xl bg-mist p-1 ring-1 ring-line">
+              <button role="tab" id="tab-tutor" aria-controls="panel-tutor" aria-selected="true" class="tab-btn flex items-center gap-2 rounded-lg px-3.5 py-2 text-[14px] text-muted transition">
+                <span class="tab-icon grid h-5 w-5 place-items-center rounded-md bg-leaf text-white"><svg class="ic h-3 w-3"><use href="#i-sparkles"/></svg></span> AI Tutor
+              </button>
+              <button role="tab" id="tab-garden" aria-controls="panel-garden" aria-selected="false" class="tab-btn flex items-center gap-2 rounded-lg px-3.5 py-2 text-[14px] text-muted transition">
+                <span class="tab-icon grid h-5 w-5 place-items-center rounded-md bg-emerald-700 text-white"><svg class="ic h-3 w-3"><use href="#i-home"/></svg></span> My Garden
+              </button>
+              <button role="tab" id="tab-weather" aria-controls="panel-weather" aria-selected="false" class="tab-btn flex items-center gap-2 rounded-lg px-3.5 py-2 text-[14px] text-muted transition">
+                <span class="tab-icon grid h-5 w-5 place-items-center rounded-md bg-sky-600 text-white"><svg class="ic h-3 w-3"><use href="#i-rain"/></svg></span> Weather-aware care
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demo canvas -->
+        <div class="frame frame-bottom px-2 py-2 sm:px-4 sm:py-4">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="canvas-gradient relative overflow-hidden rounded-2xl p-3 sm:p-8 md:p-12">
+            <div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-float">
+              <!-- window chrome -->
+              <div class="flex items-center gap-2 border-b border-line bg-mist px-4 py-2.5">
+                <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
+                <span class="ml-3 text-[12px] text-muted">Greenhand</span>
+              </div>
+
+              <div class="flex min-h-[460px] md:min-h-[540px]">
+                <!-- App sidebar -->
+                <aside class="hidden w-44 shrink-0 border-r border-line p-3 text-[13px] md:block">
+                  <div class="mb-4 flex items-center gap-2 px-2 pt-1">
+                    <span class="grid h-6 w-6 place-items-center rounded-md bg-forest text-lime-300"><svg class="ic h-3.5 w-3.5"><use href="#i-sprout"/></svg></span>
+                    <span class="font-display font-semibold">greenhand</span>
+                  </div>
+                  <ul class="space-y-0.5" id="appNav">
+                    <li data-for="garden" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted"><svg class="ic h-4 w-4"><use href="#i-home"/></svg>Garden</li>
+                    <li class="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted"><svg class="ic h-4 w-4"><use href="#i-search"/></svg>Plants</li>
+                    <li data-for="tutor" class="flex items-center gap-2 rounded-md bg-leaf-soft px-2 py-1.5 font-medium text-forest"><svg class="ic h-4 w-4"><use href="#i-sparkles"/></svg>Tutor</li>
+                    <li data-for="weather" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted"><svg class="ic h-4 w-4"><use href="#i-cloud"/></svg>Weather</li>
+                    <li class="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted"><svg class="ic h-4 w-4"><use href="#i-post"/></svg>Posts</li>
+                    <li class="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted"><svg class="ic h-4 w-4"><use href="#i-user"/></svg>Profile</li>
+                  </ul>
+                  <div class="mt-6 rounded-lg border border-line p-2.5">
+                    <div class="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted"><svg class="ic h-3 w-3"><use href="#i-pin"/></svg>Chicago, IL</div>
+                    <div class="mt-1 flex items-center gap-1.5 text-[13px]"><svg class="ic h-4 w-4 text-sky-600"><use href="#i-rain"/></svg>14&deg;C · Light rain</div>
+                    <div class="mt-0.5 text-[11px] text-muted">Zone 5b · Balcony</div>
+                  </div>
+                </aside>
+
+                <!-- Panels -->
+                <div class="min-w-0 flex-1">
+
+                  <!-- ===== Panel: Tutor ===== -->
+                  <div role="tabpanel" id="panel-tutor" aria-labelledby="tab-tutor" class="tab-panel flex h-full">
+                    <div class="flex min-w-0 flex-1 flex-col">
+                      <div class="flex items-center justify-between border-b border-line px-4 py-3">
+                        <div>
+                          <div class="text-[14px] font-medium">Why are my basil leaves yellow?</div>
+                          <div class="text-[12px] text-muted">Scoped to <span class="font-medium text-forest">Balcony Basil</span> · Day 34</div>
+                        </div>
+                        <span class="hidden rounded-full bg-leaf-soft px-2 py-0.5 text-[11px] font-medium text-forest sm:inline">Context-aware</span>
+                      </div>
+
+                      <div class="flex-1 space-y-4 overflow-hidden px-4 py-5 text-[13.5px]">
+                        <!-- user msg -->
+                        <div class="ml-auto max-w-[85%] sm:max-w-[75%]">
+                          <div class="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-white">
+                            The lower leaves on my basil are turning yellow and a bit soft. Did I do something wrong?
+                          </div>
+                          <div class="mt-1.5 flex items-center justify-end gap-1.5 text-[11px] text-muted">
+                            <svg class="ic h-3 w-3"><use href="#i-camera"/></svg> basil_leaves.jpg attached
+                          </div>
+                        </div>
+
+                        <!-- AI msg -->
+                        <div class="max-w-[95%] sm:max-w-[85%]">
+                          <div class="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-forest">
+                            <span class="grid h-5 w-5 place-items-center rounded-full bg-forest text-lime-300"><svg class="ic h-3 w-3"><use href="#i-sparkles"/></svg></span>
+                            Greenhand Tutor <span class="rounded bg-mist px-1.5 py-px text-[10px] uppercase tracking-wide text-muted">AI</span>
+                          </div>
+                          <div class="rounded-2xl rounded-tl-md border border-line bg-white p-4 shadow-card">
+                            <div class="flex flex-wrap items-center gap-2">
+                              <span class="font-medium">Likely issue: overwatering</span>
+                              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">High confidence</span>
+                            </div>
+                            <p class="mt-2 text-muted">You watered on Monday and Wednesday, and 12&nbsp;mm of rain fell yesterday. Soft, yellow <em>lower</em> leaves usually mean roots are sitting in wet soil.</p>
+                            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                              <div class="rounded-lg bg-mist p-3">
+                                <div class="text-[11px] font-semibold uppercase tracking-wide text-forest">Do now</div>
+                                <ul class="mt-1.5 space-y-1 text-[12.5px]">
+                                  <li class="flex gap-1.5"><svg class="ic mt-0.5 h-3.5 w-3.5 text-leaf"><use href="#i-check"/></svg>Skip watering for 3 days</li>
+                                  <li class="flex gap-1.5"><svg class="ic mt-0.5 h-3.5 w-3.5 text-leaf"><use href="#i-check"/></svg>Check the pot drains freely</li>
+                                  <li class="flex gap-1.5"><svg class="ic mt-0.5 h-3.5 w-3.5 text-leaf"><use href="#i-check"/></svg>Pinch off the yellow leaves</li>
+                                </ul>
+                              </div>
+                              <div class="rounded-lg bg-amber-50 p-3">
+                                <div class="text-[11px] font-semibold uppercase tracking-wide text-amber-800">Watch for</div>
+                                <ul class="mt-1.5 space-y-1 text-[12.5px]">
+                                  <li class="flex gap-1.5"><svg class="ic mt-0.5 h-3.5 w-3.5 text-amber-600"><use href="#i-alert"/></svg>Black stems near the soil</li>
+                                  <li class="flex gap-1.5"><svg class="ic mt-0.5 h-3.5 w-3.5 text-amber-600"><use href="#i-alert"/></svg>New growth turning yellow</li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-[12px]">
+                              <span class="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 font-medium"><svg class="ic h-3.5 w-3.5"><use href="#i-bell"/></svg>Remind me in 3 days</span>
+                              <span class="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 font-medium"><svg class="ic h-3.5 w-3.5"><use href="#i-alert"/></svg>Log problem</span>
+                              <span class="ml-auto flex items-center gap-2 text-muted">
+                                <span class="hidden sm:inline">Source: Basil care guide</span>
+                                <svg class="ic h-3.5 w-3.5"><use href="#i-thumb"/></svg>
+                                <svg class="ic h-3.5 w-3.5 rotate-180"><use href="#i-thumb"/></svg>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="border-t border-line p-3">
+                        <div class="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-[13px] text-muted">
+                          <svg class="ic h-4 w-4"><use href="#i-camera"/></svg>
+                          <span class="flex-1 truncate">Ask about your garden&hellip;</span>
+                          <span class="typing hidden sm:inline-block" aria-hidden="true"><span></span><span></span><span></span></span>
+                          <span class="grid h-7 w-7 place-items-center rounded-lg bg-forest text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-send"/></svg></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Context rail -->
+                    <aside class="hidden w-60 shrink-0 border-l border-line bg-mist/60 p-4 text-[12.5px] lg:block">
+                      <div class="text-[11px] font-semibold uppercase tracking-wide text-muted">What the tutor knows</div>
+                      <div class="mt-3 space-y-3">
+                        <div>
+                          <div class="text-muted">Location</div>
+                          <div class="font-medium">Chicago, IL · Zone 5b</div>
+                        </div>
+                        <div>
+                          <div class="text-muted">Space</div>
+                          <div class="font-medium">Balcony · Partial sun</div>
+                        </div>
+                        <div>
+                          <div class="mb-1 text-muted">Garden</div>
+                          <ul class="space-y-1">
+                            <li class="flex justify-between"><span>Balcony Basil</span><span class="text-muted">Day 34</span></li>
+                            <li class="flex justify-between"><span>Cherry Tomato</span><span class="text-muted">Day 52</span></li>
+                            <li class="flex justify-between"><span>Butterhead Lettuce</span><span class="text-muted">Day 18</span></li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div class="mb-1 text-muted">Recent logs (14 days)</div>
+                          <ul class="space-y-1">
+                            <li class="flex items-center gap-1.5"><svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#i-drop"/></svg>Watered basil · Mon</li>
+                            <li class="flex items-center gap-1.5"><svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#i-drop"/></svg>Watered basil · Wed</li>
+                            <li class="flex items-center gap-1.5"><svg class="ic h-3.5 w-3.5 text-forest"><use href="#i-scissors"/></svg>Pruned tomato · Thu</li>
+                          </ul>
+                        </div>
+                        <div class="rounded-lg border border-sky-200 bg-sky-50 p-2.5 text-sky-900">
+                          <div class="flex items-center gap-1.5 font-medium"><svg class="ic h-3.5 w-3.5"><use href="#i-rain"/></svg>12&nbsp;mm rain · last 24h</div>
+                          <div class="mt-0.5 text-sky-800/80">Low of 1&deg;C on Thursday</div>
+                        </div>
+                      </div>
+                    </aside>
+                  </div>
+
+                  <!-- ===== Panel: Garden ===== -->
+                  <div role="tabpanel" id="panel-garden" aria-labelledby="tab-garden" class="tab-panel hidden p-4 sm:p-6" hidden>
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <div class="font-display text-xl font-semibold tracking-tight">My Garden</div>
+                        <div class="text-[13px] text-muted">3 plants growing · 1 harvested</div>
+                      </div>
+                      <span class="inline-flex items-center gap-1.5 rounded-lg bg-forest px-3 py-1.5 text-[13px] font-medium text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-plus"/></svg>Add plant</span>
+                    </div>
+
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                      <div class="rounded-xl border border-line p-4">
+                        <div class="flex items-start gap-3">
+                          <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-lime-200 to-emerald-300 text-forest"><svg class="ic h-5 w-5"><use href="#i-leaf"/></svg></span>
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2"><span class="font-medium">Balcony Basil</span><span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-800">Growing</span></div>
+                            <div class="text-[12.5px] text-muted">Day 34 · Next: water today</div>
+                          </div>
+                        </div>
+                        <div class="mt-3 inline-flex items-center gap-1.5 rounded-md bg-sky-50 px-2 py-1 text-[12px] text-sky-800"><svg class="ic h-3.5 w-3.5"><use href="#i-rain"/></svg>Watering skipped &mdash; rain</div>
+                      </div>
+                      <div class="rounded-xl border border-line p-4">
+                        <div class="flex items-start gap-3">
+                          <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-orange-200 to-red-300 text-red-800"><svg class="ic h-5 w-5"><use href="#i-apple"/></svg></span>
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2"><span class="font-medium">Cherry Tomato</span><span class="rounded-full bg-pink-100 px-2 py-0.5 text-[11px] text-pink-800">Flowering</span></div>
+                            <div class="text-[12.5px] text-muted">Day 52 · Next: feed Saturday</div>
+                          </div>
+                        </div>
+                        <div class="mt-3 inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-1 text-[12px] text-indigo-800"><svg class="ic h-3.5 w-3.5"><use href="#i-snow"/></svg>Frost risk Thursday</div>
+                      </div>
+                      <div class="rounded-xl border border-line p-4">
+                        <div class="flex items-start gap-3">
+                          <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-green-100 to-lime-300 text-forest"><svg class="ic h-5 w-5"><use href="#i-sprout"/></svg></span>
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2"><span class="font-medium">Butterhead Lettuce</span><span class="rounded-full bg-lime-100 px-2 py-0.5 text-[11px] text-lime-800">Sprouting</span></div>
+                            <div class="text-[12.5px] text-muted">Day 18 · Next: water tomorrow</div>
+                          </div>
+                        </div>
+                        <div class="mt-3 inline-flex items-center gap-1.5 rounded-md bg-mist px-2 py-1 text-[12px] text-muted"><svg class="ic h-3.5 w-3.5"><use href="#i-sun"/></svg>Indoor &middot; windowsill</div>
+                      </div>
+                      <div class="rounded-xl border border-line p-4">
+                        <div class="flex items-start gap-3">
+                          <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-100 to-emerald-200 text-emerald-800"><svg class="ic h-5 w-5"><use href="#i-leaf"/></svg></span>
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2"><span class="font-medium">Mint</span><span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-800">Harvested</span></div>
+                            <div class="text-[12.5px] text-muted">3 harvests · 240 g total</div>
+                          </div>
+                        </div>
+                        <div class="mt-3 inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[12px] text-amber-800"><svg class="ic h-3.5 w-3.5"><use href="#i-check"/></svg>First harvest logged</div>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 rounded-xl border border-line p-4">
+                      <div class="text-[11px] font-semibold uppercase tracking-wide text-muted">Today</div>
+                      <ul class="mt-2 divide-y divide-line text-[13px]">
+                        <li class="flex items-center justify-between py-2"><span class="flex items-center gap-2"><svg class="ic h-4 w-4 text-sky-600"><use href="#i-drop"/></svg>Water lettuce</span><span class="rounded-md border border-line px-2 py-0.5 text-[12px] font-medium">Log</span></li>
+                        <li class="flex items-center justify-between py-2"><span class="flex items-center gap-2 text-muted line-through"><svg class="ic h-4 w-4"><use href="#i-drop"/></svg>Water basil</span><span class="text-[12px] text-sky-700">Rain did it</span></li>
+                        <li class="flex items-center justify-between py-2"><span class="flex items-center gap-2"><svg class="ic h-4 w-4 text-amber-600"><use href="#i-alert"/></svg>Check basil leaves</span><span class="rounded-md border border-line px-2 py-0.5 text-[12px] font-medium">Done</span></li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- ===== Panel: Weather ===== -->
+                  <div role="tabpanel" id="panel-weather" aria-labelledby="tab-weather" class="tab-panel hidden p-4 sm:p-6" hidden>
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                      <div class="flex items-center gap-4">
+                        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-sky-100 text-sky-700"><svg class="ic h-7 w-7"><use href="#i-rain"/></svg></span>
+                        <div>
+                          <div class="font-display text-3xl font-semibold tracking-tight">14&deg;C</div>
+                          <div class="text-[13px] text-muted">Chicago, IL · 12&nbsp;mm rain in the last 24h</div>
+                        </div>
+                      </div>
+                      <span class="rounded-full bg-mist px-3 py-1 text-[12px] text-muted ring-1 ring-line">Updated every 3 hours</span>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-7 gap-1.5 text-center text-[12px]">
+                      <div class="rounded-lg bg-sky-50 py-2.5 ring-1 ring-sky-200"><div class="text-muted">Mon</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-sky-600"><use href="#i-rain"/></svg><div class="font-medium">15&deg;</div><div class="text-muted">8&deg;</div></div>
+                      <div class="rounded-lg bg-mist py-2.5"><div class="text-muted">Tue</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-slate-500"><use href="#i-cloud"/></svg><div class="font-medium">13&deg;</div><div class="text-muted">6&deg;</div></div>
+                      <div class="rounded-lg bg-mist py-2.5"><div class="text-muted">Wed</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-amber-500"><use href="#i-sun"/></svg><div class="font-medium">12&deg;</div><div class="text-muted">3&deg;</div></div>
+                      <div class="rounded-lg bg-indigo-50 py-2.5 ring-1 ring-indigo-200"><div class="text-indigo-800">Thu</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-indigo-600"><use href="#i-snow"/></svg><div class="font-medium">9&deg;</div><div class="font-medium text-indigo-700">1&deg;</div></div>
+                      <div class="rounded-lg bg-mist py-2.5"><div class="text-muted">Fri</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-amber-500"><use href="#i-sun"/></svg><div class="font-medium">14&deg;</div><div class="text-muted">5&deg;</div></div>
+                      <div class="rounded-lg bg-mist py-2.5"><div class="text-muted">Sat</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-amber-500"><use href="#i-sun"/></svg><div class="font-medium">17&deg;</div><div class="text-muted">8&deg;</div></div>
+                      <div class="rounded-lg bg-mist py-2.5"><div class="text-muted">Sun</div><svg class="ic mx-auto my-1.5 h-5 w-5 text-slate-500"><use href="#i-cloud"/></svg><div class="font-medium">16&deg;</div><div class="text-muted">9&deg;</div></div>
+                    </div>
+
+                    <div class="mt-5 space-y-3">
+                      <div class="flex flex-col gap-3 rounded-xl border border-sky-200 bg-sky-50/70 p-4 sm:flex-row sm:items-center">
+                        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-sky-700 ring-1 ring-sky-200"><svg class="ic h-4 w-4"><use href="#i-rain"/></svg></span>
+                        <div class="flex-1 text-[13px]">
+                          <div class="font-medium text-sky-950">Rain did the watering today</div>
+                          <div class="text-sky-900/75">2 outdoor watering reminders skipped. Indoor plants are unaffected.</div>
+                        </div>
+                        <span class="self-start rounded-md border border-sky-200 bg-white px-2.5 py-1 text-[12px] font-medium text-sky-900 sm:self-center">Override</span>
+                      </div>
+                      <div class="flex flex-col gap-3 rounded-xl border border-indigo-200 bg-indigo-50/70 p-4 sm:flex-row sm:items-center">
+                        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-indigo-700 ring-1 ring-indigo-200"><svg class="ic h-4 w-4"><use href="#i-snow"/></svg></span>
+                        <div class="flex-1 text-[13px]">
+                          <div class="font-medium text-indigo-950">Frost risk Thursday night (1&nbsp;&deg;C)</div>
+                          <div class="text-indigo-900/75">Cover your cherry tomato, water the soil beforehand, or bring the pot inside.</div>
+                        </div>
+                        <span class="self-start rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[12px] font-medium text-indigo-900 sm:self-center">Mark done</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Plant marquee ================= -->
+    <section aria-label="Beginner-friendly plants">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom py-10">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <p class="mb-6 text-center text-[13px] font-medium text-muted">Start with ~50 curated, beginner-friendly food plants</p>
+          <div class="marquee">
+            <div class="marquee-track slow gap-3 pr-3" aria-hidden="false">
+              <!-- set A -->
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-leaf"><use href="#i-leaf"/></svg>Basil</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-red-500"><use href="#i-apple"/></svg>Cherry tomato</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-lime-600"><use href="#i-sprout"/></svg>Butterhead lettuce</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-emerald-600"><use href="#i-leaf"/></svg>Mint</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-orange-500"><use href="#i-flame"/></svg>Chili pepper</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-700"><use href="#i-sprout"/></svg>Bush beans</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-emerald-700"><use href="#i-leaf"/></svg>Spinach</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-rose-500"><use href="#i-apple"/></svg>Strawberries</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-pink-500"><use href="#i-sprout"/></svg>Radish</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-600"><use href="#i-leaf"/></svg>Cilantro</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-lime-700"><use href="#i-leaf"/></svg>Kale</span>
+              <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-500"><use href="#i-sprout"/></svg>Green onion</span>
+              <!-- set B (duplicate for seamless loop) -->
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-leaf"><use href="#i-leaf"/></svg>Basil</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-red-500"><use href="#i-apple"/></svg>Cherry tomato</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-lime-600"><use href="#i-sprout"/></svg>Butterhead lettuce</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-emerald-600"><use href="#i-leaf"/></svg>Mint</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-orange-500"><use href="#i-flame"/></svg>Chili pepper</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-700"><use href="#i-sprout"/></svg>Bush beans</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-emerald-700"><use href="#i-leaf"/></svg>Spinach</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-rose-500"><use href="#i-apple"/></svg>Strawberries</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-pink-500"><use href="#i-sprout"/></svg>Radish</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-600"><use href="#i-leaf"/></svg>Cilantro</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-lime-700"><use href="#i-leaf"/></svg>Kale</span>
+              <span aria-hidden="true" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-[14px]"><svg class="ic h-4 w-4 text-green-500"><use href="#i-sprout"/></svg>Green onion</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Problem statement ================= -->
+    <section aria-labelledby="why-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="reveal mx-auto max-w-3xl text-center">
+            <p class="text-[13px] font-semibold uppercase tracking-[0.14em] text-leaf">Why Greenhand</p>
+            <h2 id="why-title" class="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-[44px]">
+              Beginners don&rsquo;t quit because they lose interest.
+              <span class="text-muted">They quit because generic advice doesn&rsquo;t fit <em class="not-italic text-ink">their</em> plant, climate, or problem.</span>
+            </h2>
+          </div>
+          <div class="reveal mx-auto mt-14 grid max-w-5xl gap-px overflow-hidden rounded-2xl bg-line ring-1 ring-line md:grid-cols-3">
+            <div class="bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-leaf-soft text-forest"><svg class="ic h-5 w-5"><use href="#i-search"/></svg></span>
+              <h3 class="mt-5 font-medium">What should I plant?</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">See which plants are a great fit for your space, sunlight, and season &mdash; before you buy a single seed.</p>
+            </div>
+            <div class="bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-lime-100 text-forest"><svg class="ic h-5 w-5"><use href="#i-calendar"/></svg></span>
+              <h3 class="mt-5 font-medium">How do I care for it here?</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Get a care schedule that adapts to your local forecast instead of a one-size-fits-all chart.</p>
+            </div>
+            <div class="bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-amber-100 text-amber-800"><svg class="ic h-5 w-5"><use href="#i-alert"/></svg></span>
+              <h3 class="mt-5 font-medium">What&rsquo;s wrong with it?</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Snap a photo and get likely causes, a confidence level, and clear next steps in seconds.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Feature rows ================= -->
+    <section id="product" aria-label="Product">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+
+        <!-- Row 1: Tutor -->
+        <div id="tutor" class="frame frame-bottom scroll-mt-24 px-4 py-16 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="grid items-center gap-12 lg:grid-cols-2">
+            <div class="reveal">
+              <div class="inline-flex items-center gap-2 text-[14px] font-medium">
+                <span class="grid h-6 w-6 place-items-center rounded-md bg-leaf text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg></span>
+                AI Gardening Tutor
+              </div>
+              <h2 class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight sm:text-[40px]">An AI tutor that already knows your garden</h2>
+              <p class="mt-5 max-w-lg text-[16px] leading-relaxed text-muted">
+                Every answer is grounded in your plants, planting dates, growth stage, the last 14 days of logs, and your live forecast &mdash;
+                plus a curated plant-care knowledge base with sources.
+              </p>
+              <ul class="mt-6 space-y-2.5 text-[15px]">
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>Ask anything in plain language, or scope a chat to one plant</li>
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>Photo diagnosis with confidence, &ldquo;do now&rdquo;, and &ldquo;watch for&rdquo;</li>
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>One-click actions: add a reminder, log a problem, share to Posts</li>
+              </ul>
+              <a href="#demo" class="mt-8 inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-[14px] font-medium text-white hover:bg-forest-900">See the tutor <svg class="ic h-4 w-4"><use href="#i-arrow-right"/></svg></a>
+            </div>
+
+            <div class="reveal">
+              <div class="canvas-gradient rounded-2xl p-4 sm:p-8">
+                <div class="overflow-hidden rounded-xl bg-[#0d1f14] text-[12.5px] text-emerald-50 shadow-float">
+                  <div class="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
+                    <span class="font-mono text-[11px] text-emerald-200/70">context sent with every message</span>
+                    <span class="rounded bg-white/10 px-1.5 py-px font-mono text-[10px] text-lime-300">RAG</span>
+                  </div>
+                  <pre class="overflow-x-auto p-4 font-mono leading-[1.75]"><span class="text-lime-300">profile</span>   Chicago, IL · zone 5b · balcony · partial sun · beginner
+<span class="text-lime-300">garden</span>    basil (day 34, vegetative, outdoor)
+          cherry tomato (day 52, flowering, outdoor)
+          lettuce (day 18, seedling, indoor)
+<span class="text-lime-300">logs</span>      watered basil Mon, Wed · pruned tomato Thu
+<span class="text-lime-300">weather</span>   12 mm rain/24h · low 1°C Thu · frost alert
+<span class="text-lime-300">knowledge</span> top 5 chunks · "Basil care guide", …</pre>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span class="rounded-full bg-white/80 px-3 py-1.5 text-[12.5px] shadow-card">When should I transplant my tomato seedlings?</span>
+                  <span class="rounded-full bg-white/80 px-3 py-1.5 text-[12.5px] shadow-card">Is it too late to plant lettuce?</span>
+                  <span class="rounded-full bg-white/80 px-3 py-1.5 text-[12.5px] shadow-card">How do I know my tomatoes are ripe?</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Pick a Plant -->
+        <div id="plants" class="frame frame-bottom scroll-mt-24 px-4 py-16 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="grid items-center gap-12 lg:grid-cols-2">
+            <div class="reveal order-2 lg:order-1">
+              <div class="canvas-gradient rounded-2xl p-4 sm:p-8">
+                <div class="rounded-xl bg-white p-4 shadow-float">
+                  <div class="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-[13px] text-muted">
+                    <svg class="ic h-4 w-4"><use href="#i-search"/></svg> Search herbs, greens, vegetables&hellip;
+                  </div>
+                  <div class="mt-3 flex flex-wrap gap-1.5 text-[12px]">
+                    <span class="rounded-full bg-ink px-2.5 py-1 text-white">Beginner-friendly</span>
+                    <span class="rounded-full border border-line px-2.5 py-1">Container</span>
+                    <span class="rounded-full border border-line px-2.5 py-1">Fall</span>
+                    <span class="rounded-full border border-line px-2.5 py-1">Herbs</span>
+                  </div>
+                  <ul class="mt-4 space-y-2">
+                    <li class="flex items-center gap-3 rounded-lg border border-line p-3">
+                      <span class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-green-100 to-lime-300 text-forest"><svg class="ic h-5 w-5"><use href="#i-sprout"/></svg></span>
+                      <div class="min-w-0 flex-1"><div class="text-[14px] font-medium">Spinach</div><div class="text-[12px] text-muted">Leafy green · 40&ndash;50 days · Frost tolerant</div></div>
+                      <span class="whitespace-nowrap rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800">Great for you now</span>
+                    </li>
+                    <li class="flex items-center gap-3 rounded-lg border border-line p-3">
+                      <span class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-lime-100 to-emerald-300 text-forest"><svg class="ic h-5 w-5"><use href="#i-leaf"/></svg></span>
+                      <div class="min-w-0 flex-1"><div class="text-[14px] font-medium">Basil</div><div class="text-[12px] text-muted">Herb · Indoor-friendly · Full sun</div></div>
+                      <span class="whitespace-nowrap rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">Possible with care</span>
+                    </li>
+                    <li class="flex items-center gap-3 rounded-lg border border-line p-3">
+                      <span class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-orange-100 to-red-300 text-red-800"><svg class="ic h-5 w-5"><use href="#i-apple"/></svg></span>
+                      <div class="min-w-0 flex-1"><div class="text-[14px] font-medium">Tomato</div><div class="text-[12px] text-muted">Fruit · 60&ndash;85 days · Frost sensitive</div></div>
+                      <span class="whitespace-nowrap rounded-full bg-rose-100 px-2 py-1 text-[11px] font-medium text-rose-800">Not recommended now</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="reveal order-1 lg:order-2">
+              <div class="inline-flex items-center gap-2 text-[14px] font-medium">
+                <span class="grid h-6 w-6 place-items-center rounded-md bg-lime-500 text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-search"/></svg></span>
+                Pick a Plant
+              </div>
+              <h2 class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight sm:text-[40px]">Grow what will actually thrive where you live</h2>
+              <p class="mt-5 max-w-lg text-[16px] leading-relaxed text-muted">
+                Browse a curated database of beginner food plants. Every plant gets a suitability badge computed from your climate zone,
+                the current month, and your space &mdash; so your first plant is a win.
+              </p>
+              <ul class="mt-6 space-y-2.5 text-[15px]">
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>Sunlight, watering, spacing, germination and harvest times</li>
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>Filter by difficulty, season, category, and container-friendly</li>
+                <li class="flex gap-2.5"><svg class="ic mt-1 h-4 w-4 text-leaf"><use href="#i-check"/></svg>&ldquo;Start growing&rdquo; builds your care schedule automatically</li>
+              </ul>
+              <a href="#start" class="mt-8 inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-[14px] font-medium text-white hover:bg-forest-900">Find your first plant <svg class="ic h-4 w-4"><use href="#i-arrow-right"/></svg></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: My Garden -->
+        <div id="garden" class="frame frame-bottom scroll-mt-24 px-4 py-16 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="grid items-center gap-12 lg:grid-cols-2">
+            <div class="reveal">
+              <div class="inline-flex items-center gap-2 text-[14px] font-medium">
+                <span class="grid h-6 w-6 place-items-center rounded-md bg-emerald-700 text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-home"/></svg></span>
+                My Garden
+              </div>
+              <h2 class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight sm:text-[40px]">Every plant&rsquo;s story, from seed to harvest</h2>
+              <p class="mt-5 max-w-lg text-[16px] leading-relaxed text-muted">
+                A personal record and control center for each plant. Add photos by growth stage, log care in one tap,
+                track problems until they&rsquo;re resolved, and see everything on a visual calendar.
+              </p>
+              <div class="mt-6 grid max-w-lg grid-cols-2 gap-3 text-[14px]">
+                <div class="rounded-xl border border-line p-3"><svg class="ic h-4 w-4 text-forest"><use href="#i-camera"/></svg><div class="mt-2 font-medium">Timeline</div><div class="text-[13px] text-muted">Photo + note by stage</div></div>
+                <div class="rounded-xl border border-line p-3"><svg class="ic h-4 w-4 text-sky-600"><use href="#i-drop"/></svg><div class="mt-2 font-medium">Care log</div><div class="text-[13px] text-muted">Water, feed, prune</div></div>
+                <div class="rounded-xl border border-line p-3"><svg class="ic h-4 w-4 text-amber-600"><use href="#i-alert"/></svg><div class="mt-2 font-medium">Problems</div><div class="text-[13px] text-muted">Open &rarr; resolved</div></div>
+                <div class="rounded-xl border border-line p-3"><svg class="ic h-4 w-4 text-indigo-600"><use href="#i-calendar"/></svg><div class="mt-2 font-medium">Calendar</div><div class="text-[13px] text-muted">Reminders &amp; events</div></div>
+              </div>
+            </div>
+
+            <div class="reveal">
+              <div class="canvas-gradient rounded-2xl p-4 sm:p-8">
+                <div class="rounded-xl bg-white shadow-float">
+                  <div class="flex items-center gap-3 border-b border-line p-4">
+                    <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-orange-200 to-red-300 text-red-800"><svg class="ic h-5 w-5"><use href="#i-apple"/></svg></span>
+                    <div class="flex-1"><div class="font-medium">Cherry Tomato &lsquo;Sungold&rsquo;</div><div class="text-[12px] text-muted">Planted Aug 22 · Outdoor · Raised bed</div></div>
+                    <span class="rounded-full bg-pink-100 px-2 py-0.5 text-[11px] text-pink-800">Flowering</span>
+                  </div>
+                  <div class="flex gap-4 border-b border-line px-4 text-[13px]">
+                    <span class="border-b-2 border-ink py-2.5 font-medium">Timeline</span>
+                    <span class="py-2.5 text-muted">Care log</span>
+                    <span class="py-2.5 text-muted">Problems</span>
+                    <span class="py-2.5 text-muted">Calendar</span>
+                  </div>
+                  <ol class="relative space-y-5 p-5 text-[13px] before:absolute before:bottom-6 before:left-[29px] before:top-6 before:w-px before:bg-line">
+                    <li class="relative flex gap-3">
+                      <span class="z-10 grid h-5 w-5 place-items-center rounded-full bg-pink-500 ring-4 ring-white"></span>
+                      <div><div class="font-medium">Flowering <span class="font-normal text-muted">· Oct 12</span></div><div class="text-muted">First yellow flowers on the top truss.</div></div>
+                    </li>
+                    <li class="relative flex gap-3">
+                      <span class="z-10 grid h-5 w-5 place-items-center rounded-full bg-emerald-600 ring-4 ring-white"></span>
+                      <div><div class="font-medium">Vegetative <span class="font-normal text-muted">· Sep 20</span></div><div class="text-muted">Staked and pruned suckers. 45 cm tall.</div></div>
+                    </li>
+                    <li class="relative flex gap-3">
+                      <span class="z-10 grid h-5 w-5 place-items-center rounded-full bg-lime-500 ring-4 ring-white"></span>
+                      <div><div class="font-medium">Seedling <span class="font-normal text-muted">· Aug 29</span></div><div class="text-muted">Transplanted into the raised bed.</div></div>
+                    </li>
+                  </ol>
+                  <div class="flex items-center justify-between border-t border-line px-4 py-3 text-[12.5px]">
+                    <span class="text-muted">Next: harvest check in ~3 weeks</span>
+                    <span class="inline-flex items-center gap-1 font-medium text-forest"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg>Ask about this plant</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Weather band ================= -->
+    <section id="weather" class="scroll-mt-24" aria-labelledby="weather-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-2 py-2 sm:px-4 sm:py-4">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="cta-gradient overflow-hidden rounded-2xl px-6 py-14 text-white sm:px-12 md:py-20">
+            <div class="reveal grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+              <div>
+                <div class="inline-flex items-center gap-2 text-[14px] font-medium text-lime-200">
+                  <span class="grid h-6 w-6 place-items-center rounded-md bg-sky-500 text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-rain"/></svg></span>
+                  Weather-aware care
+                </div>
+                <h2 id="weather-title" class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight sm:text-[44px]">Generic schedules, turned into smart local ones</h2>
+                <p class="mt-5 max-w-lg text-[16px] leading-relaxed text-emerald-50/75">
+                  Greenhand checks the forecast for your location every few hours and adjusts your reminders. You can override any change.
+                </p>
+              </div>
+              <div class="grid gap-3">
+                <div class="rounded-xl bg-white/[0.06] p-5 ring-1 ring-white/10">
+                  <div class="flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-sky-400/20 text-sky-200"><svg class="ic h-4 w-4"><use href="#i-rain"/></svg></span><span class="font-medium">Rain rule</span></div>
+                  <p class="mt-2 text-[14px] leading-relaxed text-emerald-50/70">5&nbsp;mm of rain in the last 24h, or a 70% chance in the next 12h, skips outdoor watering. Indoor plants are never affected.</p>
+                </div>
+                <div class="rounded-xl bg-white/[0.06] p-5 ring-1 ring-white/10">
+                  <div class="flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-400/20 text-indigo-200"><svg class="ic h-4 w-4"><use href="#i-snow"/></svg></span><span class="font-medium">Frost rule</span></div>
+                  <p class="mt-2 text-[14px] leading-relaxed text-emerald-50/70">Lows at or below 2&nbsp;&deg;C within 48h trigger an alert for frost-sensitive outdoor plants &mdash; with what to do about it.</p>
+                </div>
+                <div class="rounded-xl bg-white/[0.06] p-5 ring-1 ring-white/10">
+                  <div class="flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-orange-400/20 text-orange-200"><svg class="ic h-4 w-4"><use href="#i-flame"/></svg></span><span class="font-medium">Heat rule <span class="ml-1 rounded bg-white/10 px-1.5 py-px text-[11px] font-normal text-emerald-50/70">Coming soon</span></span></div>
+                  <p class="mt-2 text-[14px] leading-relaxed text-emerald-50/70">Heat waves of 32&nbsp;&deg;C and up suggest extra watering and shade.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= How it works ================= -->
+    <section id="how" class="scroll-mt-24" aria-labelledby="how-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="reveal mx-auto max-w-2xl text-center">
+            <p class="text-[13px] font-semibold uppercase tracking-[0.14em] text-leaf">How it works</p>
+            <h2 id="how-title" class="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-[44px]">Your first plant in under three minutes</h2>
+            <p class="mt-4 text-[16px] text-muted">Four quick questions give the tutor everything it needs to personalize from minute one.</p>
+          </div>
+
+          <ol class="reveal mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <li class="rounded-2xl border border-line bg-white p-6">
+              <div class="flex items-center justify-between"><span class="font-mono text-[12px] text-muted">01</span><svg class="ic h-5 w-5 text-forest"><use href="#i-pin"/></svg></div>
+              <h3 class="mt-6 font-medium">Set your location</h3>
+              <p class="mt-1.5 text-[14px] text-muted">City or ZIP for local weather and climate. Stored at city precision.</p>
+            </li>
+            <li class="rounded-2xl border border-line bg-white p-6">
+              <div class="flex items-center justify-between"><span class="font-mono text-[12px] text-muted">02</span><svg class="ic h-5 w-5 text-forest"><use href="#i-home"/></svg></div>
+              <h3 class="mt-6 font-medium">Describe your space</h3>
+              <p class="mt-1.5 text-[14px] text-muted">Backyard, balcony, windowsill, or indoor.</p>
+            </li>
+            <li class="rounded-2xl border border-line bg-white p-6">
+              <div class="flex items-center justify-between"><span class="font-mono text-[12px] text-muted">03</span><svg class="ic h-5 w-5 text-forest"><use href="#i-sun"/></svg></div>
+              <h3 class="mt-6 font-medium">Check your sunlight</h3>
+              <p class="mt-1.5 text-[14px] text-muted">Full sun, partial, or shade &mdash; plus your experience level.</p>
+            </li>
+            <li class="rounded-2xl border border-forest bg-forest p-6 text-white">
+              <div class="flex items-center justify-between"><span class="font-mono text-[12px] text-lime-200/80">04</span><svg class="ic h-5 w-5 text-lime-300"><use href="#i-sprout"/></svg></div>
+              <h3 class="mt-6 font-medium">Pick your first plant</h3>
+              <p class="mt-1.5 text-[14px] text-emerald-50/75">Recommendations for your season, climate, and space. Tap &ldquo;Start growing&rdquo;.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Use across the season (Navattic "use cases" grid) ================= -->
+    <section aria-labelledby="season-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="reveal max-w-2xl">
+            <h2 id="season-title" class="font-display text-3xl font-semibold tracking-tight sm:text-[44px]">Help at every point in the season.</h2>
+          </div>
+          <div class="reveal mt-12 grid gap-px overflow-hidden rounded-2xl bg-line ring-1 ring-line sm:grid-cols-2 lg:grid-cols-3">
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-forest"><use href="#i-search"/></svg>Planning</div>
+              <h3 class="mt-4 text-[17px] font-medium">Choose what to grow</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Suitability badges show what&rsquo;s great for you right now, and what to save for next season.</p>
+            </article>
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-forest"><use href="#i-sprout"/></svg>Planting</div>
+              <h3 class="mt-4 text-[17px] font-medium">Start with a schedule</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Enter a date and seed or seedling &mdash; Greenhand creates the care calendar and a personalized welcome from your tutor.</p>
+            </article>
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-sky-600"><use href="#i-drop"/></svg>Daily care</div>
+              <h3 class="mt-4 text-[17px] font-medium">One-tap care logging</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Reminders arrive in-app and by email. Log watering, feeding, or pruning in a single tap.</p>
+            </article>
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-amber-600"><use href="#i-camera"/></svg>Troubleshooting</div>
+              <h3 class="mt-4 text-[17px] font-medium">Diagnose from a photo</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Likely issues, confidence, and next steps &mdash; saved straight into the plant&rsquo;s problem log with a follow-up reminder.</p>
+            </article>
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-indigo-600"><use href="#i-snow"/></svg>Protecting</div>
+              <h3 class="mt-4 text-[17px] font-medium">Get ahead of the weather</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Frost alerts tell you exactly which plants to cover or move inside, and when.</p>
+            </article>
+            <article class="group bg-white p-7 transition hover:bg-mist">
+              <div class="flex items-center gap-2 text-[13px] text-muted"><svg class="ic h-4 w-4 text-red-500"><use href="#i-apple"/></svg>Harvesting</div>
+              <h3 class="mt-4 text-[17px] font-medium">Harvest and share</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">Learn the signs of ripeness, log what you picked, and share the win with the community.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Numbers marquee ================= -->
+    <section aria-labelledby="numbers-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom py-20 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="reveal px-4 text-center sm:px-10">
+            <h2 id="numbers-title" class="font-display text-3xl font-semibold tracking-tight sm:text-[44px]">Small details that do the heavy lifting.</h2>
+            <p class="mx-auto mt-4 max-w-xl text-[16px] text-muted">The numbers behind a tutor that actually knows your garden.</p>
+          </div>
+          <div class="marquee mt-12">
+            <div class="marquee-track gap-4 pr-4">
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">14</div><div class="mt-3 text-[14px] text-muted">days of your care logs in every tutor answer</div></div>
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">~50</div><div class="mt-3 text-[14px] text-muted">curated beginner food plants at launch</div></div>
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">7-day</div><div class="mt-3 text-[14px] text-muted">local forecast shared with your tutor</div></div>
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">5&nbsp;mm</div><div class="mt-3 text-[14px] text-muted">of rain is enough to skip outdoor watering</div></div>
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">2&nbsp;&deg;C</div><div class="mt-3 text-[14px] text-muted">default frost threshold for alerts</div></div>
+              <div class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">&lt;3 min</div><div class="mt-3 text-[14px] text-muted">from sign-up to your first plant</div></div>
+              <!-- duplicate -->
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">14</div><div class="mt-3 text-[14px] text-muted">days of your care logs in every tutor answer</div></div>
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">~50</div><div class="mt-3 text-[14px] text-muted">curated beginner food plants at launch</div></div>
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">7-day</div><div class="mt-3 text-[14px] text-muted">local forecast shared with your tutor</div></div>
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">5&nbsp;mm</div><div class="mt-3 text-[14px] text-muted">of rain is enough to skip outdoor watering</div></div>
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">2&nbsp;&deg;C</div><div class="mt-3 text-[14px] text-muted">default frost threshold for alerts</div></div>
+              <div aria-hidden="true" class="w-64 shrink-0 rounded-2xl border border-line bg-white p-6"><div class="font-display text-5xl font-semibold tracking-tight text-forest">&lt;3 min</div><div class="mt-3 text-[14px] text-muted">from sign-up to your first plant</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Who it's for ================= -->
+    <section aria-labelledby="who-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="reveal flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <h2 id="who-title" class="max-w-xl font-display text-3xl font-semibold tracking-tight sm:text-[44px]">Built for first-time growers.</h2>
+            <p class="max-w-sm text-[15px] text-muted">Whether you have a windowsill or a whole backyard, Greenhand meets you where you are.</p>
+          </div>
+          <div class="reveal mt-12 grid gap-4 lg:grid-cols-3">
+            <figure class="flex flex-col rounded-2xl border border-line bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-full bg-lime-100 text-forest"><svg class="ic h-5 w-5"><use href="#i-sun"/></svg></span>
+              <figcaption class="mt-5"><div class="font-medium">The curious beginner</div><div class="text-[13px] text-muted">Renter with a balcony or windowsill</div></figcaption>
+              <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed">&ldquo;What can I realistically grow in my space &mdash; and how do I start?&rdquo;</blockquote>
+              <div class="mt-6 border-t border-line pt-4 text-[13px] text-muted">Suitability badges + step-by-step tutor</div>
+            </figure>
+            <figure class="flex flex-col rounded-2xl border border-line bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-100 text-forest"><svg class="ic h-5 w-5"><use href="#i-home"/></svg></span>
+              <figcaption class="mt-5"><div class="font-medium">The self-sufficiency learner</div><div class="text-[13px] text-muted">Homeowner with a backyard</div></figcaption>
+              <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed">&ldquo;I want to plan crops by season and actually make it to harvest.&rdquo;</blockquote>
+              <div class="mt-6 border-t border-line pt-4 text-[13px] text-muted">Care calendar + harvest logging</div>
+            </figure>
+            <figure class="flex flex-col rounded-2xl border border-line bg-white p-7">
+              <span class="grid h-10 w-10 place-items-center rounded-full bg-amber-100 text-amber-800"><svg class="ic h-5 w-5"><use href="#i-shield"/></svg></span>
+              <figcaption class="mt-5"><div class="font-medium">The returning hobbyist</div><div class="text-[13px] text-muted">Lost plants to pests or frost before</div></figcaption>
+              <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed">&ldquo;Help me spot problems early and warn me before the weather turns.&rdquo;</blockquote>
+              <div class="mt-6 border-t border-line pt-4 text-[13px] text-muted">Photo diagnosis + frost alerts</div>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Community ================= -->
+    <section id="community" class="scroll-mt-24" aria-labelledby="community-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="grid items-center gap-12 lg:grid-cols-2">
+            <div class="reveal">
+              <div class="inline-flex items-center gap-2 text-[14px] font-medium">
+                <span class="grid h-6 w-6 place-items-center rounded-md bg-ink text-white"><svg class="ic h-3.5 w-3.5"><use href="#i-users"/></svg></span>
+                Posts
+              </div>
+              <h2 id="community-title" class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight sm:text-[40px]">Learn from growers with the same plants as you</h2>
+              <p class="mt-5 max-w-lg text-[16px] leading-relaxed text-muted">
+                Share progress, show off harvests, swap tips, and ask for help. Filter the feed to people growing what you grow.
+                Question posts get a clearly labeled AI suggestion to get the conversation started.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-2 text-[13px]">
+                <span class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Progress</span>
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">Harvest</span>
+                <span class="rounded-full bg-sky-100 px-3 py-1 text-sky-800">Question</span>
+                <span class="rounded-full bg-violet-100 px-3 py-1 text-violet-800">Tip</span>
+              </div>
+            </div>
+
+            <div class="reveal">
+              <div class="canvas-gradient rounded-2xl p-4 sm:p-8">
+                <div class="space-y-3">
+                  <article class="rounded-xl bg-white p-4 shadow-float">
+                    <div class="flex items-center gap-2.5">
+                      <span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-amber-200 to-orange-300 text-[12px] font-semibold text-orange-900">BG</span>
+                      <div class="flex-1 text-[13px]"><div class="font-medium">balcony_grower</div><div class="text-muted">Cherry tomato · 2h</div></div>
+                      <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-800">Harvest</span>
+                    </div>
+                    <p class="mt-3 text-[14px]">First harvest of the season &mdash; 12 cherry tomatoes off one pot! The frost alert last week saved them.</p>
+                    <div class="mt-3 flex gap-4 text-[12px] text-muted">
+                      <span class="flex items-center gap-1"><svg class="ic h-3.5 w-3.5"><use href="#i-heart"/></svg>24</span>
+                      <span class="flex items-center gap-1"><svg class="ic h-3.5 w-3.5"><use href="#i-post"/></svg>6</span>
+                      <span class="flex items-center gap-1"><svg class="ic h-3.5 w-3.5"><use href="#i-bookmark"/></svg>Save</span>
+                    </div>
+                  </article>
+                  <article class="rounded-xl bg-white p-4 shadow-float">
+                    <div class="flex items-center gap-2.5">
+                      <span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-sky-200 to-indigo-300 text-[12px] font-semibold text-indigo-900">WS</span>
+                      <div class="flex-1 text-[13px]"><div class="font-medium">windowsill_sprouts</div><div class="text-muted">Basil · 5h</div></div>
+                      <span class="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-800">Question</span>
+                    </div>
+                    <p class="mt-3 text-[14px]">My basil is getting tall and leggy. Should I move it or prune it?</p>
+                    <div class="mt-3 rounded-lg border border-line bg-mist p-3 text-[13px]">
+                      <div class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-forest"><svg class="ic h-3 w-3"><use href="#i-sparkles"/></svg>AI suggestion</div>
+                      Leggy growth usually means not enough light. Move it to your brightest window and pinch the top just above a leaf pair.
+                    </div>
+                  </article>
+                </div>
+                <p class="mt-3 text-center text-[11px] text-emerald-900/60">Example posts for illustration</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FAQ ================= -->
+    <section id="faq" class="scroll-mt-24" aria-labelledby="faq-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-4 py-20 sm:px-10 md:py-24">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
+            <div class="reveal">
+              <h2 id="faq-title" class="font-display text-3xl font-semibold tracking-tight sm:text-[44px]">Questions, answered.</h2>
+              <p class="mt-4 text-[15px] text-muted">Still curious? Ask the tutor &mdash; it&rsquo;s what it&rsquo;s there for.</p>
+            </div>
+            <div class="reveal divide-y divide-line border-y border-line">
+              <details class="group py-5" open>
+                <summary class="flex items-center justify-between gap-4 text-[16px] font-medium">Do I need a backyard?<svg class="ic faq-plus h-5 w-5 text-muted"><use href="#i-plus"/></svg></summary>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted">No. Greenhand supports backyards, balconies, windowsills, and indoor spaces, and recommends plants that suit the space you have.</p>
+              </details>
+              <details class="group py-5">
+                <summary class="flex items-center justify-between gap-4 text-[16px] font-medium">How does the tutor know about my garden?<svg class="ic faq-plus h-5 w-5 text-muted"><use href="#i-plus"/></svg></summary>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted">Each message includes your profile, your plants and their stages, your last 14 days of logs, open problems, and your local forecast. Answers are grounded in a curated plant-care knowledge base and cite sources where possible.</p>
+              </details>
+              <details class="group py-5">
+                <summary class="flex items-center justify-between gap-4 text-[16px] font-medium">What if the AI gets a diagnosis wrong?<svg class="ic faq-plus h-5 w-5 text-muted"><use href="#i-plus"/></svg></summary>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted">Every diagnosis shows a confidence level and signs to watch for, and sets a follow-up reminder. All AI content is labeled, and for serious issues the tutor points you to your local extension office.</p>
+              </details>
+              <details class="group py-5">
+                <summary class="flex items-center justify-between gap-4 text-[16px] font-medium">Is my location private?<svg class="ic faq-plus h-5 w-5 text-muted"><use href="#i-plus"/></svg></summary>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted">Location is stored at city or ZIP precision by default, GPS data is stripped from uploaded photos, and you can delete your account and data at any time.</p>
+              </details>
+              <details class="group py-5">
+                <summary class="flex items-center justify-between gap-4 text-[16px] font-medium">Can I use it on my phone?<svg class="ic faq-plus h-5 w-5 text-muted"><use href="#i-plus"/></svg></summary>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted">Yes. Greenhand is a mobile-first web app, built for snapping photos right in the garden.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Final CTA ================= -->
+    <section id="start" class="scroll-mt-24" aria-labelledby="cta-title">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="frame frame-bottom px-2 py-2 sm:px-4 sm:py-4">
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="canvas-gradient relative overflow-hidden rounded-2xl px-6 py-20 text-center sm:px-12 md:py-28">
+            <div class="dot-grid pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(60%_60%_at_50%_50%,#000,transparent)]"></div>
+            <div class="reveal relative">
+              <h2 id="cta-title" class="mx-auto max-w-2xl font-display text-4xl font-semibold leading-[1.05] tracking-tightest sm:text-6xl">Turn seeds into harvests.</h2>
+              <p class="mx-auto mt-5 max-w-md text-[17px] text-muted">Grow your first plant with a tutor that knows your space, your plants, and your weather.</p>
+              <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <a href="{% url 'userprofile:signup' %}" class="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 text-[15px] font-medium text-white shadow-sm hover:bg-forest-900">Start growing <svg class="ic h-4 w-4"><use href="#i-arrow-right"/></svg></a>
+                <a href="#demo" class="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-5 py-3 text-[15px] font-medium shadow-card hover:bg-mist">Try the tutor</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Footer ================= -->
+  <footer>
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="frame px-4 pb-10 pt-16 sm:px-10">
+        <div class="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+          <div>
+            <a href="#top" class="flex items-center gap-2">
+              <span class="grid h-8 w-8 place-items-center rounded-lg bg-forest text-lime-300"><svg class="ic h-[18px] w-[18px]"><use href="#i-sprout"/></svg></span>
+              <span class="font-display text-[21px] font-semibold tracking-tight">greenhand</span>
+            </a>
+            <p class="mt-4 max-w-xs text-[14px] leading-relaxed text-muted">Making farming accessible to everyone &mdash; one balcony, backyard, and windowsill at a time.</p>
+          </div>
+          <div>
+            <h3 class="text-[13px] font-semibold">Product</h3>
+            <ul class="mt-4 space-y-2.5 text-[14px] text-muted">
+              <li><a href="#tutor" class="hover:text-ink">AI Tutor</a></li>
+              <li><a href="#plants" class="hover:text-ink">Pick a Plant</a></li>
+              <li><a href="#garden" class="hover:text-ink">My Garden</a></li>
+              <li><a href="#weather" class="hover:text-ink">Weather-aware care</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-[13px] font-semibold">Community</h3>
+            <ul class="mt-4 space-y-2.5 text-[14px] text-muted">
+              <li><a href="#community" class="hover:text-ink">Posts</a></li>
+              <li><a href="#" class="hover:text-ink">Community guidelines</a></li>
+              <li><a href="#faq" class="hover:text-ink">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-[13px] font-semibold">Company</h3>
+            <ul class="mt-4 space-y-2.5 text-[14px] text-muted">
+              <li><a href="#" class="hover:text-ink">About</a></li>
+              <li><a href="#" class="hover:text-ink">Privacy</a></li>
+              <li><a href="#" class="hover:text-ink">Terms</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-14 flex flex-col justify-between gap-3 border-t border-line pt-6 text-[13px] text-muted sm:flex-row">
+          <span>&copy; <span id="year">{{ gh_today|date:"Y" }}</span> Greenhand · Team 4</span>
+          <span>All AI content is clearly labeled.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/main.js' %}"></script>{% endblock %}

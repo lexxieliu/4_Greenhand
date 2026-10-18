@@ -1,0 +1,123 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+
+{% block title %}Pick a Plant — Greenhand{% endblock %}
+{% block description %}Browse beginner-friendly food plants and see which ones suit your space, season, and climate right now.{% endblock %}
+
+{% block breadcrumb %}{% url 'garden:dashboard' as dash_url %}{% include "partials/breadcrumb.html" with parent="Learn" parent_url=dash_url current="Pick a Plant" %}{% endblock %}
+{% block page_title %}Pick a Plant{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">{{ great_count }} of {{ total }} plants are great to plant in {{ gh_location.label }} right now · {{ gh_today|date:"F" }}</p>{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'garden:my_garden' %}" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-sprout"/></svg>My Garden</a>
+{% endblock %}
+
+{% block content %}
+<!-- Growing context (FR-03/04) drives suitability (FR-12) -->
+<div class="stat-card mb-5 flex flex-col gap-4 rounded-2xl bg-forest p-5 text-white sm:flex-row sm:items-center">
+  <span class="orb orb-a bg-[#0f3f22]"></span><span class="orb orb-b bg-[#1f7a43]"></span>
+  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#0f3f22] text-lime-300"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg></span>
+  <div class="flex-1">
+    <p class="text-[15px] font-medium">Suggestions are tailored to your garden</p>
+    <p class="mt-0.5 text-[13px] text-lime-100/75">Badges use your climate zone, this month, and whether a plant suits containers or indoor growing.</p>
+  </div>
+  <ul class="flex flex-wrap gap-1.5 text-[12.5px]">
+    <li class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1"><svg class="ic h-3.5 w-3.5 text-lime-300"><use href="#i-pin"/></svg>{{ gh_location.label }} · Zone {{ gh_location.hardiness_zone }}</li>
+    <li class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1"><svg class="ic h-3.5 w-3.5 text-lime-300"><use href="#i-home"/></svg>{{ gh_user.space_type }}</li>
+    <li class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1"><svg class="ic h-3.5 w-3.5 text-lime-300"><use href="#i-sun"/></svg>{{ gh_user.sunlight_level }}</li>
+    <li class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1"><svg class="ic h-3.5 w-3.5 text-lime-300"><use href="#i-gauge"/></svg>{{ gh_user.experience_level }}</li>
+  </ul>
+</div>
+
+<!-- Filters (FR-10). Plain GET form; plants.js auto-submits on change. -->
+<form id="plantFilters" method="get" action="{% url 'plants:list' %}" class="rounded-2xl bg-white p-4 shadow-card" role="search" aria-label="Filter plants">
+  <div class="grid gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <div>
+      <label for="q" class="sr-only">Search</label>
+      <div class="flex items-center gap-2 rounded-xl border border-line px-3 focus-within:border-leaf focus-within:ring-4 focus-within:ring-leaf/15">
+        <svg class="ic h-4 w-4 text-muted"><use href="#i-search"/></svg>
+        <input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Search basil, tomato, kale…" class="h-10 min-w-0 flex-1 bg-transparent text-[14px] placeholder:text-muted/70 focus:outline-none" />
+      </div>
+    </div>
+    <div>
+      <label for="category" class="sr-only">Category</label>
+      <select id="category" name="category" class="dash-input">
+        <option value="">All categories</option>
+        {% for value, label in categories.items %}<option value="{{ value }}" {% if filters.category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="difficulty" class="sr-only">Difficulty</label>
+      <select id="difficulty" name="difficulty" class="dash-input">
+        <option value="">Any difficulty</option>
+        {% for value, label in difficulties.items %}<option value="{{ value }}" {% if filters.difficulty == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="season" class="sr-only">Planting season</label>
+      <select id="season" name="season" class="dash-input">
+        <option value="">Any season</option>
+        {% for s in seasons %}<option value="{{ s }}" {% if filters.season == s %}selected{% endif %}>Plant in {{ s }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+    <label class="filter-pill"><input type="checkbox" name="suitable" value="1" {% if filters.suitable %}checked{% endif %} /><span><svg class="ic h-3.5 w-3.5"><use href="#i-check-circle"/></svg>Great for me now</span></label>
+    <label class="filter-pill"><input type="checkbox" name="container" value="1" {% if filters.container %}checked{% endif %} /><span><svg class="ic h-3.5 w-3.5"><use href="#i-pot"/></svg>Container-friendly</span></label>
+    <label class="filter-pill"><input type="checkbox" name="indoor" value="1" {% if filters.indoor %}checked{% endif %} /><span><svg class="ic h-3.5 w-3.5"><use href="#i-home"/></svg>Grows indoors</span></label>
+    <noscript><button type="submit" class="rounded-lg bg-ink px-3 py-1.5 text-white">Apply</button></noscript>
+    {% if active_filters %}<a href="{% url 'plants:list' %}" class="ml-auto inline-flex items-center gap-1 font-medium text-forest hover:text-leaf"><svg class="ic h-3.5 w-3.5"><use href="#i-x"/></svg>Clear filters</a>{% endif %}
+  </div>
+</form>
+
+<div class="mb-3 mt-5 flex items-center justify-between">
+  <h2 class="text-[14px] text-muted"><span class="font-semibold text-ink">{{ plants|length }}</span> plant{{ plants|length|pluralize }}{% if active_filters %} match your filters{% endif %}</h2>
+  <span class="hidden text-[12.5px] text-muted sm:inline">Sorted by what suits you best</span>
+</div>
+
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+  {% for plant in plants %}
+    {% url 'plants:detail' plant.slug as detail_url %}
+    <article class="plant-tile flex flex-col overflow-hidden rounded-2xl bg-white shadow-card">
+      <a href="{{ detail_url }}" class="relative flex h-32 items-center justify-center bg-gradient-to-br {{ plant.grad }}">
+        <svg class="ic h-12 w-12 opacity-80"><use href="#{{ plant.icon }}"/></svg>
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium shadow-card {{ plant.suitability.cls }}"><svg class="ic h-3.5 w-3.5"><use href="#{{ plant.suitability.icon }}"/></svg>{{ plant.suitability.label }}</span>
+        {% if plant.in_garden %}<span class="absolute right-3 top-3 rounded-full bg-white/85 px-2 py-0.5 text-[11px] font-medium text-forest">In your garden</span>{% endif %}
+      </a>
+      <div class="flex flex-1 flex-col p-4">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="text-[16px] font-medium"><a href="{{ detail_url }}" class="hover:text-forest">{{ plant.common_name }}</a></h3>
+            <p class="text-[12.5px] italic text-muted">{{ plant.scientific_name }}</p>
+          </div>
+          <span class="shrink-0 rounded-full bg-mist px-2 py-0.5 text-[11px] text-muted ring-1 ring-line">{{ plant.category_label }}</span>
+        </div>
+        <p class="mt-2 text-[12.5px] {% if plant.suitability.level == 'great' %}text-emerald-700{% elif plant.suitability.level == 'care' %}text-amber-700{% else %}text-rose-700{% endif %}">{{ plant.suitability.reason }}</p>
+        <dl class="mt-3 grid grid-cols-3 gap-2 text-[12px]">
+          <div class="rounded-lg bg-mist p-2"><dt class="flex items-center gap-1 text-muted"><svg class="ic h-3 w-3"><use href="#i-sun"/></svg>Sun</dt><dd class="font-medium">{{ plant.sunlight_label }}</dd></div>
+          <div class="rounded-lg bg-mist p-2"><dt class="flex items-center gap-1 text-muted"><svg class="ic h-3 w-3"><use href="#i-drop"/></svg>Water</dt><dd class="font-medium">Every {{ plant.watering_interval_days }}d</dd></div>
+          <div class="rounded-lg bg-mist p-2"><dt class="flex items-center gap-1 text-muted"><svg class="ic h-3 w-3"><use href="#i-basket"/></svg>Harvest</dt><dd class="font-medium">{{ plant.days_to_harvest.0 }}–{{ plant.days_to_harvest.1 }}d</dd></div>
+        </dl>
+        <div class="mt-3 flex flex-wrap gap-1.5 text-[11.5px]">
+          <span class="rounded-full {% if plant.difficulty == 'easy' %}bg-lime-100 text-lime-800{% else %}bg-amber-100 text-amber-800{% endif %} px-2 py-0.5">{{ plant.difficulty_label }}</span>
+          {% if plant.container_friendly %}<span class="rounded-full bg-mist px-2 py-0.5 text-muted ring-1 ring-line">Containers</span>{% endif %}
+          {% if plant.indoor_friendly %}<span class="rounded-full bg-mist px-2 py-0.5 text-muted ring-1 ring-line">Indoors</span>{% endif %}
+          {% if plant.frost_tolerant %}<span class="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700">Frost-hardy</span>{% endif %}
+        </div>
+        <div class="mt-auto flex gap-2 pt-4">
+          <a href="{{ detail_url }}" class="flex-1 rounded-lg border border-line py-2 text-center text-[13.5px] font-medium hover:bg-mist">Details</a>
+          <a href="{{ detail_url }}#start" class="flex-1 rounded-lg bg-forest py-2 text-center text-[13.5px] font-medium text-white hover:bg-forest-900">Start growing</a>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <div class="col-span-full flex flex-col items-center rounded-2xl border border-dashed border-[#cfd8cf] bg-white px-6 py-14 text-center">
+      <span class="grid h-12 w-12 place-items-center rounded-full bg-mist text-forest"><svg class="ic h-6 w-6"><use href="#i-search"/></svg></span>
+      <p class="mt-3 text-[15px] font-medium">No plants match these filters</p>
+      <p class="mt-1 text-[13px] text-muted">Try fewer filters, or ask the tutor what to grow next.</p>
+      <a href="{% url 'plants:list' %}" class="mt-4 rounded-lg bg-ink px-4 py-2 text-[13.5px] font-medium text-white">Clear filters</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block page_js %}<script src="{% static 'js/plants.js' %}"></script>{% endblock %}

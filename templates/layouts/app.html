@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{# Signed-in app shell (Berry-style): header + sidebar + content canvas + mobile bottom nav. #}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  {% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+  {% include "partials/app_header.html" %}
+  {% include "partials/sidebar.html" %}
+
+  <main id="main" class="app-main">
+    <div class="content-canvas min-h-[calc(100vh-72px)] p-4 pb-24 sm:p-5 sm:pb-24 lg:pb-5">
+      {% block page_header %}
+        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            {% block breadcrumb %}{% endblock %}
+            <h1 class="font-display text-[22px] font-semibold tracking-tight">{% block page_title %}{% endblock %}</h1>
+            {% block page_subtitle %}{% endblock %}
+          </div>
+          <div class="flex flex-wrap gap-2">{% block page_actions %}{% endblock %}</div>
+        </div>
+      {% endblock %}
+
+      {% block content %}{% endblock %}
+
+      <footer class="mt-6 flex flex-col items-center justify-between gap-2 pb-2 text-[12.5px] text-muted sm:flex-row">
+        <span>&copy; {{ gh_today|date:"Y" }} Greenhand · Team 4</span>
+        <span>All AI content is clearly labeled.</span>
+      </footer>
+    </div>
+  </main>
+
+  {% block after_main %}{% endblock %}
+  {% include "partials/bottom_nav.html" %}
+  {% block modals %}{% endblock %}
+  {% include "partials/toasts.html" %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/shell.js' %}"></script>
+  {% block page_js %}{% endblock %}
+{% endblock %}

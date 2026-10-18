@@ -1,0 +1,137 @@
+/* Greenhand landing page — custom styles that sit on top of Tailwind utilities. */
+
+:root {
+  --gh-ink: #0b1a10;
+  --gh-line: #e4e9e4;
+  --gh-forest: #14532d;
+  --gh-leaf: #16a34a;
+  --gh-lime: #bef264;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Framed sections (Navattic-style grid lines + corner squares) ---------- */
+.frame {
+  position: relative;
+  border-left: 1px solid var(--gh-line);
+  border-right: 1px solid var(--gh-line);
+}
+.frame-top { border-top: 1px solid var(--gh-line); }
+.frame-bottom { border-bottom: 1px solid var(--gh-line); }
+
+.corner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 1px solid #cfd8cf;
+  border-radius: 2px;
+  z-index: 2;
+}
+.corner.tl { top: -5px; left: -5px; }
+.corner.tr { top: -5px; right: -5px; }
+.corner.bl { bottom: -5px; left: -5px; }
+.corner.br { bottom: -5px; right: -5px; }
+
+/* Faint dotted background used behind the hero */
+.dot-grid {
+  background-image: radial-gradient(circle, #d6ded6 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Soft green "demo canvas" gradient, echoing the Navattic hero panel */
+.canvas-gradient {
+  background:
+    radial-gradient(120% 90% at 0% 0%, #d9f99d 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 0%, #a7f3d0 0%, transparent 60%),
+    radial-gradient(110% 90% at 50% 100%, #bbf7d0 0%, transparent 60%),
+    #ecfdf5;
+}
+
+.cta-gradient {
+  background:
+    radial-gradient(70% 90% at 0% 100%, rgba(16, 185, 129, 0.28) 0%, transparent 65%),
+    radial-gradient(60% 80% at 100% 0%, rgba(56, 189, 248, 0.18) 0%, transparent 60%),
+    #0b2416;
+}
+
+.announce-gradient {
+  background: linear-gradient(90deg, #ecfccb 0%, #d1fae5 50%, #ecfccb 100%);
+}
+
+/* ---------- Hero product tabs ---------- */
+.tab-btn[aria-selected="true"] {
+  background: #fff;
+  color: var(--gh-ink);
+  box-shadow: 0 1px 2px rgba(11, 26, 16, 0.08), 0 0 0 1px rgba(11, 26, 16, 0.08);
+}
+.tab-btn[aria-selected="true"] .tab-icon { opacity: 1; filter: none; }
+.tab-btn .tab-icon { opacity: 0.55; filter: grayscale(1); transition: opacity .2s, filter .2s; }
+
+.tab-panel { animation: panelIn .35s ease both; }
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- Marquees ---------- */
+.marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-track.slow { animation-duration: 60s; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Typing dots in the tutor mock */
+.typing span {
+  display: inline-block; width: 6px; height: 6px; margin: 0 1px;
+  border-radius: 999px; background: #16a34a;
+  animation: blink 1.2s infinite ease-in-out;
+}
+.typing span:nth-child(2) { animation-delay: .15s; }
+.typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+/* ---------- FAQ ---------- */
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] .faq-plus { transform: rotate(45deg); }
+.faq-plus { transition: transform .2s ease; }
+
+/* Accessible focus ring */
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--gh-leaf);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track, .typing span, .tab-panel { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Inline SVG sprite icons (<svg class="ic"><use href="#i-..."/></svg>) */
+.ic {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}

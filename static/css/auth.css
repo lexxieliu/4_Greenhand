@@ -1,0 +1,124 @@
+/* Greenhand auth pages (login / register) — builds on styles.css. */
+
+/* Full-height framed shell */
+.auth-shell {
+  min-height: calc(100vh - 4rem);
+}
+
+/* ---------- Form fields ---------- */
+.field-input {
+  width: 100%;
+  height: 2.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--gh-line);
+  background: #fff;
+  padding: 0 0.875rem;
+  font-size: 15px;
+  color: var(--gh-ink);
+  box-shadow: 0 1px 2px rgba(11, 26, 16, 0.04);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.field-input::placeholder { color: #9aa79e; }
+.field-input:hover { border-color: #cfd8cf; }
+.field-input:focus {
+  outline: none;
+  border-color: var(--gh-leaf);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.14);
+}
+.field-input.has-icon { padding-left: 2.5rem; }
+.field-input.has-action { padding-right: 2.75rem; }
+
+.field-input[aria-invalid="true"] {
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.12);
+}
+
+/* Keep Chrome autofill on-brand */
+.field-input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #f7fdf9 inset;
+  -webkit-text-fill-color: var(--gh-ink);
+}
+
+.field-error { display: none; }
+.field-error.is-shown { display: flex; animation: errIn .18s ease both; }
+@keyframes errIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+/* Custom checkbox */
+.check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  border: 1px solid #c9d3cb;
+  border-radius: 0.3rem;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.check::after {
+  content: "";
+  width: 0.55rem;
+  height: 0.3rem;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+  opacity: 0;
+}
+.check:checked { background: var(--gh-forest); border-color: var(--gh-forest); }
+.check:checked::after { opacity: 1; }
+.check:focus-visible { outline: 2px solid var(--gh-leaf); outline-offset: 2px; }
+.check[aria-invalid="true"] { border-color: #f43f5e; }
+
+/* ---------- Password strength ---------- */
+.strength-bar span { transition: background-color .25s ease; }
+.req[data-met="true"] { color: var(--gh-forest); }
+.req[data-met="true"] .req-dot { background: var(--gh-leaf); border-color: var(--gh-leaf); }
+.req[data-met="true"] .req-dot::after { opacity: 1; }
+.req-dot {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  border: 1px solid #c9d3cb;
+  transition: background .2s, border-color .2s;
+}
+.req-dot::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 0.35rem;
+  height: 0.2rem;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg);
+  opacity: 0;
+}
+
+/* ---------- Submit button loading state ---------- */
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+button[data-loading="true"] { pointer-events: none; opacity: .85; }
+
+/* Gentle float for the showcase cards */
+.float-slow { animation: floatY 6s ease-in-out infinite; }
+.float-slow.delay { animation-delay: -3s; }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-slow, .btn-spinner, .field-error.is-shown { animation: none; }
+}

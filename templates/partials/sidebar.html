@@ -1,0 +1,83 @@
+{# Sidebar navigation. `nav` ("namespace:url_name") comes from apps.core.context_processors.app_shell. #}
+<div class="drawer-backdrop fixed inset-0 z-[55] bg-ink/40 lg:hidden" data-close-drawer></div>
+<aside id="sidebar" class="sidebar scroll-thin fixed bottom-0 left-0 flex flex-col overflow-y-auto bg-white px-4 pb-5" aria-label="Sidebar">
+  <!-- Drawer header (mobile only) -->
+  <div class="flex h-[72px] shrink-0 items-center justify-between lg:hidden">
+    <span class="flex items-center gap-2">
+      <span class="grid h-8 w-8 place-items-center rounded-lg bg-forest text-lime-300"><svg class="ic h-[18px] w-[18px]"><use href="#i-sprout"/></svg></span>
+      <span class="font-display text-[21px] font-semibold tracking-tight">greenhand</span>
+    </span>
+    <button type="button" class="grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-mist" data-close-drawer aria-label="Close menu"><svg class="ic h-5 w-5"><use href="#i-x"/></svg></button>
+  </div>
+
+  <nav aria-label="Primary" class="shrink-0 text-[14px] text-ink/80">
+    <div class="border-b border-line pb-3 pt-1">
+      <p class="px-3 pb-2 pt-2 text-[13.5px] font-semibold text-ink">Garden</p>
+      <ul class="space-y-0.5">
+        <li><a href="{% url 'garden:dashboard' %}" {% if nav == 'garden:dashboard' %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-grid"/></svg>Dashboard</a></li>
+        <li class="has-sub {% if nav == 'garden:my_garden' %}is-open{% endif %}">
+          <button type="button" class="sub-toggle side-link {% if nav == 'garden:my_garden' %}is-section{% endif %} flex w-full items-center gap-3 rounded-xl px-3 py-2.5" aria-expanded="{% if nav == 'garden:my_garden' %}true{% else %}false{% endif %}" aria-controls="sub-garden">
+            <svg class="ic h-[18px] w-[18px] {% if nav == 'garden:my_garden' %}text-forest{% else %}text-muted{% endif %}"><use href="#i-sprout"/></svg>My Garden
+            <svg class="ic sub-chevron ml-auto h-4 w-4 text-muted"><use href="#i-chev-down"/></svg>
+          </button>
+          <div class="submenu" id="sub-garden">
+            <ul class="ml-[22px] space-y-0.5 border-l border-line pl-3 text-[13.5px]">
+              {% url 'garden:my_garden' as my_garden_url %}
+              <li><a href="{{ my_garden_url }}" {% if nav == 'garden:my_garden' %}aria-current="page"{% endif %} class="side-link block rounded-lg px-3 py-2">All plants</a></li>
+              <li><a href="{{ my_garden_url }}#tab=timeline" class="side-link block rounded-lg px-3 py-2">Timeline</a></li>
+              <li><a href="{{ my_garden_url }}#tab=care" class="side-link block rounded-lg px-3 py-2">Care log</a></li>
+              <li><a href="{{ my_garden_url }}#tab=problems" class="side-link block rounded-lg px-3 py-2">Problems</a></li>
+              <li><a href="{{ my_garden_url }}#tab=harvests" class="side-link block rounded-lg px-3 py-2">Harvests</a></li>
+              <li><a href="{{ my_garden_url }}#tab=reminders" class="side-link block rounded-lg px-3 py-2">Reminders</a></li>
+            </ul>
+          </div>
+        </li>
+        <li><a href="{% url 'garden:my_garden' %}#tab=calendar" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-calendar"/></svg>Calendar</a></li>
+      </ul>
+    </div>
+
+    <div class="border-b border-line py-3">
+      <p class="px-3 pt-1 text-[13.5px] font-semibold text-ink">Learn</p>
+      <p class="px-3 pb-2 text-[11.5px] text-muted">AI tutor &amp; plant database</p>
+      <ul class="space-y-0.5">
+        <li><a href="{% url 'garden:dashboard' %}#tutor" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-sparkles"/></svg>AI Tutor<span class="ml-auto rounded-md bg-forest px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-lime-300">AI</span></a></li>
+        <li><a href="{% url 'plants:list' %}" {% if 'plants:' in nav %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-search"/></svg>Pick a Plant</a></li>
+        <li><a href="{% url 'weather:index' %}" {% if nav == 'weather:index' %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-cloud"/></svg>Weather</a></li>
+      </ul>
+    </div>
+
+    <div class="border-b border-line py-3">
+      <p class="px-3 pb-2 pt-1 text-[13.5px] font-semibold text-ink">Community</p>
+      <ul class="space-y-0.5">
+        <li><a href="{% url 'community:feed' %}" {% if 'community:' in nav %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-post"/></svg>Posts</a></li>
+        <li><a href="#" data-open-notifications class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-bell"/></svg>Notifications{% if gh_unread %}<span id="sideBadge" class="ml-auto grid h-5 min-w-[20px] place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{{ gh_unread }}</span>{% endif %}</a></li>
+      </ul>
+    </div>
+
+    <ul class="space-y-0.5 py-3">
+      <li><a href="#" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-user"/></svg>Profile</a></li>
+      <li>
+        <form method="post" action="{% url 'userprofile:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="side-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-logout"/></svg>Sign out</button>
+        </form>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Tutor usage (PRD 6.6: 50 tutor messages/user/day) -->
+  <div class="relative mt-auto shrink-0 overflow-hidden rounded-2xl bg-leaf-soft p-4">
+    <span class="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-lime-200/80"></span>
+    <span class="pointer-events-none absolute -right-2 -top-16 h-32 w-32 rounded-full bg-emerald-200/60"></span>
+    <div class="relative flex items-center gap-3">
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-white text-forest shadow-card"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg></span>
+      <div>
+        <div class="text-[14px] font-medium text-forest">Tutor messages</div>
+        <div class="text-[12px] text-forest/70"><span id="tutorUsed">{{ gh_tutor.used }}</span> of {{ gh_tutor.limit }} used today</div>
+      </div>
+    </div>
+    <div class="relative mt-4 flex items-center justify-between text-[12px] text-forest"><span>Daily limit</span><span id="tutorPct">{{ gh_tutor.pct }}%</span></div>
+    <div class="relative mt-1.5 h-1.5 overflow-hidden rounded-full bg-white"><span id="tutorBar" class="block h-full rounded-full bg-forest" style="width:{{ gh_tutor.pct }}%"></span></div>
+  </div>
+  <span class="mx-auto mt-4 rounded-full bg-mist px-2.5 py-1 text-[11px] text-muted ring-1 ring-line">MVP v1.0</span>
+</aside>

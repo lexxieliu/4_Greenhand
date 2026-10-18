@@ -1,0 +1,413 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+
+{% block title %}Dashboard — Greenhand{% endblock %}
+{% block description %}Your Greenhand garden dashboard: plants, today's tasks, weather alerts, and tips from your AI tutor.{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">{{ gh_today|date:"l, F j" }} · {{ gh_location.label }} · Zone {{ gh_location.hardiness_zone }}</p>{% endblock %}
+{% block page_actions %}
+  <button type="button" data-open-log class="inline-flex h-10 items-center gap-2 rounded-lg bg-forest px-4 text-[14px] font-medium text-white shadow-sm hover:bg-forest-900">
+    <svg class="ic h-4 w-4"><use href="#i-plus"/></svg>Log care
+  </button>
+  <a href="{% url 'garden:my_garden' %}#tab=timeline" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist">
+    <svg class="ic h-4 w-4"><use href="#i-camera"/></svg>Add photo
+  </a>
+{% endblock %}
+
+{% block content %}
+{% url 'garden:my_garden' as my_garden_url %}
+
+<!-- ===== Row 1: stat cards ===== -->
+<div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
+
+  <!-- Harvested (North Star metric) -->
+  <section class="stat-card rounded-2xl bg-forest p-5 text-white xl:col-span-4" aria-labelledby="harvest-label">
+    <span class="orb orb-a bg-[#0f3f22]"></span><span class="orb orb-b bg-[#1f7a43]"></span>
+    <div class="flex items-start justify-between">
+      <span class="grid h-11 w-11 place-items-center rounded-xl bg-[#0f3f22] text-lime-300"><svg class="ic h-5 w-5"><use href="#i-basket"/></svg></span>
+      <div class="relative" data-popover>
+        <button class="grid h-8 w-8 place-items-center rounded-lg bg-[#1f7a43] text-lime-200 hover:bg-[#25904f]" data-popover-trigger aria-expanded="false" aria-controls="harvestMenu" aria-label="Harvest options">
+          <svg class="ic h-4 w-4"><use href="#i-more"/></svg>
+        </button>
+        <div id="harvestMenu" class="popover absolute right-0 top-full z-10 mt-2 hidden w-48 rounded-xl bg-white p-1.5 text-[13.5px] text-ink shadow-float" role="menu">
+          <a href="{{ my_garden_url }}#tab=harvests" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-basket"/></svg>Log a harvest</a>
+          <a href="{% url 'community:feed' %}?type=harvest" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-post"/></svg>Harvest posts</a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-7 flex items-center gap-2">
+      <span class="font-display text-[34px] font-semibold leading-none tracking-tight">{{ stats.harvest_grams }}&nbsp;g</span>
+      <span class="grid h-7 w-7 place-items-center rounded-full bg-white/15 text-lime-200"><svg class="ic h-4 w-4"><use href="#i-arrow-up-right"/></svg></span>
+    </div>
+    <p id="harvest-label" class="mt-2 text-[14px] font-medium text-lime-100/80">Harvested this season · {{ stats.harvest_count }} harvest{{ stats.harvest_count|pluralize }}</p>
+  </section>
+
+  <!-- Care actions with period toggle + sparkline (filled by dashboard.js) -->
+  <section class="stat-card rounded-2xl bg-[#15803d] p-5 text-white xl:col-span-4" aria-labelledby="care-label">
+    <span class="orb orb-a bg-[#166534]"></span><span class="orb orb-b bg-[#22c55e]"></span>
+    <div class="flex items-start justify-between">
+      <span class="grid h-11 w-11 place-items-center rounded-xl bg-[#166534] text-lime-200"><svg class="ic h-5 w-5"><use href="#i-drop"/></svg></span>
+      <div class="seg-toggle flex gap-1 rounded-lg text-[12.5px] font-medium text-white" role="group" aria-label="Period">
+        <button type="button" class="rounded-md px-3 py-1.5" data-period="week" aria-pressed="true">7 days</button>
+        <button type="button" class="rounded-md px-3 py-1.5" data-period="season" aria-pressed="false">12 weeks</button>
+      </div>
+    </div>
+    <div class="mt-5 flex items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span id="careTotal" class="font-display text-[34px] font-semibold leading-none tracking-tight">&mdash;</span>
+          <span class="grid h-7 w-7 place-items-center rounded-full bg-white/15 text-lime-100"><svg class="ic h-4 w-4"><use href="#i-arrow-up-right"/></svg></span>
+        </div>
+        <p id="care-label" class="mt-2 text-[14px] font-medium text-lime-50/80">Care actions logged</p>
+      </div>
+      <svg id="careSpark" class="h-14 w-36 shrink-0 overflow-visible" viewBox="0 0 144 56" role="img" aria-label="Care actions trend"></svg>
+    </div>
+  </section>
+
+  <div class="grid gap-5 md:col-span-2 md:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
+    <a href="{% url 'weather:index' %}" class="stat-card is-small flex items-center gap-4 rounded-2xl bg-[#0d1f14] p-5 text-emerald-50">
+      <span class="orb orb-a bg-[#173523]"></span><span class="orb orb-b bg-[#1f4a2f]"></span>
+      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 text-sky-300"><svg class="ic h-5 w-5"><use href="#{{ weather.current.icon }}"/></svg></span>
+      <span>
+        <span class="block text-[17px] font-semibold">{{ weather.current.temp_c }}&deg;C · {{ weather.current.condition }}</span>
+        <span class="block text-[13px] text-emerald-50/65">{{ weather.current.rain_last_24h_mm }} mm today{% if alerts.frost %} · frost risk Thu{% endif %}</span>
+      </span>
+    </a>
+    <a href="{{ my_garden_url }}#tab=problems" class="stat-card is-small flex items-center gap-4 rounded-2xl bg-white p-5 shadow-card">
+      <span class="orb orb-a bg-amber-50"></span><span class="orb orb-b bg-amber-100/70"></span>
+      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700"><svg class="ic h-5 w-5"><use href="#i-alert"/></svg></span>
+      <span>
+        <span class="block text-[17px] font-semibold">{{ stats.open_problems }} open problem{{ stats.open_problems|pluralize }}</span>
+        <span class="block text-[13px] text-muted">{% if stats.open_problems %}Balcony Basil · monitoring{% else %}All plants healthy{% endif %}</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<!-- ===== Row 2: care chart + plant list ===== -->
+<div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-12">
+  <section class="min-w-0 rounded-2xl bg-white p-5 shadow-card xl:col-span-8" aria-labelledby="chart-title">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 id="chart-title" class="text-[13.5px] text-muted">Care activity</h2>
+        <p class="mt-1 font-display text-[22px] font-semibold tracking-tight"><span id="chartTotal">0</span> actions</p>
+      </div>
+      <label class="sr-only" for="chartRange">Chart range</label>
+      <select id="chartRange" class="dash-input !h-10 !w-auto pr-8 text-[14px]">
+        <option value="weeks">Last 12 weeks</option>
+        <option value="days">Last 14 days</option>
+      </select>
+    </div>
+    <div class="relative mt-6" id="careChart">
+      <div class="absolute inset-x-0 top-0" aria-hidden="true" id="chartGrid"></div>
+      <div class="relative ml-8 flex h-[320px] items-end gap-2 sm:gap-3" id="chartBars" role="list" aria-label="Care actions per period"></div>
+      <div class="ml-8 mt-2 flex gap-2 text-center text-[11.5px] text-muted sm:gap-3" id="chartLabels" aria-hidden="true"></div>
+      <div id="chartTip" class="chart-tip absolute z-10 min-w-[150px] rounded-xl bg-ink px-3 py-2.5 text-[12px] text-white opacity-0 shadow-float"></div>
+    </div>
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+      <ul class="flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-muted" id="chartLegend"></ul>
+      <button type="button" id="tableToggle" class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-forest hover:bg-mist" aria-expanded="false" aria-controls="chartTable">
+        <svg class="ic h-3.5 w-3.5"><use href="#i-table"/></svg><span>View as table</span>
+      </button>
+    </div>
+    <div id="chartTable" class="scroll-thin mt-3 hidden overflow-x-auto rounded-xl border border-line"></div>
+  </section>
+
+  <section id="plants" class="min-w-0 scroll-mt-24 rounded-2xl bg-white p-5 shadow-card xl:col-span-4" aria-labelledby="plants-title">
+    <div class="flex items-center justify-between">
+      <h2 id="plants-title" class="font-display text-[17px] font-semibold tracking-tight">My plants</h2>
+      <div class="flex gap-1 rounded-lg bg-mist p-0.5 text-[12px] ring-1 ring-line" role="group" aria-label="Filter plants">
+        <button type="button" class="chip rounded-md px-2.5 py-1" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="chip rounded-md px-2.5 py-1" data-filter="attention" aria-pressed="false">Needs care</button>
+      </div>
+    </div>
+
+    <a href="{{ my_garden_url }}#plant={{ featured.id }}" class="mt-4 block overflow-hidden rounded-xl bg-leaf-soft">
+      <div class="flex items-start justify-between p-4 pb-0">
+        <div>
+          <div class="text-[14px] font-medium text-forest">{{ featured.nickname }}</div>
+          <div class="text-[12px] text-forest/70">Day {{ featured.day }} · {{ featured.status|capfirst }} · height</div>
+        </div>
+        <div class="text-right">
+          <div id="heightValue" class="font-display text-[18px] font-semibold text-forest"></div>
+          <div id="heightDate" class="text-[11.5px] text-forest/70"></div>
+        </div>
+      </div>
+      <svg id="heightChart" class="mt-2 block h-[96px] w-full" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-label="{{ featured.nickname }} height over time"></svg>
+    </a>
+
+    <ul id="plantList" class="mt-2 divide-y divide-line">
+      {% for row in plant_rows %}
+        <li class="plant-row relative flex items-center gap-3 rounded-lg py-3 hover:bg-mist/70" data-name="{{ row.search }}" data-attention="{{ row.attention|yesno:'true,false' }}" data-href="{{ my_garden_url }}#plant={{ row.id }}">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br {{ row.grad }}"><svg class="ic h-5 w-5"><use href="#{{ row.icon }}"/></svg></span>
+          <div class="min-w-0 flex-1"><div class="truncate text-[14px] font-medium">{{ row.nickname }}</div><div class="truncate text-[12px] {{ row.sub_cls }}">{{ row.sub }}</div></div>
+          <div class="text-right text-[13px] font-medium">{{ row.value }}</div>
+          <span class="grid h-6 w-6 place-items-center rounded-md {{ row.badge.cls }}" title="{{ row.badge.title }}"><svg class="ic h-3.5 w-3.5"><use href="#{{ row.badge.icon }}"/></svg></span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p id="plantEmpty" class="hidden py-6 text-center text-[13.5px] text-muted">No plants match.</p>
+    <a href="{{ my_garden_url }}" class="mt-2 flex items-center justify-center gap-1 rounded-lg py-2 text-[13.5px] font-medium text-forest hover:bg-mist">View all plants <svg class="ic h-4 w-4"><use href="#i-chev-right"/></svg></a>
+  </section>
+</div>
+
+<!-- ===== Row 3: today + weather/community ===== -->
+<div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-12">
+  <section class="min-w-0 rounded-2xl bg-white shadow-card xl:col-span-8" aria-labelledby="tasks-title">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+      <div>
+        <h2 id="tasks-title" class="font-display text-[17px] font-semibold tracking-tight">Today</h2>
+        <p class="text-[13px] text-muted">Reminders adjusted for today&rsquo;s weather</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-[13px] text-muted"><span id="tasksDone" class="font-semibold text-ink">0</span>/<span id="tasksTotal">{{ tasks|length }}</span> <span id="tasksHint">done</span></span>
+        <div class="progress w-28"><span id="tasksBar" style="width:0%"></span></div>
+      </div>
+    </div>
+
+    <div class="space-y-3 px-5 pt-4">
+      {% with frost=alerts.frost %}{% if frost %}
+      <article class="alert is-open rounded-xl border border-indigo-200 bg-indigo-50/60" id="frostAlert">
+        <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-indigo-700 ring-1 ring-indigo-200"><svg class="ic h-5 w-5"><use href="#{{ frost.icon }}"/></svg></span>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-[14.5px] font-medium text-indigo-950">{{ frost.title }}</h3>
+            <p class="text-[13px] text-indigo-900/75">{{ frost.message }} Affects {{ frost.plants|join:", " }}.</p>
+          </div>
+          <button type="button" class="alert-toggle inline-flex items-center gap-1 self-start rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-[13px] font-medium text-indigo-900 sm:self-center" aria-expanded="true" aria-controls="frostActions">
+            What to do <svg class="ic alert-chevron h-3.5 w-3.5"><use href="#i-chev-down"/></svg>
+          </button>
+        </div>
+        <div class="alert-actions" id="frostActions">
+          <div>
+            <ul class="space-y-2 border-t border-indigo-200/70 px-4 pb-3 pt-3 text-[13.5px] text-indigo-950">
+              {% for action in frost.actions %}
+                <li><label class="flex cursor-pointer items-center gap-2.5"><input type="checkbox" class="frost-step h-4 w-4 accent-[#14532d]" />{{ action }}</label></li>
+              {% endfor %}
+            </ul>
+            <div class="flex items-center justify-between px-4 pb-4 text-[12.5px] text-indigo-900/70">
+              <span><span id="frostCount">0</span> of {{ frost.actions|length }} steps done</span>
+              <button type="button" id="frostDone" class="rounded-lg bg-indigo-900 px-3 py-1.5 font-medium text-white hover:bg-indigo-950">Mark done</button>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% endif %}{% endwith %}
+
+      {% with rain=alerts.rain_skip %}{% if rain %}
+      <article class="alert flex flex-col gap-3 rounded-xl border border-sky-200 bg-sky-50/60 p-4 sm:flex-row sm:items-center" id="rainAlert">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200"><svg class="ic h-5 w-5"><use href="#{{ rain.icon }}"/></svg></span>
+        <div class="min-w-0 flex-1">
+          <h3 class="text-[14.5px] font-medium text-sky-950">{{ rain.title }}</h3>
+          <p class="text-[13px] text-sky-900/75">{{ rain.message }}</p>
+        </div>
+        <div class="flex gap-2 self-start sm:self-center">
+          <button type="button" id="rainOverride" class="rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-[13px] font-medium text-sky-900 hover:bg-sky-50">Water anyway</button>
+          <button type="button" id="rainAck" class="rounded-lg bg-sky-900 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-sky-950">Got it</button>
+        </div>
+      </article>
+      {% endif %}{% endwith %}
+    </div>
+
+    <ul id="taskList" class="mt-2 divide-y divide-line">
+      {% for task in tasks %}
+        <li class="task {% if task.done %}is-done{% endif %} flex items-center gap-3 px-5 py-3.5" data-task="{{ task.id }}" data-plant="{{ task.plant }}" {% if task.skipped %}data-skipped="{{ task.skipped }}"{% endif %} {% if task.care %}data-care="{{ task.care }}"{% endif %}>
+          <button type="button" class="task-check grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#c9d3cb]" aria-label="Mark “{{ task.title }}” as {% if task.done %}not done{% else %}done{% endif %}"><svg class="ic h-3.5 w-3.5"><use href="#i-check"/></svg></button>
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ task.tint }}"><svg class="ic h-4 w-4"><use href="#{{ task.icon }}"/></svg></span>
+          <div class="min-w-0 flex-1">
+            <div class="task-title text-[14.5px] font-medium">{{ task.title }}</div>
+            <div class="text-[12.5px] text-muted">{{ task.detail }}</div>
+          </div>
+          {% if task.skipped == "rain" %}
+            <span class="task-badge inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11.5px] font-medium text-sky-800"><svg class="ic h-3 w-3"><use href="#i-rain"/></svg>Skipped &mdash; rain</span>
+          {% elif task.badge %}
+            <span class="hidden rounded-full px-2 py-0.5 text-[11.5px] sm:inline {{ task.badge.cls }}">{{ task.badge.text }}</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <div class="min-w-0 space-y-5 xl:col-span-4">
+    <section id="weather" aria-labelledby="weather-title" class="scroll-mt-24 overflow-hidden rounded-2xl bg-white shadow-card">
+      <div class="canvas-gradient p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 id="weather-title" class="text-[13px] font-medium text-forest/80">Weather · {{ weather.location }}</h2>
+            <div class="mt-1 font-display text-[44px] font-semibold leading-none tracking-tight">{{ weather.current.temp_c }}&deg;</div>
+            <div class="mt-1.5 text-[13px] text-forest/80">{{ weather.current.condition }} · H {{ weather.current.high }}&deg; L {{ weather.current.low }}&deg;</div>
+          </div>
+          <span class="grid h-14 w-14 place-items-center rounded-2xl bg-white/70 text-sky-700 shadow-card"><svg class="ic h-7 w-7"><use href="#{{ weather.current.icon }}"/></svg></span>
+        </div>
+        <dl class="mt-4 grid grid-cols-3 gap-2 text-[12px]">
+          <div class="rounded-lg bg-white/70 p-2"><dt class="text-muted">Rain 24h</dt><dd class="font-medium">{{ weather.current.rain_last_24h_mm }} mm</dd></div>
+          <div class="rounded-lg bg-white/70 p-2"><dt class="text-muted">Next 12h</dt><dd class="font-medium">{{ weather.current.precip_prob_next_12h }}%</dd></div>
+          <div class="rounded-lg bg-white/70 p-2"><dt class="text-muted">Low 48h</dt><dd class="font-medium text-indigo-700">{{ weather.current.min_temp_next_48h_c }}&deg;C</dd></div>
+        </dl>
+      </div>
+      <ol class="grid grid-cols-7 gap-1 p-3 text-center text-[11.5px]" aria-label="7-day forecast">
+        {% for d in weather.daily %}
+          <li class="rounded-lg py-2 {% if d.frost %}bg-indigo-50 ring-1 ring-indigo-200{% elif forloop.first %}bg-mist ring-1 ring-line{% endif %}">
+            <div class="{% if d.frost %}text-indigo-800{% elif forloop.first %}font-medium{% else %}text-muted{% endif %}">{{ d.day_short }}</div>
+            <svg class="ic mx-auto my-1.5 h-4 w-4 {% if d.icon == 'i-rain' %}text-sky-600{% elif d.icon == 'i-snow' %}text-indigo-600{% elif d.icon == 'i-sun' %}text-amber-500{% else %}text-slate-500{% endif %}"><use href="#{{ d.icon }}"/></svg>
+            <div class="font-medium">{{ d.high }}&deg;</div><div class="{% if d.frost %}font-medium text-indigo-700{% else %}text-muted{% endif %}">{{ d.low }}&deg;</div>
+          </li>
+        {% endfor %}
+      </ol>
+      <a href="{% url 'weather:index' %}" class="flex items-center justify-between border-t border-line px-4 py-2.5 text-[12px] text-muted hover:text-forest">
+        <span>Updated {{ weather.updated }} · checked every 3 hours</span><span class="inline-flex items-center gap-0.5 font-medium text-forest">Details<svg class="ic h-3.5 w-3.5"><use href="#i-chev-right"/></svg></span>
+      </a>
+    </section>
+
+    <section aria-labelledby="community-title" class="rounded-2xl bg-white shadow-card">
+      <div class="flex items-center justify-between border-b border-line px-5 py-4">
+        <h2 id="community-title" class="font-display text-[17px] font-semibold tracking-tight">Growers like you</h2>
+        <a href="{% url 'community:feed' %}?feed=same" class="text-[13px] font-medium text-forest hover:text-leaf">Posts</a>
+      </div>
+      <ul class="divide-y divide-line">
+        {% for post in community %}
+          <li class="px-5 py-4">
+            <div class="flex items-center gap-2 text-[12.5px]">
+              <span class="grid h-6 w-6 place-items-center rounded-full bg-gradient-to-br {{ post.author_info.grad }} text-[10px] font-semibold">{{ post.author_info.initials }}</span>
+              <span class="font-medium">{{ post.author }}</span><span class="text-muted">· {{ post.plant_name }}</span>
+              <span class="ml-auto rounded-full px-2 py-0.5 text-[10.5px] {{ post.type_info.cls }}">{{ post.type_info.label }}</span>
+            </div>
+            <a href="{% url 'community:feed' %}#post-{{ post.id }}" class="mt-2 block text-[13.5px] hover:text-forest">{{ post.body|truncatechars:120 }}</a>
+            <div class="mt-2 flex gap-3 text-[12px] text-muted"><span>{{ post.comments|length }} comment{{ post.comments|length|pluralize }}</span><span>{{ post.likes }} like{{ post.likes|pluralize }}</span></div>
+          </li>
+        {% empty %}
+          <li class="px-5 py-6 text-center text-[13px] text-muted">No posts about your plants yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+
+<!-- ===== Row 4: tutor, calendar, activity ===== -->
+<div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
+  <section id="tutor" aria-labelledby="tutor-title" class="min-w-0 scroll-mt-24 overflow-hidden rounded-2xl bg-[#0d1f14] text-emerald-50 md:col-span-2 xl:col-span-4">
+    <div class="p-5">
+      <div class="flex items-center justify-between">
+        <h2 id="tutor-title" class="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-lime-300"><svg class="ic h-4 w-4"><use href="#i-sparkles"/></svg>This week in your garden</h2>
+        <span class="rounded bg-white/10 px-1.5 py-px text-[10px] uppercase tracking-wide text-emerald-50/70">AI</span>
+      </div>
+      <ul class="mt-4 space-y-3 text-[13.5px] leading-relaxed text-emerald-50/85">
+        {% for tip in tips %}<li class="flex gap-2.5"><span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-lime-300"></span>{{ tip }}</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="border-t border-white/10 bg-white/[0.03] p-4">
+      <div id="chatLog" class="scroll-thin max-h-72 space-y-3 overflow-y-auto" aria-live="polite"></div>
+      <div id="chatChips" class="flex flex-wrap gap-1.5">
+        <button type="button" class="chat-chip rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] text-emerald-50 hover:bg-white/15">Should I water today?</button>
+        <button type="button" class="chat-chip rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] text-emerald-50 hover:bg-white/15">How do I protect my tomato from frost?</button>
+        <button type="button" class="chat-chip rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] text-emerald-50 hover:bg-white/15">When can I harvest?</button>
+      </div>
+      {# Real endpoint: POST /api/tutor/sessions/{id}/messages/ (PRD 6.5), streamed via SSE #}
+      <form id="chatForm" class="mt-3 flex items-center gap-2 rounded-xl bg-white/[0.06] p-1.5 ring-1 ring-white/10 focus-within:ring-lime-300/60">
+        <label for="chatInput" class="sr-only">Ask your tutor</label>
+        <input id="chatInput" type="text" autocomplete="off" placeholder="Ask about your garden…" class="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-white placeholder:text-emerald-50/40 focus:outline-none" />
+        <button type="submit" class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-lime-300 text-forest-900 hover:bg-lime-200" aria-label="Send question"><svg class="ic h-4 w-4"><use href="#i-send"/></svg></button>
+      </form>
+      <p class="mt-2 text-[11px] text-emerald-50/45">Answers use your plants, recent logs, and local forecast.</p>
+    </div>
+  </section>
+
+  <section id="calendar" aria-labelledby="cal-title" class="min-w-0 scroll-mt-24 rounded-2xl bg-white p-5 shadow-card xl:col-span-4">
+    <div class="flex items-center justify-between">
+      <h2 id="cal-title" class="font-display text-[17px] font-semibold tracking-tight"><span id="calMonth">{{ gh_today|date:"F Y" }}</span></h2>
+      <div class="flex gap-1">
+        <button type="button" id="calPrev" class="grid h-8 w-8 place-items-center rounded-lg bg-mist hover:bg-leaf-soft" aria-label="Previous month"><svg class="ic h-4 w-4"><use href="#i-chev-left"/></svg></button>
+        <button type="button" id="calNext" class="grid h-8 w-8 place-items-center rounded-lg bg-mist hover:bg-leaf-soft" aria-label="Next month"><svg class="ic h-4 w-4"><use href="#i-chev-right"/></svg></button>
+      </div>
+    </div>
+    <div class="mt-4 grid grid-cols-7 text-center text-[11px] font-medium uppercase tracking-wide text-muted" aria-hidden="true">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div id="calGrid" class="mt-1 grid grid-cols-7 gap-0.5" role="grid" aria-labelledby="cal-title"></div>
+    <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11.5px] text-muted">
+      <span class="flex items-center gap-1"><i class="block h-2 w-2 rounded-full bg-sky-500"></i>Watering</span>
+      <span class="flex items-center gap-1"><i class="block h-2 w-2 rounded-full bg-lime-500"></i>Growth</span>
+      <span class="flex items-center gap-1"><i class="block h-2 w-2 rounded-full bg-amber-500"></i>Harvest</span>
+      <span class="flex items-center gap-1"><i class="block h-2 w-2 rounded-full bg-indigo-500"></i>Weather</span>
+      <span class="flex items-center gap-1"><i class="block h-2 w-2 rounded-full bg-rose-500"></i>Problem</span>
+    </div>
+    <div class="mt-4 border-t border-line pt-4">
+      <h3 id="calDayTitle" class="text-[13px] font-medium">Today</h3>
+      <ul id="calDayEvents" class="mt-2 space-y-2 text-[13px]"></ul>
+    </div>
+  </section>
+
+  <section id="activity" aria-labelledby="activity-title" class="min-w-0 scroll-mt-24 rounded-2xl bg-white shadow-card xl:col-span-4">
+    <div class="flex items-center justify-between border-b border-line px-5 py-4">
+      <h2 id="activity-title" class="font-display text-[17px] font-semibold tracking-tight">Recent activity</h2>
+      <a href="{{ my_garden_url }}#tab=care" class="text-[13px] font-medium text-forest hover:text-leaf">Care log</a>
+    </div>
+    <ol id="activityList" class="px-5 py-2">
+      {% for item in activity %}
+        <li class="flex gap-3 py-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full {{ item.tint }}"><svg class="ic h-4 w-4"><use href="#{{ item.icon }}"/></svg></span>
+          <div class="flex-1 text-[13.5px]"><div><span class="font-medium">{{ item.subject }}</span> {{ item.text }}</div><div class="text-muted">{{ item.meta }}</div></div>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>
+{% endblock %}
+
+{% block after_main %}
+  <a href="#tutor" id="floatTutor" class="float-tab fixed right-0 top-[38%] z-30 hidden items-center gap-2 rounded-l-full bg-forest py-2.5 pl-3 pr-3 text-lime-300 shadow-float lg:flex" aria-label="Ask your tutor">
+    <svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg>
+  </a>
+{% endblock %}
+
+{% block modals %}
+  {# Log care (FR-22). Real endpoint: POST /api/garden/plants/{id}/care-logs/ #}
+  <dialog id="logDialog" class="sheet" aria-labelledby="log-title">
+    <form id="logForm" method="dialog" class="sheet-panel m-4 w-[min(480px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float">
+      <div class="flex items-center justify-between border-b border-line px-5 py-4">
+        <h2 id="log-title" class="font-display text-[19px] font-semibold tracking-tight">Log care</h2>
+        <button type="button" data-close-log class="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-mist hover:text-ink" aria-label="Close"><svg class="ic h-4 w-4"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="space-y-5 px-5 py-5">
+        <div>
+          <label for="logPlant" class="mb-1.5 block text-[13.5px] font-medium">Plant</label>
+          <select id="logPlant" name="plant" class="dash-input">
+            {% for p in log_plants %}<option value="{{ p.id }}">{{ p.nickname }}</option>{% endfor %}
+          </select>
+        </div>
+        <fieldset>
+          <legend class="mb-1.5 block text-[13.5px] font-medium">What did you do?</legend>
+          <div class="seg grid grid-cols-3 gap-2 text-[13px]">
+            {% for value, label, icon in care_actions %}
+              <div class="relative"><input type="radio" name="action" id="a-{{ value }}" value="{{ value }}" {% if forloop.first %}checked{% endif %} /><label for="a-{{ value }}" class="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-line py-2.5"><svg class="ic h-4 w-4"><use href="#{{ icon }}"/></svg>{{ label }}</label></div>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="logAmount" class="mb-1.5 block text-[13.5px] font-medium">Amount <span class="font-normal text-muted">(optional)</span></label>
+            <input id="logAmount" name="amount" type="text" placeholder="e.g. 500 ml" class="dash-input" />
+          </div>
+          <div>
+            <label for="logWhen" class="mb-1.5 block text-[13.5px] font-medium">When</label>
+            <select id="logWhen" name="when" class="dash-input"><option>Just now</option><option>Earlier today</option><option>Yesterday</option></select>
+          </div>
+        </div>
+        <div>
+          <label for="logNote" class="mb-1.5 block text-[13.5px] font-medium">Note <span class="font-normal text-muted">(optional)</span></label>
+          <textarea id="logNote" name="note" rows="2" placeholder="Anything you noticed?" class="dash-input"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-line px-5 py-4">
+        <button type="button" data-close-log class="h-10 rounded-lg border border-line px-4 text-[14px] font-medium hover:bg-mist">Cancel</button>
+        <button type="submit" value="save" class="h-10 rounded-lg bg-ink px-4 text-[14px] font-medium text-white hover:bg-forest-900">Save log</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block page_js %}
+  {{ dashboard_data|json_script:"dashboard-data" }}
+  <script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
