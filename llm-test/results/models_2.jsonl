@@ -1,0 +1,7 @@
+{"model": "Qwen/Qwen2.5-0.5B", "category": "2 Tiny (0.5-1B)", "params_b": 0.5, "kind": "chat", "load_s": 1.9, "mem_gb": 1.01, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "openai-community/gpt2-large", "category": "2 Tiny (0.5-1B)", "params_b": 0.774, "kind": "base", "load_s": 3.2, "mem_gb": 1.55, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "google/gemma-2-2b", "category": "3 Small (1-3B)", "params_b": 2.6, "kind": "base", "load_s": 15.0, "mem_gb": 5.3, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "Qwen/Qwen2.5-3B-Instruct", "category": "4 Medium (3-5B)", "params_b": 3.1, "kind": "chat", "load_s": 7.3, "mem_gb": 6.19, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "Qwen/Qwen2.5-7B-Instruct", "category": "5 Medium-Big (5-7B)", "params_b": 7.6, "kind": "chat", "load_s": 127.7, "mem_gb": 15.49, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "Qwen/Qwen2.5-3B-Instruct", "category": "4 Medium (3-5B)", "params_b": 3.1, "kind": "chat", "load_s": 10.4, "mem_gb": 6.19, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
+{"model": "google/gemma-2-2b", "category": "3 Small (1-3B)", "params_b": 2.6, "kind": "base", "load_s": 12.8, "mem_gb": 5.3, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "2", "status": "ok"}
