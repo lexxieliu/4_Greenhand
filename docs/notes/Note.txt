@@ -29,3 +29,48 @@ Challenges:
 
 * The main challenge this week was coordinating the initial team setup and deciding how responsibilities should be divided.
 * More detailed task assignments will be finalized after the project idea and features are confirmed.
+
+
+Production Reflection 
+
+The Size vs. Quality Trade-off:
+The sweet spot sits in the medium-sized category, around 3 to 5B parameters, and the model that fits best is Qwen2.5-3B-Instruct. It scores 0.96, needs 6.19 GB of memory, and takes about 3.78 seconds to generate an answer on the test laptop. The larger Qwen2.5-7B model scores 0.99, but that is only a 0.03 improvement. The 7B model also uses 15.49 GB of memory, about 2.5 times more, and takes 8.19 seconds per answer, roughly 2.2 times slower. Its cost roughly doubles as well.
+
+Phi-4-mini looks strong at 0.98 in a zero-shot setting, but its performance drops to 0.86 to 0.87 when examples are provided, which means it is not stable enough to rely on. Qwen2.5-3B, by contrast, stays stable at 0.95–0.96 across 0-, 1-, 3-, and many-shot scenarios, so it became the final choice. For Qwen2.5-3B, a single replica on a 16 GB GPU costs about $250 to $700 per month. Once you add high availability, CPU/RAM/disk resources, monitoring, and operations, the realistic total is roughly $500 to $1,400 per month. Moving to the 7B model means you need a 24 GB GPU, and the expense roughly doubles compared with the 3B model, while quality improves by only +0.03.
+
+Model  Params Memory (GB) Practical GPU  Est. single-replica monthly cost
+Qwen2.5-7B-Instruct	7.6B	15.49	24 GB L4/A10	$500 to $1,200
+granite-7b-instruct	~7B	~77	80 GB	GPU ~$1,300
+Yi-1.5-6B-Chat	~6B	~20	24 GB GPU $200 to $430
+Minitron-4B-Base	4.0B	8.39	16 GB  $300 to $800
+Phi-4-mini-instruct	3.8B	7.68	16 GB T4/L4	$300 to $800
+Qwen2.5-3B-Instruct	3.1B	6.19	16 GB T4/L4	$250 to $700
+gemma-2-2b	2.6B	5.3	8 to 16 GB $200 to $600
+Qwen2.5-1.5B-Instruct	1.5B	3.11	8 to 16 GB $150 to $500
+AceInstruct-1.5B	1.5B	3.11	8–16 GB	 $150 to $500
+flan-t5-large	0.78B	3.13	— $150 to $500
+gpt2-large	0.774B	1.55	Small GPU/CPU	$50 to $250
+Qwen2.5-0.5B	0.5B	1.01	CPU/small GPU	$30 to $200
+SmolLM-135M	0.135B	~2	CPU server	$50 to $150
+gpt2	0.124B	~1.5	CPU server	$50 to $150
+flan-t5-small (77M)	0.077B	<1	CPU server $50 to $150
+
+Cost & Scaling:
+If the application suddenly scales to 10,000 daily users, the plan is to move user-facing traffic entirely to the API and disconnect from the local Django integration. The estimate assumes 10 requests per user per day, with 800 input tokens and 300 output tokens per request. That works out to about 3 million requests per month and about 3.3 billion tokens per month. At that volume, a low-cost API costs about $900 per month, a mid-cost API about $2,550 per month, and a high-cost API with strong models about $20,700 per month. Running locally costs about $1,500–$4,000 per month for an 8B dual-replica high-availability setup, about $3,000–$8,000 per month for 13B, and about $15,000–$40,000 per month for 70B high availability. If GPU utilization is only 30%, the effective cost per token is about 3.3 times what it would be at full load.
+
+So at this scale, low-cost APIs are the cheapest route. Mid-cost APIs are close to the cost of running local 8B, but they come with much less operational burden. Local 8B only becomes attractive when model quality is good enough, traffic is stable, and GPU utilization stays consistently above 60 to 70%.
+
+Hybrid Potential:
+The hybrid idea is to cache first, handle high-frequency simple tasks locally, send complex and peak tasks to the API, automatically escalate low-confidence tasks, stop when the budget is hit, and keep evaluating quality. Django should only handle orchestration and should not load models directly. The local Hugging Face model should run as a separate inference service using something like vLLM or TGI, while the external API acts as another provider. Unified routing, semantic caching, asynchronous queues, and a cost ledger sit in between.
+
+For routing, simple and high-frequency tasks such as classification, extraction, rewriting, short summarization, and intent recognition should go local first. Complex inference, long-text analysis, and code generation should go through the API first. Sensitive data, PII, and internal documents should only be routed locally. Short contexts should be handled locally when possible, while very long contexts should go through the API. Local queues should be used as much as possible when the system is idle, and APIs should take over when peak traffic or latency limits are hit. As the budget limit gets close, the share of local tasks should increase. When the budget is comfortable and quality requirements are high, the API should be used.
+
+Based on about 3.3 billion tokens per month, a full mid-priced API costs about $2,550 a full local 8B dual-replica setup costs about $1,500 to $4,000, a 65% local plus 35% mid-priced API mix costs about $2,000 to $3,500, and a 65% local plus 35% high-priced API  mix costs about $9,000 to $12,000. Whether the hybrid approach actually saves money depends on local throughput and GPU utilization. If GPU utilization stays below 50%, the fixed costs are hard to amortize, and the hybrid may end up costing more than just using the API.
+
+For quality control, use a Golden Set to regularly compare local and API performance. Automatically upgrade to the API when local confidence is low, the format is wrong, or a rule blocks the answer. If the API fails, fall back to local or cache. High-risk tasks should default to the API or go through manual review. During deployment, start with the API and add a provider abstraction layer and cost ledger to Django. Then deploy a local inference service for one or two high-frequency, simple tasks. After that, add a difficulty classifier and automatic upgrades. Once GPU utilization is stable above 60 to 70% and quality checks pass, gradually increase the share of local traffic.
+
+Cost Comparison:
+Local models are only worth using if they consistently run at high GPU capacity, maintain good quality, and cost less overall than API models. Otherwise, APIs are simply easier. Local servers can generally run 7B to 13B quantized models reliably, and models should not be put directly inside the Django web process. They should run as a separate inference service. Local models make sense when average GPU utilization consistently exceeds 60%, traffic is stable, quality evaluations are satisfactory, the data is sensitive or needs offline control, and the API’s monthly bill is significantly higher than the total local cost. APIs make more sense when GPU utilization is below 50%, traffic fluctuates, a stronger model is needed, or the team does not want to maintain GPUs.
+
+Assuming 800 input tokens and 300 output tokens per request, a local full-cost API of $1,500 per month would need about 1.76 million requests per month, or roughly 59,000 requests per day, to break even against a mid-priced API. It would need about 5 million requests per month, or roughly 167,000 requests per day, to break even against a low-priced API. It would need about 217,000 requests per month, or roughly 7,200 requests per day, to break even against a high-priced strong model, although a small local model may not match that quality. A local full-cost API of $2,500 per month would need about 2.94 million requests per month, or roughly 98,000 requests per day, to break even against a mid-priced API.
+
