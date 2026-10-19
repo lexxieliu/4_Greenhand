@@ -3,10 +3,24 @@
 {% block title %}Post List{% endblock %}
 
 {% block content %}
-  <h2>Posts</h2>
+  {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'success' %}success{% else %}info{% endif %}">{{ message }}</div>
+  {% endfor %}
+
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Posts</h2>
+    {% if user.is_authenticated %}
+      <a href="{% url 'post-create' %}" class="btn btn-success btn-sm">New post</a>
+    {% endif %}
+  </div>
   <ul>
     {% for post in posts %}
-      <li>{{ post.post_content}} - {{ post.created_at }}</li>
+      <li class="mb-2">
+        {{ post.post_content}} - {{ post.created_at }}
+        {% if post.ai_summary %}
+          <div class="small text-success">🤖 AI summary: {{ post.ai_summary }}</div>
+        {% endif %}
+      </li>
     {% empty %}
       <li>No posts available.</li>
     {% endfor %}
