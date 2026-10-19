@@ -108,6 +108,17 @@ class PromptTests(SimpleTestCase):
         out = prompts.build_messages("care", "<b>Help</b>!!!!  my   plant")[-1]["content"]
         self.assertEqual(out, "Help ! my plant")   # same cleaning as the benchmark notebook
 
+    def test_summary_prompt_does_not_refuse_short_posts_but_still_refuses_spam(self):
+        """Real-model finding: 'I just planted my potato' was refused as 'insufficient information'."""
+        system = prompts.SYSTEM["summary"]
+        self.assertIn("Never refuse a post just because it is short", system)
+        self.assertIn('"other" as the topic', system)
+        self.assertIn("spam", system)                 # the refusal rule is still there
+        self.assertIn('"refused": true', system)
+
+    def test_care_prompt_is_unchanged_from_the_benchmark(self):
+        self.assertNotIn("Never refuse", prompts.SYSTEM["care"])
+
     def test_examples_pass_our_own_schema(self):
         for task, examples in prompts.EXAMPLES.items():
             for example in examples:
