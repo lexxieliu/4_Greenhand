@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Gardening Tutor{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-1">🌱 AI Gardening Tutor</h2>
+    <p class="text-muted">
+        Ask a beginner-friendly plant-care question. Answers come from a small AI model that runs on our own server.
+        The first question after the server starts can take a minute while the model loads.
+    </p>
+
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.question.id_for_label }}" class="form-label fw-bold">{{ form.question.label }}</label>
+            {{ form.question }}
+            {% for err in form.question.errors %}
+                <div class="text-danger small mt-1">{{ err }}</div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-success">Ask the tutor</button>
+    </form>
+
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% endif %}
+
+    {% if result %}
+        {% if result.refused %}
+            <div class="alert alert-info">
+                <strong>I can only help with plants and gardening.</strong>
+                {% if result.reason %}<div class="small mt-1">{{ result.reason }}</div>{% endif %}
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title">Answer</h5>
+                        <span class="badge bg-success">Difficulty: {{ result.difficulty }}</span>
+                    </div>
+                    <p class="card-text">{{ result.answer }}</p>
+                    <h6>Steps</h6>
+                    <ol class="mb-0">
+                        {% for step in result.steps %}<li>{{ step }}</li>{% endfor %}
+                    </ol>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <h4 class="mt-5">Your recent questions</h4>
+    {% for item in history %}
+        <div class="card mb-2">
+            <div class="card-body py-2">
+                <div class="fw-bold">{{ item.log.question }}</div>
+                {% if item.data.refused %}
+                    <div class="text-muted small">Not a gardening question.</div>
+                {% else %}
+                    <div class="small">{{ item.data.answer }}</div>
+                {% endif %}
+                <div class="text-muted small">{{ item.log.created_at|date:"M j, Y H:i" }}</div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-muted">No questions yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
