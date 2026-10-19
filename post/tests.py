@@ -168,7 +168,8 @@ class PostCreateViewTests(TestCase):
         result = pipeline.PipelineResult(pipeline.OK, GOOD_SUMMARY["summary"], "pests", source="gemini")
         with mock.patch.object(pipeline, "process_post", return_value=result):
             response = self.submit("Caterpillars are eating my kale.")
-        self.assertRedirects(response, "/posts/render/")
+        # fetch_redirect_response=False: fetching the page here would use up the one-time flash message
+        self.assertRedirects(response, "/posts/render/", fetch_redirect_response=False)
         post = Post.objects.get()
         self.assertEqual((post.user, post.ai_summary), (self.user, GOOD_SUMMARY["summary"]))
         page = self.client.get("/posts/render/")
