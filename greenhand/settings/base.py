@@ -125,15 +125,3 @@ LOGOUT_REDIRECT_URL = "login"
 LOGIN_URL = "login"
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
-
-# Local LLM (Hugging Face). The weights download automatically the first time the tutor is used.
-# Part 1 benchmark winner: Qwen2.5-3B-Instruct with the many-shot prompt.
-LOCAL_MODEL_ID = env('LOCAL_MODEL_ID', default='Qwen/Qwen2.5-3B-Instruct')
-
-# External API (Part 2, feature 2): Google Gemini writes the summary of community posts.
-# The key lives only in .env (API_KEY). Google retires model names (gemini-2.5-flash is already closed
-# to new accounts), so the default is the "-latest" alias, which always points at a current Flash model.
-# To pin a specific model, run  python manage.py check_gemini --list-models  and set API_MODEL in .env.
-GEMINI_API_KEY = env('API_KEY', default='')
-GEMINI_MODEL = env('API_MODEL', default='gemini-flash-latest')
-GEMINI_TIMEOUT = 20   # seconds
