@@ -881,3 +881,196 @@
 
 
 **Answer:** Spinach needs up to 7 liters of water per m² for the first 7 days of its life, then around 8 liters per m² as it matures. Common pests that attack spinach include leaf caterpillars, aphids, leaf miners, and grasshoppers.
+
+# Step 4.3: System Design
+
+How our RAG system (Data → Embeddings → Retrieval → LLM → Output) would scale from a single-notebook prototype to **10,000 users per day**, and what we would optimize along the way.
+
+> Numbers in **[brackets]** come from our own notebook run (CELL 28 and the evaluation table). Replace them with your measured values before submitting.
+
+---
+
+## 1. Starting point: the prototype
+
+| Component | Prototype (notebook) | Limitation at scale |
+|---|---|---|
+| Knowledge base | One document, ~[N] paragraphs, ~[N] words | Manual loading; no updates without re-running everything |
+| Chunking | Fixed / overlapping / hybrid, built in memory | Re-chunks the whole corpus on every run |
+| Embeddings | 3 sentence-transformers models (384 / 768 / 1024 dims) | Models reloaded per session; corpus re-embedded every run |
+| Vector store | NumPy matrix (+ optional FAISS flat index) | Exact search over every vector; lives in one Python process |
+| Generation | A6/A7 model loaded locally, one request at a time | Single user, no batching, no concurrency |
+| Evaluation | Labelled test queries, run by hand | No monitoring of real traffic |
+
+Measured in our run: retrieval takes **[~10–50] ms**, while generation takes **[~1,000–3,000] ms**. **The LLM is the bottleneck, not the vector search.** That one fact drives most of the design below.
+
+---
+
+## 2. Load estimate
+
+| Assumption | Value |
+|---|---|
+| Users per day | 10,000 |
+| Questions per user per day | ~5 |
+| **Queries per day** | **~50,000** |
+| Average load | 50,000 / 86,400 s ≈ **0.6 queries/second** |
+| Peak load (traffic concentrated in a few busy hours, ~10× average) | **~6 queries/second** |
+| Design target (headroom for spikes) | **10–20 queries/second** |
+| Prompt size at top-k = 3 | **[~550] input tokens** + ~150 output tokens |
+| **Tokens per day** | 50,000 × ~700 ≈ **35M tokens/day** |
+| Concurrent LLM requests at peak (6 QPS × ~3 s per answer) | **~18 in flight** |
+
+The load is modest for a web service but significant for an LLM. Ten thousand users a day does not need a large cluster. It does need the LLM served efficiently and as few unnecessary LLM calls as possible.
+
+---
+
+## 3. Architecture
+
+```mermaid
+flowchart LR
+    subgraph Offline["Offline ingestion (runs when documents change)"]
+        D[Source documents] --> P[Clean + split paragraphs]
+        P --> C[Hybrid chunking]
+        C --> E1[Batch embedding]
+        E1 --> V[(Vector DB<br/>HNSW index + metadata)]
+    end
+
+    subgraph Online["Online query path"]
+        U[User] --> G[API gateway<br/>auth + rate limit]
+        G --> AC{Answer cache}
+        AC -- hit --> R[Response + citations]
+        AC -- miss --> QE[Query embedding<br/>small model, cached]
+        QE --> S[ANN search + metadata filter]
+        V --> S
+        S --> RR[Reranker on top 20<br/>optional]
+        RR --> PB[Prompt builder<br/>top-k + token budget]
+        PB --> LLM[LLM server<br/>batched, streaming]
+        LLM --> R
+    end
+
+    R --> L[(Logs: query, chunk IDs,<br/>latency, feedback)]
+    L --> EV[Offline evaluation<br/>labelled test set]
+```
+
+Plain-text version:
+
+```
+OFFLINE (on document change)
+  documents -> clean + paragraph split -> hybrid chunking -> batch embed -> vector DB (+ metadata)
+
+ONLINE (per request)
+  user -> API gateway (auth, rate limit) -> answer cache --hit--> response
+                                                |
+                                               miss
+                                                v
+                     query embedding (small model) -> ANN search + filter -> reranker (optional)
+                                                v
+                     prompt builder (top-k, token budget) -> LLM server (batched, streaming)
+                                                v
+                                   response + citations -> logs -> evaluation
+```
+
+---
+
+## 4. How it scales to 10K users/day
+
+### 4.1 Ingestion becomes an offline pipeline
+- Documents are chunked and embedded **once**, when they are added or changed, not per request or per session.
+- Each chunk stores a content hash, so an edited document re-embeds **only its changed chunks**.
+- We keep the **hybrid chunking** strategy (one complete thought per chunk, section header attached) because it gave the best balance of retrieval quality and prompt size in our experiments **[update with your result]**.
+
+### 4.2 Vector store: from NumPy to an ANN index
+- Replace the in-memory NumPy matrix with a vector database or index: **FAISS HNSW**, **pgvector** (if the app already uses PostgreSQL), **Qdrant** or **Chroma**.
+- HNSW (approximate nearest neighbour) keeps search at a few milliseconds even at millions of chunks, trading a small amount of recall for speed. Exact search is fine for our current corpus; ANN matters once the corpus grows.
+- Store metadata (section, document, date) with each vector so queries can be **filtered** before ranking. Our data-scaling experiment (Step 2.5) showed that more documents add more look-alike distractor chunks, and filters remove many of them cheaply.
+
+Storage is not the problem:
+
+| Corpus size | 384 dims (small) | 768 dims (medium) | 1024 dims (large) |
+|---|---|---|---|
+| 10K chunks | 15 MB | 29 MB | 39 MB |
+| 100K chunks | 147 MB | 293 MB | 391 MB |
+| 1M chunks | 1.5 GB | 2.9 GB | 3.9 GB |
+
+*(float32; halve with float16, quarter with int8 quantization.)*
+
+### 4.3 Stateless API layer
+- A small API service (e.g., FastAPI) runs the retrieval logic. It holds no session state, so it can run as **2–3 replicas behind a load balancer** for availability.
+- The small embedding model (MiniLM, 23M parameters) runs on CPU inside the API service in about 10 ms per query, so no separate GPU is needed for embeddings.
+- An API gateway handles authentication and **per-user rate limits**, which protect both the budget and the LLM from abuse.
+
+### 4.4 LLM serving: the real bottleneck
+Two options, depending on budget:
+
+| Option | How it scales | When to choose it |
+|---|---|---|
+| **Self-hosted** A6/A7 model with an inference server (**vLLM** or **Text Generation Inference**) on a GPU | **Continuous batching** serves many requests at once on one GPU. ~18 concurrent requests at peak fits on 1 GPU for a 0.5–3B model, or 1–2 GPUs for a 7B model. Add a replica for redundancy. | Predictable traffic, privacy requirements, steady volume |
+| **Hosted LLM API** | The provider handles scaling; we handle rate limits, retries and fallbacks. | Spiky traffic, small team, faster launch |
+
+In both cases:
+- **Stream tokens** to the user, so the first words appear in well under a second even when the full answer takes 2–3 s.
+- Set **timeouts and a fallback** (a smaller model or a "try again" message) so one slow request never blocks the queue.
+
+### 4.5 Caching
+- **Answer cache:** many users ask the same questions (deadlines, policies, common how-tos). Cache answers keyed by the normalised query, or by query-embedding similarity (a *semantic cache*). Each hit skips the LLM entirely. Even a 20–30% hit rate removes the same share of LLM cost.
+- **Embedding cache:** cache query embeddings for repeated queries.
+- **Invalidation:** clear cached answers whose source chunks changed during re-ingestion.
+
+---
+
+## 5. What we would optimize
+
+Ordered by impact on cost, latency and quality, based on what we measured.
+
+### 5.1 Prompt size: top-k × chunk size (biggest cost lever)
+- In our top-k sweep, prompt tokens grew from **[~250] (k=1)** to **[~540] (k=3)** to **[~890] (k=5)**. LLM cost and latency grow with them on **every request**.
+- Keep **top-k = 3** with mid-sized hybrid chunks, and enforce a **token budget** in the prompt builder (drop the lowest-ranked chunk if the prompt exceeds it).
+- Use a higher k only where measurements showed it fixes incomplete-context failures (Step 3.3).
+
+### 5.2 Retrieval quality, so a small k is enough
+- **Hybrid search:** combine BM25 keyword search with embedding search. Keywords catch exact terms (names, codes, numbers) that embeddings sometimes miss.
+- **Reranking:** retrieve the top 20 cheaply, then rerank with a cross-encoder and keep the best 3. This is more accurate than a bigger embedding model and keeps the prompt small.
+- **Metadata filters** to cut distractors as the corpus grows (Step 2.5).
+- **Query rewriting** for short or vague queries (tested in Step 3.3). Apply it only when the top retrieval score is low, so it doesn't add an extra LLM call to every request.
+
+### 5.3 Embedding model choice
+- Use the **smallest model that meets our retrieval target.** In our experiments the larger models **[did / did not]** consistently beat the small one **[cite MRR numbers from Step 2.3]**, while costing **[~2–3×]** more storage and embedding time.
+- **Quantize vectors** (float16 or int8) to cut memory 2–4× with minimal quality loss.
+- Embedding cost is paid once per chunk at ingestion and once per query, so it matters far less than LLM tokens.
+
+### 5.4 Generation
+- Use the **improved grounding prompt** from Step 3.3: answer only from context, cite chunk numbers, and abstain with a fixed sentence when nothing is relevant. This targets the hallucination failure we observed on out-of-scope questions.
+- Add an **abstain gate:** if the best retrieval score is below a threshold, return "I don't know based on the provided documents" without calling the LLM. This is cheaper and safer.
+- **Quantize the LLM** (8-bit or 4-bit) to fit more concurrent requests per GPU.
+- **Model routing:** send simple lookup questions to a small model and only complex ones to a larger model.
+- Cap `max_new_tokens`, since answers are meant to be 2–4 sentences.
+
+### 5.5 Monitoring and continuous evaluation
+- **Log every request:** query, retrieved chunk IDs and scores, prompt tokens, latency per stage, answer, and user feedback (thumbs up/down).
+- **Dashboards and alerts:** p50/p95 latency (target: **p95 < 3 s** end to end, **< 1 s** to first token), error rate, cache hit rate, tokens per day, abstention rate.
+- **Regression testing:** re-run this notebook's labelled test set (precision/recall/MRR and answer quality) on every change to chunking, embedding model, prompt or LLM. Grow the test set with real failed queries from the logs.
+
+---
+
+## 6. Rough daily cost
+
+| Item | Estimate |
+|---|---|
+| LLM tokens (hosted API) | ~35M tokens/day × price per 1M tokens. At $0.50/1M input this is **[~$13–18/day]** at k=3 (CELL 28); a 25% cache hit rate cuts it by about a quarter |
+| LLM (self-hosted) | 1–2 GPU instances running continuously; a fixed cost, independent of token volume |
+| API + embeddings | 2–3 small CPU instances |
+| Vector DB | Under 1 GB for our corpus even at 100K chunks; managed tier or co-located with the API |
+
+The **LLM dominates** the cost in both options, which is why sections 5.1, 4.5 and 5.4 (fewer tokens, fewer calls, cheaper calls) matter most.
+
+---
+
+## 7. Summary of trade-offs
+
+| Decision | Choice | Trade-off accepted |
+|---|---|---|
+| Search | ANN (HNSW) instead of exact search | Tiny recall loss for millisecond search at scale |
+| Embedding model | Smallest model that meets the quality target | Possibly a few points of retrieval quality for 2–3× lower cost |
+| Top-k | 3, with a reranker | Reranker adds ~50–100 ms, but keeps prompts short |
+| Chunking | Hybrid (complete thoughts + section header) | More complex ingestion than fixed-length chunking |
+| Caching | Answer + embedding cache | Must invalidate when documents change |
+| LLM | Batched serving + streaming + abstain gate | Infrastructure to run, in exchange for lower latency and fewer hallucinations |
