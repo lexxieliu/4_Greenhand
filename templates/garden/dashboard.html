@@ -303,8 +303,9 @@
         <button type="button" class="chat-chip rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] text-emerald-50 hover:bg-white/15">How do I protect my tomato from frost?</button>
         <button type="button" class="chat-chip rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] text-emerald-50 hover:bg-white/15">When can I harvest?</button>
       </div>
-      {# Real endpoint: POST /api/tutor/sessions/{id}/messages/ (PRD 6.5), streamed via SSE #}
+      {# Answers come from POST /tutor/api/ask/ (local model + RAG). PRD 6.5 later: /api/tutor/sessions/{id}/messages/ with SSE #}
       <form id="chatForm" class="mt-3 flex items-center gap-2 rounded-xl bg-white/[0.06] p-1.5 ring-1 ring-white/10 focus-within:ring-lime-300/60">
+        {% csrf_token %}
         <label for="chatInput" class="sr-only">Ask your tutor</label>
         <input id="chatInput" type="text" autocomplete="off" placeholder="Ask about your garden…" class="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-white placeholder:text-emerald-50/40 focus:outline-none" />
         <button type="submit" class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-lime-300 text-forest-900 hover:bg-lime-200" aria-label="Send question"><svg class="ic h-4 w-4"><use href="#i-send"/></svg></button>
@@ -409,5 +410,6 @@
 
 {% block page_js %}
   {{ dashboard_data|json_script:"dashboard-data" }}
+  <script src="{% static 'js/tutor_client.js' %}" data-endpoint="{% url 'tutor:api_ask' %}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

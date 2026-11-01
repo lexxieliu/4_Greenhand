@@ -40,7 +40,7 @@
       <p class="px-3 pt-1 text-[13.5px] font-semibold text-ink">Learn</p>
       <p class="px-3 pb-2 text-[11.5px] text-muted">AI tutor &amp; plant database</p>
       <ul class="space-y-0.5">
-        <li><a href="{% url 'garden:dashboard' %}#tutor" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-sparkles"/></svg>AI Tutor<span class="ml-auto rounded-md bg-forest px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-lime-300">AI</span></a></li>
+        <li><a href="{% url 'tutor:ask' %}" {% if nav == 'tutor:ask' %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-sparkles"/></svg>AI Tutor<span class="ml-auto rounded-md bg-forest px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-lime-300">AI</span></a></li>
         <li><a href="{% url 'plants:list' %}" {% if 'plants:' in nav %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-search"/></svg>Pick a Plant</a></li>
         <li><a href="{% url 'weather:index' %}" {% if nav == 'weather:index' %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-cloud"/></svg>Weather</a></li>
       </ul>

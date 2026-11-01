@@ -167,7 +167,7 @@
       </form>
     </section>
 
-    <a href="{% url 'garden:dashboard' %}#tutor" class="flex items-center gap-3 rounded-2xl bg-[#0d1f14] p-4 text-emerald-50 hover:bg-forest-900">
+    <a href="{% url 'tutor:ask' %}?q=How%20do%20I%20grow%20{{ plant.common_name|lower|urlencode }}%3F" class="flex items-center gap-3 rounded-2xl bg-[#0d1f14] p-4 text-emerald-50 hover:bg-forest-900">
       <span class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-lime-300"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg></span>
       <span class="flex-1"><span class="block text-[14px] font-medium text-white">Ask the tutor about {{ plant.common_name|lower }}</span><span class="block text-[12.5px] text-emerald-50/60">Answers use your space and local weather</span></span>
       <svg class="ic h-4 w-4 text-lime-300"><use href="#i-chev-right"/></svg>

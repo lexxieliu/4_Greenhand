@@ -86,6 +86,7 @@
     <div class="border-t border-white/10 p-4">
       <div id="drawerChips" class="mb-3 flex flex-wrap gap-1.5"></div>
       <form id="drawerForm" class="flex items-center gap-2 rounded-xl bg-white/[0.06] p-1.5 ring-1 ring-white/10 focus-within:ring-lime-300/60">
+        {% csrf_token %}
         <label for="drawerInput" class="sr-only">Ask your tutor</label>
         <input id="drawerInput" type="text" autocomplete="off" placeholder="Ask about this plant…" class="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-white placeholder:text-emerald-50/40 focus:outline-none" />
         <button type="submit" class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-lime-300 text-forest-900 hover:bg-lime-200" aria-label="Send question"><svg class="ic h-4 w-4"><use href="#i-send"/></svg></button>
@@ -353,5 +354,6 @@
 
 {% block page_js %}
   {{ garden_data|json_script:"garden-data" }}
+  <script src="{% static 'js/tutor_client.js' %}" data-endpoint="{% url 'tutor:api_ask' %}"></script>
   <script src="{% static 'js/garden.js' %}"></script>
 {% endblock %}

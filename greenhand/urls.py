@@ -27,4 +27,5 @@ urlpatterns = [
     path("plants/", include('plants.urls')),
     path("weather/", include('weather.urls')),
     path("community/", include('community.urls')),
+    path("tutor/", include('tutor.urls')),
 ]

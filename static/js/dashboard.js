@@ -2,7 +2,7 @@
 // Server data arrives via {{ dashboard_data|json_script:"dashboard-data" }}:
 //   care   -> weekly/daily care counts for the chart     height -> featured plant growth
 //   events -> garden-wide calendar events by ISO date
-// Tutor answers below are canned until /api/tutor/sessions/{id}/messages/ exists.
+// Tutor answers come from the local AI model through tutor_client.js.
 
 (function () {
   const { TODAY, $, $$, toast } = window.GH;
@@ -315,32 +315,7 @@
     });
   }
 
-  // ---------- Tutor mini chat (mock answers) ----------
-  const ANSWERS = [
-    {
-      match: /water|rain|thirsty|dry/i,
-      text: 'Skip the basil today — 12 mm of rain fell in the last 24 hours, so its soil is still moist. Your lettuce is indoors, so water it as usual until a little drains out the bottom.',
-    },
-    {
-      match: /frost|cold|cover|freez/i,
-      text: 'Thursday’s low is 1 °C, below your tomato’s 2 °C frost threshold. Water the soil Wednesday afternoon, cover the plant at sunset with frost cloth or an old sheet (kept off the leaves with stakes), and uncover it Friday morning.',
-    },
-    {
-      match: /harvest|ripe|pick/i,
-      text: 'Your tomato started flowering on Oct 12, so expect ripe fruit in about 3 weeks. ‘Sungold’ is ready when it turns deep golden-orange and comes off with a gentle tug. Your mint can be trimmed again now — before the frost.',
-    },
-    {
-      match: /yellow|basil|leaves/i,
-      text: 'The yellow lower leaves on your basil most likely come from overwatering (high confidence): you watered Oct 5 and 7, then it rained. Let the pot dry out, make sure it drains, and pinch off the yellow leaves. Watch for black stems near the soil.',
-    },
-    {
-      match: /thin|lettuce|seedling/i,
-      text: 'Your lettuce is on day 18 — a good time to thin. Snip (don’t pull) the weaker seedlings at soil level so one plant remains every 15 cm. The thinnings make a tasty micro-salad.',
-    },
-  ];
-  const FALLBACK =
-    'Here’s what matters most in your garden this week: protect the cherry tomato before Thursday’s frost, let the basil dry out, and keep the lettuce evenly moist. Ask me about any plant for specifics.';
-
+  // ---------- Tutor mini chat (real answers from /tutor/api/ask/, see tutor_client.js) ----------
   const chatLog = $('#chatLog');
   const chatInput = $('#chatInput');
   let tutorUsed = 12;
@@ -380,18 +355,10 @@
     const body = $('.msg-body', reply);
     body.innerHTML = '<span class="typing" aria-label="Tutor is typing"><span></span><span></span><span></span></span>';
 
-    const answer = (ANSWERS.find((a) => a.match.test(question)) || { text: FALLBACK }).text;
-    setTimeout(() => {
-      // Reveal word by word to mimic a streamed answer
-      const words = answer.split(' ');
-      body.textContent = '';
-      let i = 0;
-      const tick = setInterval(() => {
-        body.textContent += (i ? ' ' : '') + words[i++];
-        chatLog.scrollTop = chatLog.scrollHeight;
-        if (i >= words.length) clearInterval(tick);
-      }, 28);
-    }, 700);
+    window.GHTutor.ask(question).then((result) => {
+      window.GHTutor.fill(body, result);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
   }
 
   $('#chatForm').addEventListener('submit', (e) => {

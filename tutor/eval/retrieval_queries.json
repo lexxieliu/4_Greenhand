@@ -1,0 +1,37 @@
+{
+  "_about": "Labeled queries for `python manage.py evaluate_retrieval`. 'gold' lists every chunk that answers the query; off_topic queries should retrieve nothing above the score cutoff. Queries are worded the way beginners write, often without the guide's keywords.",
+  "queries": [
+    {"q": "Why are the lower leaves on my basil turning yellow?", "gold": ["plant-basil-problems", "watering-3", "nutrients_and_fertilizer-3"]},
+    {"q": "How do I protect my tomato plant from frost this week?", "gold": ["frost_and_cold-2"]},
+    {"q": "Should I water my plants today after all that rain?", "gold": ["watering-5"]},
+    {"q": "There are tiny black flies around the soil of my lettuce tray", "gold": ["pests-4"]},
+    {"q": "Can I eat the leaves of my tomato plant?", "gold": ["safety-1"]},
+    {"q": "When will my cherry tomatoes be ready to pick?", "gold": ["flowering_and_harvest-2", "plant-cherry-tomato"]},
+    {"q": "my seedlings fell over and died at the bottom of the stem", "gold": ["diseases-2"]},
+    {"q": "white powdery stuff on my cucumber leaves", "gold": ["diseases-1"]},
+    {"q": "bugs clustered under the new leaves and everything is sticky", "gold": ["pests-1", "plant-cherry-tomato-problems"]},
+    {"q": "dark sunken patch on the bottom of my tomatoes", "gold": ["diseases-5", "plant-cherry-tomato-problems"]},
+    {"q": "my lettuce shot up a tall stalk and tastes bitter", "gold": ["diseases-6", "plant-lettuce-problems"]},
+    {"q": "how often should I feed plants in pots?", "gold": ["nutrients_and_fertilizer-2"]},
+    {"q": "what kind of soil should I put in a container?", "gold": ["soil_and_containers-1"]},
+    {"q": "how big a pot does a tomato need?", "gold": ["soil_and_containers-3"]},
+    {"q": "my basil is tall and thin and leaning toward the window", "gold": ["light_and_indoor-2", "plant-basil-problems"]},
+    {"q": "how many hours a day should a grow light be on?", "gold": ["light_and_indoor-3"]},
+    {"q": "how deep do I plant seeds?", "gold": ["seeds_and_seedlings-1"]},
+    {"q": "how do I get seedlings used to being outside?", "gold": ["seeds_and_seedlings-3"]},
+    {"q": "how do I pick basil without killing it?", "gold": ["flowering_and_harvest-3", "plant-basil"]},
+    {"q": "holes in my leaves and slimy trails in the morning", "gold": ["pests-2", "plant-lettuce-problems"]},
+    {"q": "tiny holes like shotgun pellets in my arugula", "gold": ["pests-5", "plant-arugula-problems"]},
+    {"q": "is it safe to spray pesticide on vegetables I will eat?", "gold": ["safety-2"]},
+    {"q": "what can I plant in October in zone 5b?", "gold": ["planting-calendar", "plant-lettuce", "plant-spinach", "plant-cilantro", "plant-kale", "plant-radish", "plant-arugula"]},
+    {"q": "how long until radishes are ready?", "gold": ["plant-radish", "flowering_and_harvest-5"]},
+    {"q": "my pepper flowers keep dropping off", "gold": ["flowering_and_harvest-1"]}
+  ],
+  "off_topic": [
+    "What's the best stock to buy this year?",
+    "Can you help me write a cover letter?",
+    "Who won the football game last night?",
+    "Write me a poem about pirates",
+    "How do I fix a flat bicycle tire?"
+  ]
+}

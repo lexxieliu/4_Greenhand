@@ -970,39 +970,9 @@
     toast(`${nickname} added · watering every ${c.water} days`, { icon: 'i-sprout' });
   });
 
-  // ---------- Tutor drawer (mock answers grounded in this plant's data) ----------
+  // ---------- Tutor drawer: real answers scoped to this plant (FR-32), see tutor_client.js ----------
   const drawer = $('#tutorDrawer');
   const drawerLog = $('#drawerLog');
-  function answerFor(p, q) {
-    const c = cat(p);
-    const d = day(p);
-    const water = p.reminders.find((r) => r.type === 'water' && r.active);
-    const open = openProblems(p)[0];
-    if (/water|dry|thirst/i.test(q)) {
-      if (p.setting !== 'outdoor') return `${p.nickname} is indoors, so rain doesn’t count. It’s on a ${water ? `${water.every}-day` : `${p.watering_interval_days}-day`} schedule${water ? ` and the next watering is ${rel(water.next_due)}` : ''}. Push a finger 2 cm into the soil first — only water if it feels dry.`;
-      if (weatherBadges(p).some((b) => b.icon === 'i-rain')) return `Skip it today: ${WEATHER.rainMm} mm of rain fell in the last 24 hours, so the soil is still moist. ${water ? `Your next watering is ${rel(water.next_due)}.` : ''}`;
-      return `${water ? `Next watering is ${rel(water.next_due)}.` : 'There’s no active watering reminder.'} In cool October weather, check the top 2 cm of soil first and only water when it’s dry.`;
-    }
-    if (/harvest|ripe|pick|ready/i.test(q)) {
-      const ripe = { 'cherry-tomato': 'Cherry tomatoes are ready when they turn fully coloured and come off with a gentle tug.', basil: 'Pick the top leaves just above a leaf pair once the plant is about 20 cm tall.', lettuce: 'Start picking outer leaves once they’re about 10 cm long.', spinach: 'Pick outer leaves when they’re 8–10 cm long.', mint: 'Cut stems back by a third — it regrows quickly.' }[p.type] || '';
-      if (p.status === 'planned') return `After sowing on ${fmt(p.planted_on)}, expect the first harvest in about ${c.harvest[0]}–${c.harvest[1]} days. ${ripe}`;
-      if (p.harvests.length) return `You’ve harvested ${harvestTotals(p)} so far across ${p.harvests.length} pickings. ${ripe}`;
-      return d >= c.harvest[0] ? `It’s day ${d}, so you’re in the harvest window. ${ripe}` : `It’s day ${d}. The harvest window opens in about ${c.harvest[0] - d} days (day ${c.harvest[0]}–${c.harvest[1]}). ${ripe}`;
-    }
-    if (/frost|cold|freez/i.test(q)) {
-      if (!WEATHER.frostDate) return `No frost is forecast this week. ${c.frostOk ? `${c.name} handles light frost anyway.` : 'You’ll get an alert 48 hours ahead if that changes.'}`;
-      const frostDay = fmt(WEATHER.frostDate, { weekday: 'long' });
-      if (p.setting !== 'outdoor') return `${p.nickname} is indoors, so ${frostDay}’s ${WEATHER.frostLow} °C low won’t affect it. Just keep it away from cold window glass at night.`;
-      return c.frostOk
-        ? `${c.name} handles light frost well, so ${frostDay}’s ${WEATHER.frostLow} °C low shouldn’t harm it.`
-        : `${frostDay}’s low is ${WEATHER.frostLow} °C, below the ${WEATHER.frostThreshold} °C frost threshold. Water the soil the afternoon before, cover the plant at sunset with frost cloth or an old sheet, and uncover it the next morning.`;
-    }
-    if (/problem|wrong|healthy|yellow|sick|do about/i.test(q)) {
-      if (open) return `The open problem is “${open.title}”. Most likely: ${open.diagnosis.issues[0].name.toLowerCase()} (${open.diagnosis.issues[0].confidence} confidence). Right now: ${open.diagnosis.immediate_actions.join('; ').toLowerCase()}. Watch for ${open.diagnosis.watch_for[0].toLowerCase()}.`;
-      return `No open problems on ${p.nickname} — nice. ${p.tip}`;
-    }
-    return p.tip;
-  }
   function drawerMsg(role, text) {
     const wrap = document.createElement('div');
     wrap.className = `chat-msg ${role === 'user' ? 'ml-auto max-w-[85%]' : 'max-w-[95%]'}`;
@@ -1025,8 +995,10 @@
     const reply = drawerMsg('assistant', '');
     const body = $('.msg-body', reply);
     body.innerHTML = '<span class="typing" aria-label="Tutor is typing"><span></span><span></span><span></span></span>';
-    const text = answerFor(selected(), q);
-    setTimeout(() => { body.textContent = text; drawerLog.scrollTop = drawerLog.scrollHeight; }, 700);
+    window.GHTutor.ask(q, selected().id).then((result) => {
+      window.GHTutor.fill(body, result);
+      drawerLog.scrollTop = drawerLog.scrollHeight;
+    });
   }
   let lastFocus = null;
   function openTutor(question) {

@@ -110,3 +110,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# AI Gardening Tutor (tutor app). Public Hugging Face models, downloaded to ~/.cache/huggingface on first use.
+LOCAL_MODEL_ID = env("LOCAL_MODEL_ID", default="Qwen/Qwen2.5-3B-Instruct")
+EMBEDDING_MODEL_ID = env("EMBEDDING_MODEL_ID", default="sentence-transformers/all-MiniLM-L6-v2")
+TUTOR_TIMEOUT_SECONDS = env.int("TUTOR_TIMEOUT_SECONDS", default=60)
