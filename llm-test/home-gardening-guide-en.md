@@ -1,0 +1,269 @@
+# PLANTING LOCATIONS
+
+## Large Yard
+
+In-ground beds (raised beds/*bedengan*), which can be combined with pots, polybags, and vertical gardening (*vertikultur*). With a large yard, we have more freedom to grow plants at home. Options include: in-ground beds, which can be combined with pots, polybags, and vertical gardening.
+
+## Small Yard
+
+Having a small yard is no barrier to growing vegetables at home. There are many things you can do, including using growing containers such as pots, polybags, and vertical gardening.
+
+# PREPARING THE PLANTING AREA
+
+## Beds (*Bedengan*)
+
+Hoe the soil to a depth of 20–30 cm and apply manure at 1 kg/m². Level the soil, then form planting beds 60 cm or 1 m wide, with the length adjusted to the condition of the land.
+
+## Pots and Polybags
+
+- Choose the type and size (diameter) of pot or polybag to suit the plant being grown.
+- For perennial plants, generally fruit plants, choose a pot made from a drum/can or a pot with a diameter of about 60 cm.
+- For medicinal plants or vegetables, a plastic pot or polybag with a diameter of 20–30 cm can be used.
+
+Plants that can be grown in pots and polybags include:
+
+1. Several kinds of fruit, known as *Tabulampot* (fruit plants in pots), for example: water apple, bell apple, sapodilla, mango, citrus, etc.
+2. Fruiting vegetables and leafy vegetables, for example: chili, eggplant, tomato, mustard greens, lettuce, etc.
+3. Medicinal plants, for example: turmeric, cat's whiskers, ginger-family plants (rhizomes), etc.
+
+# VERTICAL GARDENING (*VERTIKULTUR*)
+
+Vertical gardening is a method of growing in which the growing medium is placed in containers arranged vertically. Growing with a vertical system can be an alternative for people living in cities who have limited space or even no land left for growing plants.
+
+(1) Rack: this type can be made from gutters and bamboo assembled into a rack.
+
+(2) Tube: this type can be made from plastic materials (drums, bamboo, and PVC pipes).
+
+# GROWING MEDIUM
+
+Preparing Seedlings:
+
+For most vegetable crops, seedlings must be prepared first. This activity is commonly known as seeding (nursery sowing). Some vegetables that must be sown first include: mustard greens, lettuce, celery, cayenne pepper (*cabai rawit*), large or curly chili, and others.
+
+For plants grown in pots, polybags, and vertical gardens, prepare a growing medium consisting of a mixture of:
+
+1 part topsoil
+1 part rice husk charcoal
+1 part compost/manure
+
+Steps for preparing vegetable seedlings:
+
+1. Prepare a seeding medium made of soil, rice husk charcoal, and compost in a 1:1:1 ratio.
+2. Place the medium mixture in a seeding tray.
+3. Before sowing, soak the seeds in warm water (300°C) for about 10 minutes.
+4. Discard seeds that are bad (floating).
+5. Scatter the seeds in the seeding tray, cover thinly with seeding medium, then water.
+6. Water in the morning and evening.
+7. Seedlings are generally ready to be transplanted at 7–15 days old (depending on the type of plant).
+8. Signs a seedling is ready to transplant: good growth and at least 3 true leaves.
+
+**Water spinach (*kangkung*)** is a leafy vegetable that is widely consumed by Indonesians. Water spinach contains a lot of *pro-vitamin A*. Water spinach can be propagated from cuttings or from seed. Water spinach seeds are currently easy to find on the market.
+
+## CULTIVATION TECHNIQUES
+
+There are two types of water spinach known in Indonesia, distinguished by where they grow: aquatic water spinach and upland water spinach. Aquatic water spinach is a water plant found across Southeast Asia, India, and southeastern China. Upland water spinach, meanwhile, is the type commonly grown in home yards.
+
+## PLANTING
+
+### (Small yard)
+
+1. Planting can be done in polybags, pots, or with vertical gardening.
+2. Use a growing medium of soil plus manure plus husk/rice husk charcoal, in a 1:1:1 ratio.
+3. Scatter the seeds over the medium, cover thinly with soil, then water.
+
+### (Large yard)
+
+1. Can be planted directly in beds.
+2. Hoe the soil to a depth of 30 cm and apply manure at 1 kg/m². Level the soil, then form planting beds 60 cm or 1 m wide.
+3. Make planting holes spaced 20 cm between rows and 20 cm between plants.
+4. Put 2–7 water spinach seeds in each hole. Planting is done in a zig-zag pattern or in rows (furrow system).
+
+## CARE
+
+Keep water available by watering in the morning and evening (if it is not raining), and protect the plants from pests and diseases.
+
+## HARVEST AND POST-HARVEST
+
+The plants can be harvested after 60 days, by cutting them back or by pulling up the whole plant.
+
+# SPINACH (*BAYAM*)
+
+**Spinach** is an important leafy vegetable widely consumed by Indonesians. Spinach also contains quite a lot of vitamins and minerals. Based on color, there are two types of spinach commonly consumed: green spinach and red spinach.
+
+## CARE
+
+- Pay attention to water needs.
+- Up to 7 days of age, the plants need 4 liters of water/m² per day.
+- As they approach maturity, they need about 8 liters of water/m² per day.
+- Pests that often attack spinach include leaf caterpillars, aphids, leaf miners, and grasshoppers.
+- Pest control can be done mechanically, by catching the pests directly. However, if insecticide must be used, use a safe type that breaks down easily, such as biological insecticides and botanical (plant-based) insecticides.
+
+## CULTIVATION TECHNIQUES
+
+Spinach is propagated from seed. Some recommended varieties include: Giti Hijau, Giti Merah, Kakap Hijau, Bangkok, and Cimangkok.
+
+## PLANTING
+
+### (Small yard)
+
+1. Planting can be done in polybags, pots, or with vertical gardening.
+2. Use a growing medium of soil + manure + husk/rice husk charcoal, in a 1:1:1 ratio.
+3. Scatter the seeds over the medium, cover thinly with soil, then water.
+
+### (Large yard)
+
+1. Can be planted directly in beds.
+2. Hoe the soil to a depth of 20–30 cm and apply manure at 1 kg/10 m². Level the soil, then form planting beds 60 cm or 1 m wide.
+3. Apply 30 grams of urea, 20 grams of TSP, and 10 grams of KCl for every m² of land.
+4. Scatter the seeds evenly over the surface of the bed, then cover thinly with soil. Put 2–7 water spinach seeds in each hole. Planting is done in a zig-zag pattern or in rows (furrow system).
+
+## HARVEST AND POST-HARVEST
+
+- Pull-harvest spinach is usually harvested between three and four weeks after the plants emerge, or when it reaches a height of about 20 cm.
+- Harvest by pulling up the roots or by cutting at the base about 2 cm above the soil surface.
+- To keep it fresh, place freshly harvested spinach in water (soaking the roots).
+
+**Caisin**, better known as mustard greens (*sawi*), is a leafy vegetable with high levels of *pro-vitamin A* and ascorbic acid. Caisin can grow in both lowlands and highlands. Caisin/mustard plants come in two types: white mustard and green mustard. Because it is easy to care for, caisin or mustard is widely grown in home yards.
+
+## CULTIVATION TECHNIQUES
+
+When the sown seedlings are about 12 days old, they are ready to be planted into pots/polybags, vertical gardens, or directly in beds.
+
+## PLANTING
+
+Plant 1 seedling per polybag. If planted in a vertical garden or bed, use a spacing of about 15 cm.
+
+## CARE
+
+- Care activities include watering, follow-up fertilizing, weeding, hilling (mounding soil around the base), and controlling plant-disturbing organisms (OPT).
+- OPT that commonly attack include leaf caterpillars; they can be controlled by keeping things clean and destroying them directly.
+
+## HARVEST AND POST-HARVEST
+
+After about 45 days after planting, pakchoi can be harvested.
+
+# CELERY (*SELEDRI*)
+
+**Celery** is a vegetable commodity widely used as a flavoring and to garnish dishes. Celery seeds are also used as a spice and flavoring. The oil extracted from the seeds has medicinal properties.
+
+## CULTIVATION TECHNIQUES
+
+- Celery seeds are planted shallow to speed up seedling emergence.
+- Celery germination is very slow and takes 7–12 days.
+- When the plants are 2 months old, celery can be moved to the field, or to pots, polybags, or vertical gardens.
+
+## PLANTING
+
+Plant 1 seedling per polybag. If planted in a vertical garden or bed, use a spacing of about 25 cm.
+
+## CARE
+
+- Care activities include: watering, follow-up fertilizing, weeding, hilling, and controlling plant-disturbing organisms (OPT).
+- OPT that attack celery plants.
+
+## HARVEST AND POST-HARVEST
+
+- Celery can be harvested at 90–125 days. Harvesting is done by pulling up the plant.
+- Leaf celery has a shorter growing season, and it can be harvested repeatedly if the leaves are cut high enough above the soil surface to allow new leaves to grow back.
+- These include leaf miner flies, bacterial leaf spot, bacterial soft rot, fusarium disease, cercospora leaf blight, damping-off, root rot, and various viruses.
+- OPT control is adjusted to the OPT that is attacking; if insecticide must be used, use a safe type that breaks down easily, such as biological or botanical insecticides.
+
+# SCALLION / SPRING ONION (*BAWANG DAUN*)
+
+**Scallion (*bawang daun*)** is a vegetable with a very distinctive flavor and aroma. It is widely used in cooking, such as in soto, soup, and other dishes.
+
+In Indonesia, there are three types of scallion commonly cultivated:
+
+- Leek (*bawang prei*), characterized by: no bulb, and leaves that are wider than those of shallots or garlic, with long, tough leaf sheaths and a flat inner leaf shape.
+- Chives (*kucai*), characterized by small, long leaves with a small hollow inside the leaf, green in color, and small bulbs.
+- Welsh onion (*bawang bakung / bawang semprong*), characterized by: long, round leaves with a pipe-like hollow inside, sometimes bulbed.
+
+## CULTIVATION TECHNIQUES
+
+- Seed material can come from shoots.
+- Offset shoots are obtained by separating healthy, well-growing offsets from the mother plant.
+
+## PLANTING
+
+- Scallions can be planted directly in beds, or in pots, polybags, or vertical gardens.
+- Planting is done by making a small planting hole, placing the seedling or offset shoot upright, covering it with soil again, and watering.
+
+## CARE
+
+- Loosening the soil (*pendangiran*) is important to loosen soil that may have become compacted. Mounding soil around the base of the stem is also needed. This step is needed to get the white color on the pseudostem of the scallion.
+- Mounding the stems should be done gradually to avoid rotting of the stems and leaves, especially while the plants are still young.
+- Watering must be done, especially if scallions are grown in the dry season, whereas if they are planted in the rainy season, drainage must also be well managed so that water does not pool in the field.
+- Fertilizing consists of manure applied at the time of soil preparation. Other fertilizers needed are urea, KCl, and SP-36.
+- Fertilizer is applied by making a furrow about 5 cm to the left and right of the stem, scattering the fertilizer in that furrow, and then covering it back with soil.
+- Plant parts, including roots: remove rotten or wilted roots and leaves.
+
+## HARVEST AND POST-HARVEST
+
+Scallion plants can begin to be harvested 2 months after planting. Harvesting is done by pulling up the entire plant, including the roots.
+
+**Cayenne pepper / bird's eye chili (*cabai rawit*)** is a long-lived (perennial) plant that can live for 2–3 years if well maintained and its nutrient needs are met. There are several kinds of cabai rawit, including small, medium, and large. Generally, the small cabai rawit is very spicy. Cabai rawit is used in vegetable dishes, cooking spices, pickles, and medicine.
+
+## CULTIVATION TECHNIQUES
+
+Seedlings about 30–35 days after sowing, or with 5–6 leaves, are ready to be moved to the field.
+
+## PLANTING
+
+- If planted in beds, use a spacing of 70 cm x 70 cm or 60 cm x 70 cm. At the set spacing, make planting holes in the plastic mulch using a can that has been heated.
+- Planting holes are made 15–20 cm deep and 20–25 cm in diameter, and left overnight, with the seedlings planted the next day.
+- If planted in pots/polybags, use pots/polybags with a diameter of more than 50 cm.
+
+## CARE
+
+Care consists of replacing dead seedlings (*penyulaman*), installing stakes, watering, managing drainage, weeding, loosening the soil, and fertilizing.
+
+## HARVEST AND POST-HARVEST
+
+Harvest by picking fruits that are mature and ripe, indicated by the fruit skin turning red.
+
+**Red chili (*cabai merah*)** is a vegetable commodity with many benefits and is always needed for cooking. Besides being eaten fresh as a cooking spice mixture, chili can also be preserved, for example as pickles, sauce, chili powder, and dried fruit.
+
+### CULTIVATION TECHNIQUES
+
+- Seedlings about 7–8 days after sowing are moved into banana-leaf/plastic pouches.
+- After 4–5 weeks, the seedlings are ready to be planted in the field, or in polybags or pots.
+
+### PLANTING
+
+- If planted in beds, use a spacing of 70 cm x 70 cm or 60 cm x 70 cm. At the set spacing, make planting holes in the plastic using a can that has been heated.
+- Planting holes are made 15–20 cm deep and 20–25 cm in diameter, and left overnight, with the seedlings planted the next day.
+- If planted in polybags or pots, use ones with a diameter of more than 50 cm.
+
+### CARE
+
+Care consists of replacing dead seedlings, installing stakes, watering, managing drainage, weeding, loosening the soil, and fertilizing.
+
+### HARVEST AND POST-HARVEST
+
+Red chili can be harvested for the first time at 70–75 days after planting in the lowlands and at 4–5 months in the highlands, with
+
+# TOMATO (*TOMAT*)
+
+**Tomato** is a fruiting vegetable commodity that housewives always need for preparing food. Tomatoes can be grown widely from the lowlands to the highlands, on former rice-field land and on dry land. Besides being planted directly in the ground, tomatoes can also be grown in polybags/pots.
+
+## CULTIVATION TECHNIQUES
+
+- Recommended varieties include: Opal, Mirah, Jamrud, Permata, Martha, and others.
+- Seedlings about 7–8 days after sowing are moved into banana-leaf/plastic pouches.
+- After 3 weeks, the seedlings are ready to be planted in the field, or in polybags or pots.
+
+## PLANTING
+
+- If planted in beds, use a spacing of 70 cm x 70 cm or 60 cm x 70 cm. At the set spacing, make planting holes in the plastic mulch using a can that has been heated.
+- Planting holes are made 15–20 cm deep and 20–25 cm in diameter, and left overnight, with the seedlings planted the next day.
+- If planted in polybags/pots, use polybags/pots with a diameter of more than 50 cm.
+
+## CARE
+
+- Care consists of replacing dead seedlings, installing stakes, watering, managing *drainage*, weeding, loosening the soil, and fertilizing.
+- Important OPT attacking tomato plants include whiteflies, leaf miners, armyworms, tomato fruit worms, late blight, wilt disease, yellow virus, etc. Cutworms are collected and then controlled physically. If cutworm attacks are heavy, spray with insecticide.
+
+## HARVEST AND POST-HARVEST
+
+- Red chili [sic — likely means tomato] can be harvested for the first time at 2–3 months after planting.
+- Harvest can be done in 10–15 pickings, at intervals of 2–3 days. Fruit ready to harvest is that which is 30% ripe.
