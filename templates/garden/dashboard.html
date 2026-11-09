@@ -123,19 +123,21 @@
       </div>
     </div>
 
+    {% if featured %}
     <a href="{{ my_garden_url }}#plant={{ featured.id }}" class="mt-4 block overflow-hidden rounded-xl bg-leaf-soft">
       <div class="flex items-start justify-between p-4 pb-0">
         <div>
           <div class="text-[14px] font-medium text-forest">{{ featured.nickname }}</div>
-          <div class="text-[12px] text-forest/70">Day {{ featured.day }} · {{ featured.status|capfirst }} · height</div>
+          <div class="text-[12px] text-forest/70">Day {{ featured.day }} · {{ featured.status|capfirst }} · care per week</div>
         </div>
         <div class="text-right">
           <div id="heightValue" class="font-display text-[18px] font-semibold text-forest"></div>
           <div id="heightDate" class="text-[11.5px] text-forest/70"></div>
         </div>
       </div>
-      <svg id="heightChart" class="mt-2 block h-[96px] w-full" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-label="{{ featured.nickname }} height over time"></svg>
+      <svg id="heightChart" class="mt-2 block h-[96px] w-full" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-label="{{ featured.nickname }} care actions per week"></svg>
     </a>
+    {% endif %}
 
     <ul id="plantList" class="mt-2 divide-y divide-line">
       {% for row in plant_rows %}
@@ -392,7 +394,7 @@
           </div>
           <div>
             <label for="logWhen" class="mb-1.5 block text-[13.5px] font-medium">When</label>
-            <select id="logWhen" name="when" class="dash-input"><option>Just now</option><option>Earlier today</option><option>Yesterday</option></select>
+            <select id="logWhen" name="when" class="dash-input"><option value="0">Just now</option><option value="0">Earlier today</option><option value="1">Yesterday</option></select>
           </div>
         </div>
         <div>
@@ -411,5 +413,6 @@
 {% block page_js %}
   {{ dashboard_data|json_script:"dashboard-data" }}
   <script src="{% static 'js/tutor_client.js' %}" data-endpoint="{% url 'tutor:api_ask' %}"></script>
+  {{ garden_api|json_script:"garden-api" }}
   <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

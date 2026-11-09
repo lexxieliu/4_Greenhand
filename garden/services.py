@@ -1,152 +1,230 @@
-"""Derived values for My Garden and the dashboard (PRD 3.3)."""
-from datetime import date, timedelta
+"""Operations that change My Garden (PRD 3.3, FR-13, FR-20 – FR-28).
 
-from greenhand import mock_data as data
-from plants.services import suitability
+Views validate input with garden/forms.py and call these functions; nothing here touches HTTP.
+Each function takes an already-owned UserPlant (see selectors.get_user_plant), so ownership is
+checked once, at lookup.
+"""
+from datetime import timedelta
 
-ACTIVE = ("sprouting", "growing", "flowering", "fruiting")
+from django.db import transaction
 
-# CareLog.action choices shown in the quick "Log care" dialog: (value, label, icon)
-CARE_ACTIONS = [
-    ("water", "Water", "i-drop"), ("fertilize", "Fertilize", "i-flask"), ("prune", "Prune", "i-scissors"),
-    ("treat_pest", "Treat pest", "i-bug"), ("repot", "Repot", "i-pot"), ("other", "Other", "i-plus"),
-]
+from greenhand.clock import now as clock_now, today
 
-def day_count(plant):
-    """Days since planting (planting day = day 0)."""
-    return (data.TODAY - date.fromisoformat(plant["planted_on"])).days
+from .models import CareLog, Harvest, Problem, Reminder, ReminderOccurrence, TimelineEntry, UserPlant
 
+Status = UserPlant.Status
+ACTIVE = (Status.SPROUTING, Status.GROWING, Status.FLOWERING, Status.FRUITING, Status.PRODUCING)
+ENDED = (Status.COMPLETED, Status.FAILED, Status.ARCHIVED)
+# Growth order, used so a timeline entry never moves a plant backwards
+GROWTH_ORDER = [Status.PLANNED, Status.SPROUTING, Status.GROWING, Status.FLOWERING, Status.FRUITING, Status.PRODUCING]
+STAGE_STATUS = {"seed": Status.SPROUTING, "seedling": Status.SPROUTING, "vegetative": Status.GROWING,
+                "flowering": Status.FLOWERING, "fruiting": Status.FRUITING}
 
-def open_problems(plant):
-    return [p for p in plant["problems"] if p["status"] != "resolved"]
-
-
-def harvest_grams(plant):
-    to_g = {"g": 1, "kg": 1000, "oz": 28.35, "lb": 453.6}
-    return sum(h["quantity"] * to_g[h["unit"]] for h in plant["harvests"] if h.get("quantity") and h["unit"] in to_g)
-
-
-def stats():
-    garden = data.GARDEN
-    harvests = [h for p in garden for h in p["harvests"]]
-    return {
-        "active": sum(1 for p in garden if p["status"] in ACTIVE),
-        "planned": sum(1 for p in garden if p["status"] == "planned"),
-        "harvested_plants": sum(1 for p in garden if p["status"] == "harvested"),
-        "harvest_count": len(harvests),
-        "harvest_grams": round(sum(harvest_grams(p) for p in garden)),
-        "open_problems": sum(len(open_problems(p)) for p in garden),
-    }
+# Care schedule (FR-24)
+FEED_INTERVAL_DAYS = 14                                 # PRD: about every 2–3 weeks
+FIRST_FEED_AFTER_DAYS = {"seed": 21, "seedling": 14, "cutting": 14}   # seedlings need true leaves first
+PROBLEM_CHECK_AFTER_DAYS = 3                            # PRD: check_problem 3 days after a problem
+HARVEST_CHECK_INTERVAL_DAYS = {"continuous": 4, "single": 7}         # PRD: every 3–5 days for continuous crops
+CARE_FOR_REMINDER = {Reminder.Type.WATER: CareLog.Action.WATER, Reminder.Type.FERTILIZE: CareLog.Action.FERTILIZE}
 
 
-def dashboard_rows():
-    """Compact plant rows for the dashboard 'My plants' card."""
-    rows = []
-    for p in data.GARDEN:
-        if p["status"] in ("failed", "archived"):
-            continue
-        cat = data.CATALOG_BY_SLUG[p["plant_slug"]]
-        problems = open_problems(p)
-        frost = p["setting"] == "outdoor" and not cat["frost_tolerant"] and p["status"] in ACTIVE
-        if problems:
-            sub, sub_cls = f"{problems[0]['title']} · {problems[0]['status']}", "text-amber-700"
-            badge = {"icon": "i-alert", "cls": "bg-amber-100 text-amber-700", "title": "Needs attention"}
-        elif frost:
-            sub, sub_cls = f"{p['status'].capitalize()} · frost risk Thu", "text-indigo-700"
-            badge = {"icon": "i-snow", "cls": "bg-indigo-100 text-indigo-700", "title": "Frost risk"}
-        elif p["status"] == "harvested":
-            sub, sub_cls = f"Harvested · {round(harvest_grams(p))} g", "text-leaf"
-            badge = {"icon": "i-basket", "cls": "bg-amber-100 text-amber-700", "title": "Harvested"}
-        elif p["status"] == "planned":
-            sub, sub_cls = f"Planned · {suitability(cat)['label'].lower()}", "text-leaf"
-            badge = {"icon": "i-calendar", "cls": "bg-mist text-muted ring-1 ring-line", "title": "Planned"}
-        else:
-            sub, sub_cls = f"{p['status'].capitalize()} · {p['setting']}", "text-leaf"
-            badge = {"icon": "i-check", "cls": "bg-emerald-100 text-emerald-700", "title": "Healthy"}
-        if p["status"] == "harvested":
-            value = f"{len(p['harvests'])}×"
-        elif p["status"] == "planned":
-            value = date.fromisoformat(p["planted_on"]).strftime("%b ") + str(date.fromisoformat(p["planted_on"]).day)
-        else:
-            value = f"Day {day_count(p)}"
-        rows.append({
-            "id": p["id"], "nickname": p["nickname"], "icon": cat["icon"], "grad": cat["grad"],
-            "sub": sub, "sub_cls": sub_cls, "value": value, "badge": badge,
-            "attention": bool(problems) or frost,
-            "search": f"{p['nickname']} {cat['common_name']}".lower(),
-        })
-    return rows
+class GardenError(Exception):
+    """A request that is valid input but not allowed in the plant's current state (message is user-facing)."""
 
 
-def garden_catalog():
-    """Catalog subset in the shape the My Garden script expects (keyed by slug)."""
-    return {
-        p["slug"]: {
-            "name": p["common_name"], "sci": p["scientific_name"], "water": p["watering_interval_days"],
-            "harvest": p["days_to_harvest"], "frostOk": p["frost_tolerant"], "icon": p["icon"], "grad": p["grad"],
-            "suit": suitability(p)["level"], "suitLabel": suitability(p)["reason"],
-        }
-        for p in data.CATALOG
-    }
+def _reminder(user_plant, type_, title, interval_days, next_due_on, **extra):
+    return Reminder.objects.create(user=user_plant.user, user_plant=user_plant, type=type_, title=title,
+                                   interval_days=interval_days, next_due_on=next_due_on, **extra)
 
 
-def garden_payload():
-    """Everything the My Garden page script needs, passed with |json_script."""
-    plants = [{**p, "type": p["plant_slug"]} for p in data.GARDEN]
-    alerts = {a["alert_type"]: a for a in data.WEATHER_ALERTS}
-    frost_day = next((d for d in data.WEATHER["daily"] if d["frost"]), None)
-    return {
-        "today": data.TODAY.isoformat(),
-        "plants": plants,
-        "catalog": garden_catalog(),
-        "weather": {
-            "rainToday": "rain_skip" in alerts,
-            "rainMm": data.WEATHER["current"]["rain_last_24h_mm"],
-            "frostDate": frost_day["date"] if frost_day else None,
-            "frostLow": frost_day["low"] if frost_day else None,
-            "frostThreshold": data.FROST_THRESHOLD_C,
-        },
-    }
+def _deactivate(user_plant, types=None):
+    reminders = user_plant.reminders.filter(is_active=True)
+    if types:
+        reminders = reminders.filter(type__in=types)
+    reminders.update(is_active=False)
 
 
-STAGE_LABELS = {"seed": "Sowed", "seedling": "Seedling", "vegetative": "Vegetative growth", "flowering": "Flowering", "fruiting": "Fruiting", "harvest": "Harvest"}
-CARE_PAST = {"water": "Watered", "fertilize": "Fed", "prune": "Pruned", "treat_pest": "Treated pests on", "repot": "Repotted", "transplant": "Transplanted", "other": "Cared for"}
-REMINDER_EVENT = {"water": "water", "fertilize": "growth", "check_problem": "problem", "harvest_check": "harvest", "custom": "growth"}
+@transaction.atomic
+def start_growing(user, plant, *, nickname, planted_on, start_method, setting, container_type="", quantity=1):
+    """FR-13: add a plant to My Garden with its first timeline entry and an automatic care schedule."""
+    planned = planted_on > today()
+    user_plant = UserPlant.objects.create(
+        user=user, plant=plant, nickname=nickname or plant.common_name, planted_on=planted_on,
+        start_method=start_method, setting=setting, container_type=container_type, quantity=quantity,
+        status=Status.PLANNED if planned else (Status.SPROUTING if start_method == "seed" else Status.GROWING),
+        watering_interval_days=plant.watering_interval_days,
+        current_stage_updated_at=None if planned else clock_now(),
+    )
+    if not planned:
+        verb = "Sowed" if start_method == "seed" else "Planted"
+        TimelineEntry.objects.create(user_plant=user_plant, stage="seed" if start_method == "seed" else "seedling",
+                                     recorded_on=planted_on, note=f"{verb} {user_plant.nickname}.")
+    first_water = planted_on if planned else today() + timedelta(days=1)
+    _reminder(user_plant, Reminder.Type.WATER, f"Water {user_plant.nickname}", user_plant.watering_interval_days,
+              first_water, weather_aware=setting == UserPlant.Setting.OUTDOOR)
+    _reminder(user_plant, Reminder.Type.FERTILIZE, f"Feed {user_plant.nickname}", FEED_INTERVAL_DAYS,
+              planted_on + timedelta(days=FIRST_FEED_AFTER_DAYS[start_method]), notify_email=False)
+    return user_plant
 
 
-def calendar_events(days_ahead=60):
-    """Garden-wide icon calendar (FR-23) as {"YYYY-MM-DD": [{type, label, icon}]}.
-    Types match the dashboard legend: water, growth, harvest, weather, problem."""
-    events = {}
+def _advance_status(user_plant, target):
+    """Move forward along GROWTH_ORDER only, and never over a status the user set themselves."""
+    if user_plant.status in ENDED or user_plant.status_source == UserPlant.StatusSource.USER:
+        return False
+    if GROWTH_ORDER.index(target) <= GROWTH_ORDER.index(user_plant.status):
+        return False
+    user_plant.status = target
+    user_plant.status_source = UserPlant.StatusSource.AUTO
+    user_plant.current_stage_updated_at = clock_now()
+    user_plant.save(update_fields=["status", "status_source", "current_stage_updated_at", "updated_at"])
+    if target == Status.FRUITING:
+        _start_harvest_checks(user_plant)
+    return True
 
-    def add(day, kind, label, icon=None):
-        events.setdefault(day, []).append({"type": kind, "label": label, **({"icon": icon} if icon else {})})
 
-    horizon = data.TODAY + timedelta(days=days_ahead)
-    for p in data.GARDEN:
-        name = p["nickname"]
-        for t in p["timeline"]:
-            add(t["date"], "growth", f"{name}: {STAGE_LABELS[t['stage']]}")
-        for log in p["care"]:
-            add(log["date"], "water" if log["action"] == "water" else "growth", f"{CARE_PAST[log['action']]} {name}")
-        for h in p["harvests"]:
-            add(h["date"], "harvest", f"Harvested {name} · {h['quantity']} {h['unit']}" if h.get("quantity") else f"Harvested {name}")
-        for prob in p["problems"]:
-            add(prob["opened"], "problem", f"{name}: {prob['title'].lower()}")
-        for r in p["reminders"]:
-            for occ in r["history"]:
-                if occ["status"] == "skipped_rain":
-                    add(occ["date"], "weather", f"{name} watering skipped — rain", "i-rain")
-            if not r["active"]:
-                continue
-            due = date.fromisoformat(r["next_due"])
-            while due <= horizon:
-                if due >= data.TODAY:
-                    add(due.isoformat(), REMINDER_EVENT[r["type"]], r["title"])
-                if not r["every"]:
-                    break
-                due += timedelta(days=r["every"])
-    for d in data.WEATHER["daily"]:
-        if d["frost"]:
-            add(d["date"], "weather", f"Frost risk tonight · {d['low']} °C")
-    return events
+def _start_harvest_checks(user_plant):
+    """FR-24: harvest_check reminders begin when the plant starts fruiting."""
+    if user_plant.reminders.filter(type=Reminder.Type.HARVEST_CHECK, is_active=True).exists():
+        return
+    interval = HARVEST_CHECK_INTERVAL_DAYS[user_plant.plant.harvest_mode]
+    _reminder(user_plant, Reminder.Type.HARVEST_CHECK, f"Check {user_plant.nickname} for harvest", interval,
+              today() + timedelta(days=interval), notify_email=False)
+
+
+@transaction.atomic
+def add_timeline_entry(user_plant, *, stage, recorded_on, note="", photo=None, update_status=True):
+    """FR-21. Returns the new status label when the entry moved the plant to a new stage, else None."""
+    TimelineEntry.objects.create(user_plant=user_plant, stage=stage, recorded_on=recorded_on, note=note, photo=photo)
+    target = STAGE_STATUS.get(stage)
+    if user_plant.status == Status.PLANNED and stage != "harvest":
+        target = target or Status.SPROUTING
+    elif not update_status:
+        return None
+    if target and _advance_status(user_plant, target):
+        return user_plant.get_status_display()
+    return None
+
+
+def _mark_occurrence_done(reminder, done_on, interval_days):
+    ReminderOccurrence.objects.create(reminder=reminder, due_on=done_on, status=ReminderOccurrence.Status.DONE)
+    if interval_days:
+        reminder.next_due_on = done_on + timedelta(days=interval_days)
+        reminder.save(update_fields=["next_due_on", "updated_at"])
+    else:
+        reminder.is_active = False
+        reminder.save(update_fields=["is_active", "updated_at"])
+
+
+@transaction.atomic
+def log_care(user_plant, *, action, performed_on, amount="", note="", source=CareLog.Source.MANUAL):
+    """FR-22. Watering also completes a watering reminder that is due by the next day."""
+    log = CareLog.objects.create(user_plant=user_plant, action=action, performed_on=performed_on, amount=amount,
+                                 note=note, source=source)
+    reminder_type = next((t for t, a in CARE_FOR_REMINDER.items() if a == action), None)
+    if reminder_type:
+        reminder = user_plant.reminders.filter(type=reminder_type, is_active=True,
+                                               next_due_on__lte=performed_on + timedelta(days=1)).first()
+        if reminder:
+            _mark_occurrence_done(reminder, performed_on, reminder.interval_days or user_plant.watering_interval_days)
+    return log
+
+
+@transaction.atomic
+def complete_reminder(reminder):
+    """One-tap Done on a task (FR-24): log the matching care action, or just record the occurrence."""
+    action = CARE_FOR_REMINDER.get(reminder.type)
+    if action and reminder.user_plant:
+        return log_care(reminder.user_plant, action=action, performed_on=today(), source=CareLog.Source.REMINDER)
+    _mark_occurrence_done(reminder, today(), reminder.interval_days)
+    return None
+
+
+@transaction.atomic
+def log_problem(user_plant, *, title, description="", category="unknown", severity="medium", photo=None):
+    """FR-25: log a problem and schedule the 3-day follow-up check."""
+    problem = Problem.objects.create(user_plant=user_plant, title=title, description=description, category=category,
+                                     severity=severity, photo=photo, opened_on=today())
+    _reminder(user_plant, Reminder.Type.CHECK_PROBLEM, f"Check: {title}", 0,
+              today() + timedelta(days=PROBLEM_CHECK_AFTER_DAYS), time="09:00", notify_email=False)
+    return problem
+
+
+@transaction.atomic
+def set_problem_status(problem, status, resolution_note=""):
+    problem.status = status
+    if status == Problem.Status.RESOLVED:
+        problem.resolved_at = clock_now()
+        problem.resolution_note = resolution_note
+        if not problem.user_plant.problems.exclude(pk=problem.pk).exclude(status=Problem.Status.RESOLVED).exists():
+            _deactivate(problem.user_plant, [Reminder.Type.CHECK_PROBLEM])
+    else:
+        problem.resolved_at = None
+    problem.save(update_fields=["status", "resolved_at", "resolution_note", "updated_at"])
+    return problem
+
+
+@transaction.atomic
+def log_harvest(user_plant, *, harvested_on, quantity=None, unit="g", note="", photo=None, final=False):
+    """FR-27. The first harvest sets first_harvest_at (North Star). Continuous crops become `producing`
+    and keep accepting harvests; single-harvest crops, or a harvest marked final, become `completed`."""
+    if user_plant.status in (Status.FAILED, Status.ARCHIVED):
+        raise GardenError("This plant is no longer growing, so it can't be harvested.")
+    harvest = Harvest.objects.create(user_plant=user_plant, harvested_on=harvested_on, quantity=quantity, unit=unit,
+                                     note=note, photo=photo)
+    fields = ["status", "status_source", "updated_at"]
+    if user_plant.first_harvest_at is None:
+        user_plant.first_harvest_at = clock_now()
+        fields.append("first_harvest_at")
+    if final or user_plant.plant.harvest_mode == "single":
+        user_plant.status = Status.COMPLETED
+        _deactivate(user_plant)
+    elif user_plant.status != Status.COMPLETED:
+        user_plant.status = Status.PRODUCING
+    user_plant.status_source = UserPlant.StatusSource.AUTO
+    user_plant.save(update_fields=fields)
+    return harvest
+
+
+@transaction.atomic
+def change_status(user_plant, status, failure_reason=""):
+    """Manual status change from the status menu. The user's choice is never overwritten later (FR-29)."""
+    if status in (Status.PRODUCING, Status.COMPLETED) and not user_plant.harvests.exists():
+        raise GardenError("Log a harvest first. It marks the plant as producing or completed.")
+    if status == Status.FAILED:
+        if not failure_reason:
+            raise GardenError("Choose what went wrong before marking the plant as failed.")
+        user_plant.failure_reason = failure_reason
+        user_plant.failed_at = clock_now()
+        _deactivate(user_plant)
+    elif user_plant.status == Status.FAILED:
+        user_plant.failure_reason = ""
+        user_plant.failed_at = None
+    if status == Status.FRUITING:
+        _start_harvest_checks(user_plant)
+    user_plant.status = status
+    user_plant.status_source = UserPlant.StatusSource.USER
+    user_plant.current_stage_updated_at = clock_now()
+    user_plant.save()
+    return user_plant
+
+
+def add_reminder(user_plant, *, type_, interval_days, time):
+    titles = {"water": f"Water {user_plant.nickname}", "fertilize": f"Feed {user_plant.nickname}",
+              "check_problem": f"Check {user_plant.nickname}", "harvest_check": f"Check {user_plant.nickname} for harvest",
+              "custom": f"{user_plant.nickname} reminder"}
+    first_due = today() + timedelta(days=interval_days or 1)
+    return _reminder(user_plant, type_, titles[type_], interval_days, first_due, time=time, is_auto=False,
+                     weather_aware=type_ == "water" and user_plant.setting == UserPlant.Setting.OUTDOOR)
+
+
+REMINDER_FLAGS = {"active": "is_active", "inapp": "notify_in_app", "email": "notify_email", "weather_aware": "weather_aware"}
+
+
+def set_reminder_flag(reminder, flag, value):
+    """Toggle one switch on the Reminders tab. Turning a lapsed reminder back on schedules it from today."""
+    setattr(reminder, REMINDER_FLAGS[flag], value)
+    if flag == "active" and value and reminder.next_due_on < today():
+        reminder.next_due_on = today() + timedelta(days=reminder.interval_days) if reminder.interval_days else today()
+    reminder.is_auto = False                     # user-edited reminders are kept when the schedule is regenerated
+    reminder.save()
+    return reminder

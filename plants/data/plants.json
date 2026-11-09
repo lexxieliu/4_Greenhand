@@ -1,0 +1,2381 @@
+[
+ {
+  "slug": "basil",
+  "common_name": "Basil",
+  "scientific_name": "Ocimum basilicum",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Fragrant, fast-growing herb that loves warmth. A beginner favourite for sunny windowsills and balconies.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 10,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   60,
+   90
+  ],
+  "spacing_cm": 25,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Pinch the top pair of leaves every 2 weeks to keep it bushy",
+   "Let the soil dry slightly between waterings",
+   "Remove flower buds to keep leaves tender"
+  ],
+  "problems": [
+   {
+    "name": "Yellow lower leaves",
+    "symptoms": "Soft, yellowing older leaves",
+    "solution": "Usually overwatering. Let the pot dry out and check drainage.",
+    "source_count": 34
+   },
+   {
+    "name": "Leggy stems",
+    "symptoms": "Tall, thin stems with few leaves",
+    "solution": "Not enough light. Move to the sunniest spot and pinch the tips.",
+    "source_count": 21
+   },
+   {
+    "name": "Black spots after cold nights",
+    "symptoms": "Dark patches on leaves",
+    "solution": "Chill damage below 10 °C. Bring indoors in autumn.",
+    "source_count": 12
+   }
+  ]
+ },
+ {
+  "slug": "cherry-tomato",
+  "common_name": "Cherry tomato",
+  "scientific_name": "Solanum lycopersicum",
+  "category": "fruit",
+  "difficulty": "medium",
+  "description": "Sweet bite-sized tomatoes that crop heavily in containers. Needs warmth, sun, and support.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 10,
+  "max_temp_c": 32,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   57,
+   75
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Stake or cage early",
+   "Pinch side shoots (suckers) on vining types",
+   "Water deeply and evenly to prevent split fruit"
+  ],
+  "problems": [
+   {
+    "name": "Aphids on new growth",
+    "symptoms": "Clusters of small insects, sticky leaves",
+    "solution": "Spray with mild soapy water every 2–3 days.",
+    "source_count": 28
+   },
+   {
+    "name": "Blossom end rot",
+    "symptoms": "Dark sunken patch at the base of fruit",
+    "solution": "Uneven watering. Keep soil consistently moist and mulch.",
+    "source_count": 19
+   },
+   {
+    "name": "Split fruit",
+    "symptoms": "Cracks after heavy rain",
+    "solution": "Pick ripe fruit before storms; water evenly.",
+    "source_count": 11
+   }
+  ]
+ },
+ {
+  "slug": "lettuce",
+  "common_name": "Lettuce",
+  "scientific_name": "Lactuca sativa",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Quick, cool-season salad leaves. Pick outer leaves and it keeps growing for weeks.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": 2,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   10
+  ],
+  "days_to_harvest": [
+   45,
+   55
+  ],
+  "spacing_cm": 20,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Keep soil evenly moist",
+   "Thin seedlings to 15–20 cm apart",
+   "Harvest outer leaves from 10 cm long"
+  ],
+  "problems": [
+   {
+    "name": "Bolting",
+    "symptoms": "Tall flower stalk, bitter leaves",
+    "solution": "Heat stress. Grow in spring or fall and give afternoon shade.",
+    "source_count": 25
+   },
+   {
+    "name": "Slugs",
+    "symptoms": "Ragged holes, slime trails",
+    "solution": "Hand-pick at night; use copper tape on pots.",
+    "source_count": 17
+   }
+  ]
+ },
+ {
+  "slug": "mint",
+  "common_name": "Mint",
+  "scientific_name": "Mentha spicata",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Vigorous perennial herb for teas and drinks. Best kept in its own pot — it spreads!",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 3,
+  "min_temp_c": -20,
+  "max_temp_c": 32,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   10,
+   15
+  ],
+  "days_to_harvest": [
+   60,
+   90
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6,
+    9
+   ]
+  },
+  "care": [
+   "Grow in its own container",
+   "Cut back by a third to encourage new growth",
+   "Trim to 5 cm before winter"
+  ],
+  "problems": [
+   {
+    "name": "Rust spots",
+    "symptoms": "Orange pustules under leaves",
+    "solution": "Remove affected stems and improve airflow.",
+    "source_count": 9
+   }
+  ]
+ },
+ {
+  "slug": "spinach",
+  "common_name": "Spinach",
+  "scientific_name": "Spinacia oleracea",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Cold-hardy leafy green that thrives in cool autumn weather and shrugs off light frost.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": -5,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   40,
+   50
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Sow 1 cm deep, 5 cm apart",
+   "Keep evenly moist",
+   "Pick outer leaves at 8–10 cm"
+  ],
+  "problems": [
+   {
+    "name": "Bolting",
+    "symptoms": "Flower stalks in warm weather",
+    "solution": "Sow in early spring or late summer.",
+    "source_count": 14
+   },
+   {
+    "name": "Leaf miners",
+    "symptoms": "Pale winding trails in leaves",
+    "solution": "Remove affected leaves; cover with fleece.",
+    "source_count": 6
+   }
+  ]
+ },
+ {
+  "slug": "cilantro",
+  "common_name": "Cilantro",
+  "scientific_name": "Coriandrum sativum",
+  "category": "herb",
+  "difficulty": "medium",
+  "description": "Bright, citrusy herb that prefers cool weather. Sow little and often.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": -2,
+  "max_temp_c": 27,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   10
+  ],
+  "days_to_harvest": [
+   45,
+   70
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    5,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Sow every 3 weeks for a steady supply",
+   "Give afternoon shade",
+   "Harvest outer stems first"
+  ],
+  "problems": [
+   {
+    "name": "Bolting in heat",
+    "symptoms": "Feathery leaves and flowers",
+    "solution": "Grow in spring or fall; it bolts above 27 °C.",
+    "source_count": 31
+   }
+  ]
+ },
+ {
+  "slug": "kale",
+  "common_name": "Kale",
+  "scientific_name": "Brassica oleracea",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Tough, nutritious green that gets sweeter after a frost. Harvest leaves all season.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -10,
+  "max_temp_c": 27,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   5,
+   8
+  ],
+  "days_to_harvest": [
+   50,
+   65
+  ],
+  "spacing_cm": 40,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Pick lower leaves first",
+   "Feed monthly",
+   "Net against cabbage worms"
+  ],
+  "problems": [
+   {
+    "name": "Cabbage worms",
+    "symptoms": "Green caterpillars, holes in leaves",
+    "solution": "Hand-pick and cover with insect netting.",
+    "source_count": 16
+   }
+  ]
+ },
+ {
+  "slug": "radish",
+  "common_name": "Radish",
+  "scientific_name": "Raphanus sativus",
+  "category": "root",
+  "difficulty": "easy",
+  "description": "The fastest crop in the garden — crunchy roots in about four weeks.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": -2,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   3,
+   7
+  ],
+  "days_to_harvest": [
+   25,
+   30
+  ],
+  "spacing_cm": 5,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Thin to 5 cm apart",
+   "Keep moist for mild flavour",
+   "Harvest promptly before they turn woody"
+  ],
+  "problems": [
+   {
+    "name": "All leaves, no root",
+    "symptoms": "Lush tops, thin roots",
+    "solution": "Too crowded or too much nitrogen. Thin early.",
+    "source_count": 13
+   }
+  ]
+ },
+ {
+  "slug": "arugula",
+  "common_name": "Arugula",
+  "scientific_name": "Eruca vesicaria",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Peppery salad leaf ready in weeks. Loves cool weather.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": -2,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   7
+  ],
+  "days_to_harvest": [
+   30,
+   40
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10
+   ]
+  },
+  "care": [
+   "Cut leaves at 8 cm, it regrows",
+   "Sow every 2–3 weeks"
+  ],
+  "problems": [
+   {
+    "name": "Flea beetles",
+    "symptoms": "Tiny shot holes",
+    "solution": "Cover with fleece; keep soil moist.",
+    "source_count": 8
+   }
+  ]
+ },
+ {
+  "slug": "green-onion",
+  "common_name": "Green onion",
+  "scientific_name": "Allium fistulosum",
+  "category": "vegetable",
+  "difficulty": "easy",
+  "description": "Mild onion stalks you can regrow from kitchen scraps on a sunny sill.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   60,
+   70
+  ],
+  "spacing_cm": 5,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    5,
+    8,
+    9
+   ]
+  },
+  "care": [
+   "Snip from the top; leave 3 cm to regrow",
+   "Change water every 2 days if regrowing in a jar"
+  ],
+  "problems": [
+   {
+    "name": "Thrips",
+    "symptoms": "Silvery streaks on leaves",
+    "solution": "Rinse plants; use sticky traps.",
+    "source_count": 5
+   }
+  ]
+ },
+ {
+  "slug": "microgreens",
+  "common_name": "Microgreens",
+  "scientific_name": "Mixed seed",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Harvest-in-10-days greens grown in a tray indoors any time of year.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 1,
+  "min_temp_c": 15,
+  "max_temp_c": 27,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   2,
+   4
+  ],
+  "days_to_harvest": [
+   10,
+   14
+  ],
+  "spacing_cm": 1,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": []
+  },
+  "care": [
+   "Sow thickly on moist soil",
+   "Mist twice a day",
+   "Cut just above the soil when the first true leaves show"
+  ],
+  "problems": [
+   {
+    "name": "Mould on the tray",
+    "symptoms": "White fuzz at the base",
+    "solution": "Improve airflow and water from below.",
+    "source_count": 10
+   }
+  ]
+ },
+ {
+  "slug": "bush-beans",
+  "common_name": "Bush beans",
+  "scientific_name": "Phaseolus vulgaris",
+  "category": "legume",
+  "difficulty": "easy",
+  "description": "Compact, productive beans that need no support. A summer crop.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 10,
+  "max_temp_c": 32,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   10
+  ],
+  "days_to_harvest": [
+   50,
+   60
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Sow after the last frost",
+   "Pick often to keep pods coming"
+  ],
+  "problems": [
+   {
+    "name": "Bean beetles",
+    "symptoms": "Lacy leaves",
+    "solution": "Hand-pick adults and larvae.",
+    "source_count": 7
+   }
+  ]
+ },
+ {
+  "slug": "chili-pepper",
+  "common_name": "Chili pepper",
+  "scientific_name": "Capsicum annuum",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Compact, colourful plants that thrive in pots. Needs a long warm season.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": 12,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   21
+  ],
+  "days_to_harvest": [
+   70,
+   90
+  ],
+  "spacing_cm": 40,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Start indoors 8 weeks before last frost",
+   "Let soil dry slightly between waterings"
+  ],
+  "problems": [
+   {
+    "name": "Flower drop",
+    "symptoms": "Flowers fall without fruit",
+    "solution": "Temperatures too high or low; shake to pollinate indoors.",
+    "source_count": 9
+   }
+  ]
+ },
+ {
+  "slug": "strawberries",
+  "common_name": "Strawberries",
+  "scientific_name": "Fragaria × ananassa",
+  "category": "fruit",
+  "difficulty": "medium",
+  "description": "Perennial berries for hanging baskets and pots. Plant in spring for summer fruit.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": -15,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   14,
+   28
+  ],
+  "days_to_harvest": [
+   60,
+   90
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "4",
+   "5",
+   "6",
+   "7",
+   "8"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Plant crowns level with the soil",
+   "Remove runners for bigger fruit",
+   "Mulch with straw"
+  ],
+  "problems": [
+   {
+    "name": "Grey mould",
+    "symptoms": "Fuzzy grey berries",
+    "solution": "Remove affected fruit; keep berries off the soil.",
+    "source_count": 12
+   }
+  ]
+ },
+ {
+  "slug": "snap-peas",
+  "common_name": "Snap peas",
+  "scientific_name": "Pisum sativum",
+  "category": "legume",
+  "difficulty": "easy",
+  "description": "Sweet, crunchy pods on climbing vines. One of the first crops of spring.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -2,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   60,
+   70
+  ],
+  "spacing_cm": 5,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    8
+   ]
+  },
+  "care": [
+   "Give a trellis to climb",
+   "Pick pods daily once they start"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White powder on leaves",
+    "solution": "Improve airflow; water at the base.",
+    "source_count": 11
+   }
+  ]
+ },
+ {
+  "slug": "carrots",
+  "common_name": "Carrots",
+  "scientific_name": "Daucus carota",
+  "category": "root",
+  "difficulty": "medium",
+  "description": "Sweet roots for deep containers. Short varieties suit balconies.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -2,
+  "max_temp_c": 27,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   10,
+   21
+  ],
+  "days_to_harvest": [
+   60,
+   80
+  ],
+  "spacing_cm": 5,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Use a pot at least 30 cm deep",
+   "Keep the surface moist until seedlings appear",
+   "Thin to 5 cm apart"
+  ],
+  "problems": [
+   {
+    "name": "Forked roots",
+    "symptoms": "Split, twisted carrots",
+    "solution": "Stony or compacted soil; use loose potting mix.",
+    "source_count": 9
+   }
+  ]
+ },
+ {
+  "slug": "parsley",
+  "common_name": "Parsley",
+  "scientific_name": "Petroselinum crispum",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Fresh, mild herb that keeps producing from spring to the first hard frost.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   14,
+   28
+  ],
+  "days_to_harvest": [
+   70,
+   90
+  ],
+  "spacing_cm": 20,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Soak seeds overnight; they are slow to sprout",
+   "Cut outer stems at the base so the centre keeps growing"
+  ],
+  "problems": [
+   {
+    "name": "Green and black caterpillars",
+    "symptoms": "Striped caterpillars eating the leaves",
+    "solution": "Swallowtail larvae. Hand-pick them or move them to a spare plant.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "chives",
+  "common_name": "Chives",
+  "scientific_name": "Allium schoenoprasum",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Hardy onion-flavoured herb that comes back every spring.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -20,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   75,
+   85
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6,
+    8
+   ]
+  },
+  "care": [
+   "Snip leaves 2 cm above the soil",
+   "Divide crowded clumps every 3 years"
+  ],
+  "problems": [
+   {
+    "name": "Thrips",
+    "symptoms": "Silvery streaks on the leaves",
+    "solution": "Rinse the plant and use blue or yellow sticky traps.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "dill",
+  "common_name": "Dill",
+  "scientific_name": "Anethum graveolens",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Feathery herb for pickles and fish; its flowers attract helpful insects.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": 0,
+  "max_temp_c": 30,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   21
+  ],
+  "days_to_harvest": [
+   40,
+   60
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Sow where it will grow; it dislikes transplanting",
+   "Sow again every 3 weeks for a steady supply"
+  ],
+  "problems": [
+   {
+    "name": "Bolting",
+    "symptoms": "Flower heads form quickly in heat",
+    "solution": "Harvest leaves young and keep sowing small batches.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "thyme",
+  "common_name": "Thyme",
+  "scientific_name": "Thymus vulgaris",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Low, woody perennial herb that loves sun and dry soil.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 5,
+  "min_temp_c": -20,
+  "max_temp_c": 35,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   14,
+   28
+  ],
+  "days_to_harvest": [
+   85,
+   95
+  ],
+  "spacing_cm": 25,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Let the soil dry out between waterings",
+   "Trim lightly after flowering to keep it compact"
+  ],
+  "problems": [
+   {
+    "name": "Root rot",
+    "symptoms": "Stems turn brown and soft at the base",
+    "solution": "Too wet. Use gritty, well-drained soil and water less.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "oregano",
+  "common_name": "Oregano",
+  "scientific_name": "Origanum vulgare",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Easy perennial herb for pizza and pasta; tastes strongest in full sun.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 4,
+  "min_temp_c": -20,
+  "max_temp_c": 35,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   80,
+   90
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Pinch off flower buds for the best flavour",
+   "Cut back by a third in midsummer"
+  ],
+  "problems": [
+   {
+    "name": "Root rot",
+    "symptoms": "Wilting with wet soil",
+    "solution": "Let the soil dry between waterings and check drainage.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "rosemary",
+  "common_name": "Rosemary",
+  "scientific_name": "Salvia rosmarinus",
+  "category": "herb",
+  "difficulty": "medium",
+  "description": "Fragrant woody herb. Not winter-hardy in zone 5b, so grow it in a pot and bring it in.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 5,
+  "min_temp_c": -7,
+  "max_temp_c": 35,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   14,
+   21
+  ],
+  "days_to_harvest": [
+   90,
+   120
+  ],
+  "spacing_cm": 60,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "7",
+   "8",
+   "9",
+   "10"
+  ],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Start from a young plant; seeds are slow",
+   "Bring the pot indoors before nights drop below -5 °C"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew indoors",
+    "symptoms": "White powder on leaves in winter",
+    "solution": "Give it a sunny window, airflow and drier soil.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "sage",
+  "common_name": "Sage",
+  "scientific_name": "Salvia officinalis",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Silvery perennial herb that is very drought-tolerant once established.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 5,
+  "min_temp_c": -15,
+  "max_temp_c": 35,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   10,
+   21
+  ],
+  "days_to_harvest": [
+   75,
+   90
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "5",
+   "6",
+   "7",
+   "8"
+  ],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Harvest lightly in the first year",
+   "Prune woody stems back in spring"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White coating on leaves",
+    "solution": "Space plants for airflow and water at the base.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "lemon-balm",
+  "common_name": "Lemon balm",
+  "scientific_name": "Melissa officinalis",
+  "category": "herb",
+  "difficulty": "easy",
+  "description": "Lemon-scented perennial for tea. Spreads like mint, so keep it in a pot.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 3,
+  "min_temp_c": -20,
+  "max_temp_c": 32,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   70,
+   80
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Cut stems back by half when it gets leggy",
+   "Remove flowers to stop it self-seeding"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White powder on leaves late in summer",
+    "solution": "Cut it back hard; fresh growth comes back clean.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "swiss-chard",
+  "common_name": "Swiss chard",
+  "scientific_name": "Beta vulgaris subsp. vulgaris",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Colourful stems and big leaves; one sowing crops from summer into autumn.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 3,
+  "min_temp_c": -2,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   5,
+   14
+  ],
+  "days_to_harvest": [
+   50,
+   60
+  ],
+  "spacing_cm": 25,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Pick outer leaves and leave the centre",
+   "Each seed is a cluster, so thin to one seedling"
+  ],
+  "problems": [
+   {
+    "name": "Leaf miners",
+    "symptoms": "Pale tunnels or blotches inside the leaves",
+    "solution": "Remove affected leaves and cover the crop with fleece.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "bok-choy",
+  "common_name": "Bok choy",
+  "scientific_name": "Brassica rapa subsp. chinensis",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Fast cool-season green for stir-fries; harvest as baby leaves or whole heads.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": -2,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   7
+  ],
+  "days_to_harvest": [
+   45,
+   60
+  ],
+  "spacing_cm": 20,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    8,
+    9
+   ]
+  },
+  "care": [
+   "Grow in spring or late summer, not midsummer",
+   "Keep the soil evenly moist"
+  ],
+  "problems": [
+   {
+    "name": "Bolting",
+    "symptoms": "Flower stalk appears in hot weather",
+    "solution": "Sow in cool months and harvest promptly.",
+    "source_count": 0
+   },
+   {
+    "name": "Flea beetles",
+    "symptoms": "Tiny shot holes in the leaves",
+    "solution": "Cover with fleece right after sowing.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "mustard-greens",
+  "common_name": "Mustard greens",
+  "scientific_name": "Brassica juncea",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Peppery greens that grow fast and handle cold well.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 2,
+  "min_temp_c": -4,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   10
+  ],
+  "days_to_harvest": [
+   30,
+   45
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": true,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4,
+    8,
+    9
+   ]
+  },
+  "care": [
+   "Pick leaves young for a milder taste",
+   "Sow every 3 weeks in cool weather"
+  ],
+  "problems": [
+   {
+    "name": "Aphids",
+    "symptoms": "Clusters of small insects under leaves",
+    "solution": "Spray with water or mild soapy water.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "collard-greens",
+  "common_name": "Collard greens",
+  "scientific_name": "Brassica oleracea var. viridis",
+  "category": "leafy_green",
+  "difficulty": "easy",
+  "description": "Large, sturdy leaves that taste sweeter after frost.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -10,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   60,
+   80
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    7
+   ]
+  },
+  "care": [
+   "Harvest the lowest leaves first",
+   "Grow in a large pot or bed; plants get big"
+  ],
+  "problems": [
+   {
+    "name": "Cabbage worms",
+    "symptoms": "Green caterpillars and ragged holes",
+    "solution": "Hand-pick and cover with fine netting.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "cucumber",
+  "common_name": "Cucumber",
+  "scientific_name": "Cucumis sativus",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Fast summer crop. Bush or trellised types suit balconies.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 15,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   3,
+   10
+  ],
+  "days_to_harvest": [
+   50,
+   70
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Grow up a trellis to save space",
+   "Pick every 2 days so the plant keeps fruiting"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White powder on leaves",
+    "solution": "Water at the base and remove the worst leaves.",
+    "source_count": 0
+   },
+   {
+    "name": "Bitter fruit",
+    "symptoms": "Cucumbers taste bitter",
+    "solution": "Heat or dry soil stress. Water deeply and evenly.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "zucchini",
+  "common_name": "Zucchini",
+  "scientific_name": "Cucurbita pepo",
+  "category": "vegetable",
+  "difficulty": "easy",
+  "description": "One plant feeds a family all summer. Needs space and a big container.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 15,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   45,
+   55
+  ],
+  "spacing_cm": 90,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Pick fruit at 15–20 cm, before it gets huge",
+   "Use a container of at least 40 litres"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White patches on leaves",
+    "solution": "Normal late in summer. Remove bad leaves and improve airflow.",
+    "source_count": 0
+   },
+   {
+    "name": "Sudden wilting",
+    "symptoms": "Whole plant collapses, sawdust at the stem base",
+    "solution": "Squash vine borer. Cover young plants and check stems in June.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "bell-pepper",
+  "common_name": "Bell pepper",
+  "scientific_name": "Capsicum annuum",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Sweet peppers for warm, sunny spots. Start indoors early.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 15,
+  "max_temp_c": 32,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   60,
+   90
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Start seeds indoors 8 weeks before the last frost",
+   "Stake plants once fruit sets"
+  ],
+  "problems": [
+   {
+    "name": "Blossom end rot",
+    "symptoms": "Dark sunken patch at the bottom of fruit",
+    "solution": "Uneven watering. Keep soil evenly moist and mulch.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "eggplant",
+  "common_name": "Eggplant",
+  "scientific_name": "Solanum melongena",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Heat-loving fruiting crop; compact varieties suit pots.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 15,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   65,
+   80
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    6
+   ]
+  },
+  "care": [
+   "Plant out only when nights stay above 15 °C",
+   "Harvest while the skin is still glossy"
+  ],
+  "problems": [
+   {
+    "name": "Flea beetles",
+    "symptoms": "Tiny holes in young leaves",
+    "solution": "Cover young plants with fleece until they flower.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "broccoli",
+  "common_name": "Broccoli",
+  "scientific_name": "Brassica oleracea var. italica",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Cool-season crop; after the main head, side shoots keep coming.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -2,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   10
+  ],
+  "days_to_harvest": [
+   60,
+   90
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    7
+   ]
+  },
+  "care": [
+   "Cut the main head while the buds are tight",
+   "Leave the plant to grow side shoots"
+  ],
+  "problems": [
+   {
+    "name": "Cabbage worms",
+    "symptoms": "Green caterpillars in the heads",
+    "solution": "Cover with fine netting and soak heads in salt water before cooking.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "cabbage",
+  "common_name": "Cabbage",
+  "scientific_name": "Brassica oleracea var. capitata",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Dense heads for slaw and soups; grows best in spring or autumn.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   4,
+   10
+  ],
+  "days_to_harvest": [
+   70,
+   100
+  ],
+  "spacing_cm": 45,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    7
+   ]
+  },
+  "care": [
+   "Keep soil evenly moist so heads do not split",
+   "Harvest when the head feels firm"
+  ],
+  "problems": [
+   {
+    "name": "Split heads",
+    "symptoms": "Heads crack open after rain",
+    "solution": "Harvest firm heads promptly and water evenly.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "cauliflower",
+  "common_name": "Cauliflower",
+  "scientific_name": "Brassica oleracea var. botrytis",
+  "category": "vegetable",
+  "difficulty": "hard",
+  "description": "Rewarding but fussy: needs steady moisture and cool weather.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": -2,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   70,
+   100
+  ],
+  "spacing_cm": 50,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    7
+   ]
+  },
+  "care": [
+   "Tie leaves over the head to keep it white",
+   "Never let the plant dry out"
+  ],
+  "problems": [
+   {
+    "name": "Tiny heads (buttoning)",
+    "symptoms": "Small heads form too early",
+    "solution": "Stress from heat, drought or root damage. Transplant young and water steadily.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "onion",
+  "common_name": "Onion",
+  "scientific_name": "Allium cepa",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Grow from sets for an easy start; long-day types suit northern gardens.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   90,
+   120
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Plant sets with the tips just showing",
+   "Stop watering when the tops fall over"
+  ],
+  "problems": [
+   {
+    "name": "Onion thrips",
+    "symptoms": "Silvery streaks on leaves",
+    "solution": "Rinse plants and avoid crowding.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "garlic",
+  "common_name": "Garlic",
+  "scientific_name": "Allium sativum",
+  "category": "vegetable",
+  "difficulty": "easy",
+  "description": "Plant cloves in autumn and harvest the next summer. Almost no care.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 4,
+  "min_temp_c": -20,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   21
+  ],
+  "days_to_harvest": [
+   240,
+   270
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    10,
+    11
+   ]
+  },
+  "care": [
+   "Plant cloves 5 cm deep, pointed end up, in October",
+   "Cut off the curly flower stalks (scapes) in June"
+  ],
+  "problems": [
+   {
+    "name": "Rotting cloves",
+    "symptoms": "Soft bulbs, yellow leaves in spring",
+    "solution": "Soil too wet. Plant in raised, well-drained beds.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "celery",
+  "common_name": "Celery",
+  "scientific_name": "Apium graveolens",
+  "category": "vegetable",
+  "difficulty": "hard",
+  "description": "Thirsty, slow crop that rewards steady care with crisp stalks.",
+  "sunlight_requirement": "partial",
+  "watering_interval_days": 1,
+  "min_temp_c": 5,
+  "max_temp_c": 25,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   14,
+   21
+  ],
+  "days_to_harvest": [
+   100,
+   130
+  ],
+  "spacing_cm": 25,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Never let the soil dry out",
+   "Pick outer stalks as needed"
+  ],
+  "problems": [
+   {
+    "name": "Stringy, hollow stalks",
+    "symptoms": "Tough, bitter stalks",
+    "solution": "Dry soil. Water daily in warm weather and mulch.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "leek",
+  "common_name": "Leek",
+  "scientific_name": "Allium ampeloprasum",
+  "category": "vegetable",
+  "difficulty": "medium",
+  "description": "Mild onion relative that stands in the garden well into winter.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -10,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   100,
+   120
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Plant seedlings in deep holes",
+   "Pile soil around the stems for long white shanks"
+  ],
+  "problems": [
+   {
+    "name": "Leek rust",
+    "symptoms": "Orange spots on leaves",
+    "solution": "Remove affected leaves and give plants more airflow.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "beets",
+  "common_name": "Beets",
+  "scientific_name": "Beta vulgaris",
+  "category": "root",
+  "difficulty": "easy",
+  "description": "Sweet roots and edible leaves; fine in a deep pot.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -2,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   5,
+   10
+  ],
+  "days_to_harvest": [
+   50,
+   70
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ]
+  },
+  "care": [
+   "Each seed is a cluster, so thin to one seedling",
+   "Harvest when roots are golf-ball to tennis-ball size"
+  ],
+  "problems": [
+   {
+    "name": "Woody roots",
+    "symptoms": "Tough, stringy beets",
+    "solution": "Left too long or dry soil. Harvest young and water evenly.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "turnips",
+  "common_name": "Turnips",
+  "scientific_name": "Brassica rapa subsp. rapa",
+  "category": "root",
+  "difficulty": "easy",
+  "description": "Quick cool-season roots; the greens are edible too.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   3,
+   10
+  ],
+  "days_to_harvest": [
+   40,
+   60
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    8,
+    9
+   ]
+  },
+  "care": [
+   "Harvest roots at 5–8 cm across",
+   "Sow in late summer for a sweet autumn crop"
+  ],
+  "problems": [
+   {
+    "name": "Flea beetles",
+    "symptoms": "Tiny holes in the leaves",
+    "solution": "Cover with fleece after sowing.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "potatoes",
+  "common_name": "Potatoes",
+  "scientific_name": "Solanum tuberosum",
+  "category": "root",
+  "difficulty": "easy",
+  "description": "Fun in grow bags: keep adding soil and dig up a surprise harvest.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 4,
+  "min_temp_c": 5,
+  "max_temp_c": 30,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   14,
+   28
+  ],
+  "days_to_harvest": [
+   70,
+   120
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Plant seed potatoes, not supermarket ones",
+   "Pile soil over the stems as they grow"
+  ],
+  "problems": [
+   {
+    "name": "Green potatoes",
+    "symptoms": "Green skin on tubers",
+    "solution": "Light exposure makes them toxic. Keep tubers covered and do not eat green parts.",
+    "source_count": 0
+   },
+   {
+    "name": "Colorado potato beetle",
+    "symptoms": "Striped beetles and red larvae eating leaves",
+    "solution": "Hand-pick daily and check under leaves for eggs.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "parsnips",
+  "common_name": "Parsnips",
+  "scientific_name": "Pastinaca sativa",
+  "category": "root",
+  "difficulty": "medium",
+  "description": "Slow, sweet roots that taste best after the first frosts.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 4,
+  "min_temp_c": -10,
+  "max_temp_c": 25,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   14,
+   28
+  ],
+  "days_to_harvest": [
+   110,
+   130
+  ],
+  "spacing_cm": 10,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Use fresh seed every year",
+   "Wear gloves when handling the leaves; the sap can irritate skin in sun"
+  ],
+  "problems": [
+   {
+    "name": "Forked roots",
+    "symptoms": "Twisted or split roots",
+    "solution": "Stony or compacted soil. Use deep, loose soil.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "sweet-potato",
+  "common_name": "Sweet potato",
+  "scientific_name": "Ipomoea batatas",
+  "category": "root",
+  "difficulty": "medium",
+  "description": "Grown from rooted slips; loves heat and makes pretty vines.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 4,
+  "min_temp_c": 15,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   90,
+   120
+  ],
+  "spacing_cm": 30,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    6
+   ]
+  },
+  "care": [
+   "Plant slips two weeks after the last frost",
+   "Dig before the first frost and cure them warm for 10 days"
+  ],
+  "problems": [
+   {
+    "name": "Cracked roots",
+    "symptoms": "Splits in the tubers",
+    "solution": "Uneven watering. Water deeply once a week.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "pole-beans",
+  "common_name": "Pole beans",
+  "scientific_name": "Phaseolus vulgaris",
+  "category": "legume",
+  "difficulty": "easy",
+  "description": "Climbing beans that crop for weeks on a small footprint.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 2,
+  "min_temp_c": 10,
+  "max_temp_c": 32,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   10
+  ],
+  "days_to_harvest": [
+   60,
+   70
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6,
+    7
+   ]
+  },
+  "care": [
+   "Put the trellis up before sowing",
+   "Pick every 2–3 days while pods are slim"
+  ],
+  "problems": [
+   {
+    "name": "Mexican bean beetle",
+    "symptoms": "Lacy, skeletonised leaves",
+    "solution": "Hand-pick beetles and yellow larvae under the leaves.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "fava-beans",
+  "common_name": "Fava beans",
+  "scientific_name": "Vicia faba",
+  "category": "legume",
+  "difficulty": "easy",
+  "description": "Cold-hardy beans to sow in early spring.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -5,
+  "max_temp_c": 24,
+  "frost_tolerant": true,
+  "days_to_germination": [
+   7,
+   14
+  ],
+  "days_to_harvest": [
+   80,
+   100
+  ],
+  "spacing_cm": 20,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    3,
+    4
+   ]
+  },
+  "care": [
+   "Sow as soon as the soil can be worked",
+   "Pinch out the tips once the first pods form"
+  ],
+  "problems": [
+   {
+    "name": "Black aphids",
+    "symptoms": "Black insects on the growing tips",
+    "solution": "Pinch out the infested tips.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "edamame",
+  "common_name": "Edamame",
+  "scientific_name": "Glycine max",
+  "category": "legume",
+  "difficulty": "easy",
+  "description": "Green soybeans picked young; a fun, protein-rich crop.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": 10,
+  "max_temp_c": 32,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   7,
+   10
+  ],
+  "days_to_harvest": [
+   75,
+   90
+  ],
+  "spacing_cm": 15,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "single",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    5,
+    6
+   ]
+  },
+  "care": [
+   "Sow after the soil warms up",
+   "Harvest when pods are plump and still bright green"
+  ],
+  "problems": [
+   {
+    "name": "Japanese beetles",
+    "symptoms": "Metallic beetles skeletonising leaves",
+    "solution": "Knock them into soapy water in the early morning.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "raspberries",
+  "common_name": "Raspberries",
+  "scientific_name": "Rubus idaeus",
+  "category": "fruit",
+  "difficulty": "medium",
+  "description": "Perennial canes; autumn-fruiting types crop in the first year.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -25,
+  "max_temp_c": 30,
+  "frost_tolerant": true,
+  "days_to_germination": null,
+  "days_to_harvest": [
+   90,
+   120
+  ],
+  "spacing_cm": 60,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Plant bare-root canes in early spring",
+   "Cut autumn-fruiting canes to the ground in late winter"
+  ],
+  "problems": [
+   {
+    "name": "Japanese beetles",
+    "symptoms": "Skeletonised leaves in midsummer",
+    "solution": "Hand-pick in the early morning.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "blueberries",
+  "common_name": "Blueberries",
+  "scientific_name": "Vaccinium corymbosum",
+  "category": "fruit",
+  "difficulty": "hard",
+  "description": "Long-lived bushes that need acidic soil; great in containers.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": -30,
+  "max_temp_c": 32,
+  "frost_tolerant": true,
+  "days_to_germination": null,
+  "days_to_harvest": [
+   365,
+   730
+  ],
+  "spacing_cm": 120,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [
+   "3",
+   "4",
+   "5",
+   "6",
+   "7"
+  ],
+  "planting_months": {
+   "5b": [
+    4,
+    5
+   ]
+  },
+  "care": [
+   "Use acidic potting mix (pH 4.5–5.5)",
+   "Grow two varieties for better fruit set"
+  ],
+  "problems": [
+   {
+    "name": "Yellow leaves with green veins",
+    "symptoms": "Leaves yellow between the veins",
+    "solution": "Soil not acidic enough. Use an acidifying feed or sulfur.",
+    "source_count": 0
+   }
+  ]
+ },
+ {
+  "slug": "cantaloupe",
+  "common_name": "Cantaloupe",
+  "scientific_name": "Cucumis melo",
+  "category": "fruit",
+  "difficulty": "medium",
+  "description": "Sweet melons for hot summers; small varieties grow on a sturdy trellis.",
+  "sunlight_requirement": "full_sun",
+  "watering_interval_days": 3,
+  "min_temp_c": 18,
+  "max_temp_c": 35,
+  "frost_tolerant": false,
+  "days_to_germination": [
+   4,
+   10
+  ],
+  "days_to_harvest": [
+   75,
+   90
+  ],
+  "spacing_cm": 60,
+  "container_friendly": true,
+  "indoor_friendly": false,
+  "harvest_mode": "continuous",
+  "hardiness_zones": [],
+  "planting_months": {
+   "5b": [
+    6
+   ]
+  },
+  "care": [
+   "Support fruit on a trellis with slings",
+   "Ripe melons slip off the vine with a gentle push"
+  ],
+  "problems": [
+   {
+    "name": "Powdery mildew",
+    "symptoms": "White powder on leaves",
+    "solution": "Water at the base and give the vines airflow.",
+    "source_count": 0
+   }
+  ]
+ }
+]

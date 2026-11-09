@@ -17,11 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 from greenhand.views import Home
 
 
 urlpatterns = [
     path('', Home.as_view(), name='landing'),
+    path('admin/', admin.site.urls),
     path("accounts/", include('userprofile.urls')),
     path("garden/", include('garden.urls')),
     path("plants/", include('plants.urls')),
@@ -29,3 +33,6 @@ urlpatterns = [
     path("community/", include('community.urls')),
     path("tutor/", include('tutor.urls')),
 ]
+
+# Serve uploaded photos while developing (production serves them from object storage).
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

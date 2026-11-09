@@ -1,11 +1,13 @@
 """
 Plant database helpers: labels, suitability (PRD 3.2 / FR-12) and catalog filtering (FR-10).
-Suitability uses the user's hardiness zone (via planting_months for zone 5b), the current
-month and whether the plant can grow indoors or in containers.
+Suitability uses the user's hardiness zone (via the plant's planting_months for that zone), the
+current month and whether the plant can grow indoors or in containers.
 """
 import calendar
 
-from greenhand import mock_data as data
+from greenhand.clock import today
+
+from . import selectors
 
 CATEGORIES = {
     "herb": "Herbs", "leafy_green": "Leafy greens", "vegetable": "Vegetables",
@@ -23,12 +25,13 @@ SUITABILITY = {
 
 
 def suitability(plant, month=None):
-    month = month or data.TODAY.month
+    """plant is a catalog dict; planting_months are already for the user's zone."""
+    month = month or today().month
     months = plant["planting_months"]
     if not months and plant["indoor_friendly"]:
         level, reason = "great", "Grows indoors all year"
     elif month in months:
-        level, reason = "great", f"Ideal planting time in zone {data.LOCATION['hardiness_zone']}"
+        level, reason = "great", f"Ideal planting time in zone {selectors.user_zone()}"
     elif plant["indoor_friendly"]:
         level, reason = "care", "Out of season outside — grow it indoors on a sunny sill"
     else:
@@ -37,11 +40,24 @@ def suitability(plant, month=None):
     return {"level": level, "reason": reason, **SUITABILITY[level]}
 
 
-def enrich(plant):
-    """Add display fields used by the templates."""
-    in_garden = [g["nickname"] for g in data.GARDEN if g["plant_slug"] == plant["slug"] and g["status"] not in ("failed", "archived")]
+def _timeline_pct(plant):
+    """Seed-to-harvest bar segments as % of the longest harvest day."""
+    germination = plant["days_to_germination"][1] or 0
+    harvest_min, harvest_max = plant["days_to_harvest"]
+    if not harvest_max:
+        return {"germination": 0, "growing": 100, "harvest": 0}
+    harvest_min = harvest_min or harvest_max
+    return {
+        "germination": round(germination / harvest_max * 100),
+        "growing": round((harvest_min - germination) / harvest_max * 100),
+        "harvest": round((harvest_max - harvest_min) / harvest_max * 100),
+    }
+
+
+def enrich(plant, in_garden=()):
+    """Add display fields used by the templates. in_garden: nicknames of the user's plants of this species."""
     months = plant["planting_months"]
-    g1, (h0, h1) = plant["days_to_germination"][1], plant["days_to_harvest"]
+    current = today().month
     return {
         **plant,
         "suitability": suitability(plant),
@@ -50,22 +66,17 @@ def enrich(plant):
         "sunlight_label": SUNLIGHT[plant["sunlight_requirement"]],
         "seasons": [s for s, ms in SEASONS.items() if set(ms) & set(months)] or ["all year"],
         "months": [
-            {"abbr": calendar.month_abbr[m][0], "name": calendar.month_name[m], "plant": (m in months) or not months, "current": m == data.TODAY.month}
+            {"abbr": calendar.month_abbr[m][0], "name": calendar.month_name[m], "plant": (m in months) or not months, "current": m == current}
             for m in range(1, 13)
         ],
-        "in_garden": in_garden,
-        # Seed-to-harvest bar segments as % of the longest harvest day
-        "timeline_pct": {"germination": round(g1 / h1 * 100), "growing": round((h0 - g1) / h1 * 100), "harvest": round((h1 - h0) / h1 * 100)},
+        "in_garden": list(in_garden),
+        "timeline_pct": _timeline_pct(plant),
     }
 
 
-def catalog():
-    return [enrich(p) for p in data.CATALOG]
-
-
-def filter_catalog(params):
-    """Apply the GET filters from the Pick a Plant page."""
-    plants = catalog()
+def filter_catalog(params, in_garden_by_slug):
+    """Apply the GET filters from the Pick a Plant page (FR-10) and sort by suitability."""
+    plants = [enrich(p, in_garden_by_slug.get(p["slug"], ())) for p in selectors.catalog()]
     q = params.get("q", "").strip().lower()
     if q:
         plants = [p for p in plants if q in p["common_name"].lower() or q in p["scientific_name"].lower()]
