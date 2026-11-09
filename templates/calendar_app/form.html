@@ -1,0 +1,6 @@
+{% extends "layouts/app.html" %}{% block page_header %}{% endblock %}
+{% block content %}<section class="rounded-2xl bg-white p-6">
+<h1 class="text-2xl font-semibold">{% if event_form %}New calendar event{% else %}New reminder{% endif %}</h1>
+<form class="area3-form" method="post">{% csrf_token %}{{ form.as_p }}<button class="rounded-lg bg-forest px-4 py-2 text-white">Save</button>
+</form>
+</section>{% endblock %}

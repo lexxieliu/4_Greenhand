@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'plants',
     'post',
     'weather',
+    'calendar_app',
+    'notifications',
     'community',
 ]
 
@@ -48,6 +50,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'notifications.middleware.UserTimezoneMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -137,3 +140,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOCAL_MODEL_ID = env("LOCAL_MODEL_ID", default="Qwen/Qwen2.5-3B-Instruct")
 EMBEDDING_MODEL_ID = env("EMBEDDING_MODEL_ID", default="sentence-transformers/all-MiniLM-L6-v2")
 TUTOR_TIMEOUT_SECONDS = env.int("TUTOR_TIMEOUT_SECONDS", default=60)
+
+# Area 3: SMTP is configurable; local development prints messages to the console.
+LOGIN_URL = "userprofile:login"
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Greenhand <noreply@localhost>")
+SITE_URL = env("SITE_URL", default="http://localhost:8000")
+EMAIL_POSTAL_ADDRESS = env("EMAIL_POSTAL_ADDRESS", default="")

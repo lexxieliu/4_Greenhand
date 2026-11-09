@@ -8,10 +8,11 @@ from greenhand.clock import today
 from plants.selectors import published_plants
 
 from .images import clean_photo
-from .models import CareLog, Harvest, Problem, Reminder, TimelineEntry, UserPlant
+from .models import CareLog, Harvest, Problem, TimelineEntry, UserPlant
 
 MAX_PAST_DAYS = 5 * 365      # a plant can't have been planted more than 5 years ago
 MAX_PLAN_DAYS = 365          # or be planned more than a year ahead
+REMINDER_TYPES = [(t, t.replace("_", " ").capitalize()) for t in ("water", "fertilize", "check_problem", "harvest_check", "custom")]
 
 
 class PhotoMixin:
@@ -97,11 +98,11 @@ class StatusForm(forms.Form):
 
 
 class ReminderForm(forms.Form):
-    type = forms.ChoiceField(choices=Reminder.Type.choices)
+    type = forms.ChoiceField(choices=REMINDER_TYPES)
     every = forms.IntegerField(min_value=0, max_value=90)
     time = forms.TimeField(required=False)
 
 
 class ReminderFlagForm(forms.Form):
-    flag = forms.ChoiceField(choices=[(f, f) for f in ("active", "inapp", "email", "weather_aware")])
+    flag = forms.ChoiceField(choices=[(f, f) for f in ("active", "weather_aware")])
     value = forms.BooleanField(required=False)

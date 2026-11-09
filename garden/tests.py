@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from datetime import timedelta
 from io import StringIO
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -14,15 +15,28 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
+from calendar_app.models import Reminder, ReminderOccurrence
+from calendar_app.recurrence import parse_rule
+from calendar_app.services import act_on_occurrence
 from greenhand.clock import today
 from greenhand.users import DEMO_USERNAME
 from plants.models import Plant
 
 from . import selectors, services
 from .images import clean_photo
-from .models import Harvest, Reminder, ReminderOccurrence, TimelineEntry, UserPlant
+from .models import Harvest, TimelineEntry, UserPlant
 
 MEDIA = tempfile.mkdtemp()
+
+
+def due(reminder):
+    """A calendar_app reminder's next due date in its own timezone."""
+    return reminder.next_due_at.astimezone(ZoneInfo(reminder.timezone)).date()
+
+
+def every(reminder):
+    step = parse_rule(reminder.recurrence_rule)
+    return step.days if step else 0
 
 
 def jpeg_with_gps(size=(2400, 1200)):
@@ -57,10 +71,11 @@ class StartGrowingTests(GardenTestCase):
         self.assertEqual(up.nickname, "Basil")
         self.assertEqual(up.timeline.get().stage, "seed")
         water = up.reminders.get(type="water")
-        self.assertEqual((water.interval_days, water.next_due_on), (self.basil.watering_interval_days, today() + timedelta(days=1)))
+        self.assertEqual((every(water), due(water)), (self.basil.watering_interval_days, today() + timedelta(days=1)))
+        self.assertTrue(water.occurrences.exists())                 # materialized for the calendar
         self.assertTrue(water.weather_aware)
         feed = up.reminders.get(type="fertilize")
-        self.assertEqual(feed.next_due_on, today() + timedelta(days=services.FIRST_FEED_AFTER_DAYS["seed"]))
+        self.assertEqual(due(feed), today() + timedelta(days=services.FIRST_FEED_AFTER_DAYS["seed"]))
 
     def test_seedling_starts_growing_and_indoor_watering_ignores_rain(self):
         up = self.grow(start_method="seedling", setting="indoor")
@@ -71,14 +86,14 @@ class StartGrowingTests(GardenTestCase):
         up = self.grow(planted_on=today() + timedelta(days=10))
         self.assertEqual(up.status, "planned")
         self.assertFalse(up.timeline.exists())
-        self.assertEqual(up.reminders.get(type="water").next_due_on, today() + timedelta(days=10))
+        self.assertEqual(due(up.reminders.get(type="water")), today() + timedelta(days=10))
 
 
 class TimelineTests(GardenTestCase):
     def test_entry_moves_status_forward_and_fruiting_starts_harvest_checks(self):
         up = self.grow()
         self.assertEqual(services.add_timeline_entry(up, stage="fruiting", recorded_on=today()), "Fruiting")
-        self.assertEqual(up.reminders.get(type="harvest_check").interval_days, services.HARVEST_CHECK_INTERVAL_DAYS["continuous"])
+        self.assertEqual(every(up.reminders.get(type="harvest_check")), services.HARVEST_CHECK_INTERVAL_DAYS["continuous"])
 
     def test_entry_never_moves_status_backwards_or_over_a_user_choice(self):
         up = self.grow(start_method="seedling")
@@ -96,29 +111,36 @@ class TimelineTests(GardenTestCase):
 
 
 class CareAndProblemTests(GardenTestCase):
-    def test_watering_completes_the_due_reminder_and_schedules_the_next(self):
+    def test_watering_completes_the_task_due_by_tomorrow(self):
         up = self.grow()
-        water = up.reminders.get(type="water")
-        services.log_care(up, action="water", performed_on=today())
-        water.refresh_from_db()
-        self.assertEqual(water.next_due_on, today() + timedelta(days=water.interval_days))
-        self.assertEqual(water.occurrences.get().status, ReminderOccurrence.Status.DONE)
+        log = services.log_care(up, action="water", performed_on=today())
+        done = ReminderOccurrence.objects.get(reminder__user_plant=up, status="done")
+        self.assertEqual((done.reminder.type, done.care_log), ("water", log))
 
     def test_pruning_does_not_touch_reminders(self):
         up = self.grow()
         services.log_care(up, action="prune", performed_on=today())
-        self.assertFalse(ReminderOccurrence.objects.exists())
+        self.assertFalse(ReminderOccurrence.objects.filter(status="done").exists())
 
-    def test_completing_a_task_logs_care_from_the_reminder(self):
+    def test_done_on_a_calendar_task_logs_care(self):
         up = self.grow()
-        services.complete_reminder(up.reminders.get(type="water"))
-        self.assertEqual(up.care_logs.get().source, "reminder")
+        occurrence = up.reminders.get(type="water").occurrences.order_by("due_at").first()
+        act_on_occurrence(self.user, occurrence.pk, "done")
+        log = up.care_logs.get()
+        self.assertEqual((log.action, log.source), ("water", "reminder"))
+
+    def test_done_on_a_problem_check_logs_no_care(self):
+        up = self.grow()
+        services.log_problem(up, title="Spots")
+        occurrence = up.reminders.get(type="check_problem").occurrences.get()
+        act_on_occurrence(self.user, occurrence.pk, "done")
+        self.assertFalse(up.care_logs.exists())
 
     def test_problem_schedules_a_check_that_resolving_turns_off(self):
         up = self.grow()
         problem = services.log_problem(up, title="Yellow leaves", severity="medium")
         check = up.reminders.get(type="check_problem")
-        self.assertEqual(check.next_due_on, today() + timedelta(days=3))
+        self.assertEqual(due(check), today() + timedelta(days=3))
         services.set_problem_status(problem, "resolved", "Let it dry out")
         check.refresh_from_db()
         self.assertFalse(check.is_active)
@@ -191,12 +213,12 @@ class PhotoTests(TestCase):
 
 @override_settings(MEDIA_ROOT=MEDIA)
 class EndpointTests(GardenTestCase):
-    """The demo account is used when nobody is signed in (greenhand.users.current_user)."""
+    """Garden pages and endpoints act for the signed-in user."""
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.demo = User.objects.create(username=DEMO_USERNAME)
+        cls.demo = User.objects.create_user(username=DEMO_USERNAME, password="test-pass-123")
         cls.mine = services.start_growing(cls.demo, cls.basil, nickname="Balcony Basil", planted_on=today(),
                                           start_method="seedling", setting="outdoor")
         cls.theirs = services.start_growing(cls.user, cls.basil, nickname="Not yours", planted_on=today(),
@@ -207,6 +229,9 @@ class EndpointTests(GardenTestCase):
         super().tearDownClass()
         shutil.rmtree(MEDIA, ignore_errors=True)
 
+    def setUp(self):
+        self.client.force_login(self.demo)
+
     def post(self, name, data, *args):
         return self.client.post(reverse(f"garden:{name}", args=args), data)
 
@@ -214,10 +239,16 @@ class EndpointTests(GardenTestCase):
         for name in ("garden:my_garden", "weather:index", "community:feed", "tutor:ask", "plants:list"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
         self.assertContains(self.client.get(reverse("garden:my_garden")), "Balcony Basil")
-        self.assertContains(self.client.get(reverse("weather:index")), "Balcony Basil")
         dashboard = self.client.get(reverse("garden:dashboard"))
         self.assertContains(dashboard, "Balcony Basil")
         self.assertNotContains(dashboard, "Not yours")
+
+    def test_signed_out_visitors_are_sent_to_login(self):
+        self.client.logout()
+        for response in (self.client.get(reverse("garden:my_garden")), self.post("log_care", {}, self.mine.pk)):
+            self.assertEqual(response.status_code, 302)
+            self.assertIn(reverse("userprofile:login"), response["Location"])
+        self.assertFalse(self.mine.care_logs.exists())
 
     def test_add_plant_returns_the_saved_plant(self):
         response = self.post("add_plant", {"plant": "radish", "planted_on": today().isoformat(), "start_method": "seed",
@@ -269,7 +300,6 @@ class EndpointTests(GardenTestCase):
             ("change_status", {"status": "growing"}, self.theirs.pk),
             ("set_problem_status", {"status": "resolved"}, problem.pk),
             ("set_reminder_flag", {"flag": "active", "value": ""}, reminder.pk),
-            ("complete_reminder", {}, reminder.pk),
         ]
         for name, data, pk in checks:
             self.assertEqual(self.post(name, data, pk).status_code, 404, name)
@@ -288,3 +318,11 @@ class DemoGardenTests(TestCase):
         mint = next(p for p in plants if p["nickname"] == "Mint")
         self.assertEqual((mint["status"], len(mint["harvests"])), ("producing", 3))
         self.assertIsNotNone(mint["first_harvest_at"])
+        basil = next(p for p in plants if p["nickname"] == "Balcony Basil")
+        water = next(r for r in basil["reminders"] if r["type"] == "water")
+        self.assertEqual(water["history"][0]["status"], "skipped_rain")       # history kept as occurrences
+
+    def test_demo_account_can_sign_in_with_password(self):
+        call_command("seed_demo_garden", "--password", "demo-pass-123", stdout=StringIO())
+        response = self.client.post(reverse("userprofile:login"), {"email": "maya@greenhand.demo", "password": "demo-pass-123"})
+        self.assertRedirects(response, reverse("garden:dashboard"), fetch_redirect_response=False)

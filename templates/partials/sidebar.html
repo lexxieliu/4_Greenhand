@@ -28,11 +28,11 @@
               <li><a href="{{ my_garden_url }}#tab=care" class="side-link block rounded-lg px-3 py-2">Care log</a></li>
               <li><a href="{{ my_garden_url }}#tab=problems" class="side-link block rounded-lg px-3 py-2">Problems</a></li>
               <li><a href="{{ my_garden_url }}#tab=harvests" class="side-link block rounded-lg px-3 py-2">Harvests</a></li>
-              <li><a href="{{ my_garden_url }}#tab=reminders" class="side-link block rounded-lg px-3 py-2">Reminders</a></li>
+              <li><a href="{% url 'calendar_app:month' %}" class="side-link block rounded-lg px-3 py-2">Reminders</a></li>
             </ul>
           </div>
         </li>
-        <li><a href="{% url 'garden:my_garden' %}#tab=calendar" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-calendar"/></svg>Calendar</a></li>
+        <li><a href="{% url 'calendar_app:month' %}" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-calendar"/></svg>Calendar</a></li>
       </ul>
     </div>
 
@@ -50,7 +50,7 @@
       <p class="px-3 pb-2 pt-1 text-[13.5px] font-semibold text-ink">Community</p>
       <ul class="space-y-0.5">
         <li><a href="{% url 'community:feed' %}" {% if 'community:' in nav %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-post"/></svg>Posts</a></li>
-        <li><a href="#" data-open-notifications class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-bell"/></svg>Notifications{% if gh_unread %}<span id="sideBadge" class="ml-auto grid h-5 min-w-[20px] place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{{ gh_unread }}</span>{% endif %}</a></li>
+        <li><a href="{% url 'notifications:center' %}" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-bell"/></svg>Notifications{% if gh_unread %}<span id="sideBadge" class="ml-auto grid h-5 min-w-[20px] place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{{ gh_unread }}</span>{% endif %}</a></li>
       </ul>
     </div>
 

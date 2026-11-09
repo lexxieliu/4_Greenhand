@@ -243,82 +243,6 @@
     row.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   });
 
-  // ---------- Today's tasks ----------
-  const taskList = $('#taskList');
-
-  function updateTaskStats() {
-    const tasks = $$('.task', taskList);
-    const done = tasks.filter((t) => t.classList.contains('is-done')).length;
-    $('#tasksDone').textContent = done;
-    $('#tasksTotal').textContent = tasks.length;
-    $('#tasksHint').textContent = tasks.length && done === tasks.length ? 'all done!' : 'done';
-    $('#tasksBar').style.width = `${tasks.length ? Math.round((done / tasks.length) * 100) : 0}%`;
-  }
-
-  function setTaskDone(task, done) {
-    if (task.classList.contains('is-done') === done) return;
-    task.classList.toggle('is-done', done);
-    const title = $('.task-title', task).textContent;
-    $('.task-check', task).setAttribute('aria-label', `Mark “${title}” as ${done ? 'not done' : 'done'}`);
-    if (task.dataset.care) bumpCare(task.dataset.care, done ? 1 : -1);
-    updateTaskStats();
-  }
-
-  taskList.addEventListener('click', (e) => {
-    const check = e.target.closest('.task-check');
-    if (!check) return;
-    const task = check.closest('.task');
-    if (task.classList.contains('is-done')) return toast('Already done today', { icon: 'i-check' });
-    setTaskDone(task, true);
-    post(`reminders/${task.dataset.task}/done/`, new FormData()).then((d) => {
-      if (d) toast(d.message, { icon: 'i-check' });
-      else setTaskDone(task, false);
-    });
-  });
-
-  // ---------- Weather alerts (rendered only when the rule engine raised one) ----------
-  const rainAlert = $('#rainAlert');
-  const basilTask = $('.task[data-skipped="rain"]') || $('[data-task="water-basil"]');
-
-  if (rainAlert) {
-    $('#rainAck').addEventListener('click', () => {
-      rainAlert.classList.add('is-dismissed');
-      toast('Rain skip acknowledged', { icon: 'i-rain', undo: () => rainAlert.classList.remove('is-dismissed') });
-    });
-    $('#rainOverride').addEventListener('click', () => {
-      rainAlert.classList.add('is-dismissed');
-      if (basilTask) {
-        const badge = $('.task-badge', basilTask);
-        badge.className = 'task-badge inline-flex items-center gap-1 rounded-full bg-mist px-2 py-0.5 text-[11.5px] font-medium text-muted';
-        badge.textContent = 'Overridden';
-        basilTask.dataset.care = 'water'; // from now on, ticking it counts as watering
-        setTaskDone(basilTask, false);
-      }
-      toast('Watering added back for today', { icon: 'i-drop' });
-    });
-  }
-
-  const frostAlert = $('#frostAlert');
-  if (frostAlert) {
-    const frostToggle = $('.alert-toggle', frostAlert);
-    frostToggle.addEventListener('click', () => {
-      const open = !frostAlert.classList.contains('is-open');
-      frostAlert.classList.toggle('is-open', open);
-      frostToggle.setAttribute('aria-expanded', String(open));
-    });
-    $$('.frost-step').forEach((cb) =>
-      cb.addEventListener('change', () => {
-        $('#frostCount').textContent = $$('.frost-step').filter((c) => c.checked).length;
-      })
-    );
-    $('#frostDone').addEventListener('click', () => {
-      frostAlert.classList.add('is-dismissed');
-      const coverTask = $('[data-task="frost-cover"]');
-      if (coverTask) setTaskDone(coverTask, true);
-      toast('Frost plan saved — we’ll remind you Thursday at sunset', { icon: 'i-snow', undo: () => frostAlert.classList.remove('is-dismissed') });
-    });
-  }
-
   // ---------- Tutor mini chat (real answers from /tutor/api/ask/, see tutor_client.js) ----------
   const chatLog = $('#chatLog');
   const chatInput = $('#chatInput');
@@ -481,7 +405,6 @@
   });
 
   function showLoggedCare(data) {
-    const plantId = data.get('plant');
     const plant = $('#logPlant').selectedOptions[0].textContent;
     const action = data.get('action');
     const amount = data.get('amount').trim();
@@ -497,15 +420,7 @@
     line2.textContent = `Care log · ${when}`;
     $('#activityList').prepend(li);
 
-    // Ticking a matching task already counts the action in the chart
-    const matchingTask = action === 'water' ? $(`.task[data-plant="${plantId}"][data-care="water"]`) : null;
-    const countsToday = data.get('when') === '0';
-    if (matchingTask && countsToday && !matchingTask.classList.contains('is-done')) {
-      matchingTask.dataset.care ||= 'water';
-      setTaskDone(matchingTask, true);
-    } else if (countsToday) {
-      bumpCare(ACTION_CAT[action], 1);
-    }
+    if (data.get('when') === '0') bumpCare(ACTION_CAT[action], 1);
 
     toast(`${ACTION_LABELS[action]} ${plant}`, { icon });
     logForm.reset();
@@ -516,6 +431,6 @@
   renderChart();
   renderCareCard();
   renderCalendar();
-  updateTaskStats();
+
   window.addEventListener('resize', hideTip);
 })();

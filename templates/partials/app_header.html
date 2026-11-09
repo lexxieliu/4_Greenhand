@@ -22,7 +22,7 @@
 
   <div class="ml-auto flex items-center gap-2.5">
     <a href="{% url 'weather:index' %}" class="hidden items-center gap-1.5 rounded-lg bg-mist px-2.5 py-2 text-[13px] text-muted ring-1 ring-line hover:text-forest xl:inline-flex">
-      <svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#{{ gh_weather_now.icon }}"/></svg>{{ gh_weather_now.temp_c }}&deg;C · {{ gh_location.label }}
+      <svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#{{ gh_weather_now.icon }}"/></svg>{% if gh_weather_now %}{{ gh_weather_now.temp_c }}&deg;C · {% endif %}{{ gh_location.label }}
     </a>
 
     <!-- Notifications -->
@@ -34,7 +34,7 @@
       <div id="notifPanel" class="popover absolute right-0 top-full mt-3 hidden w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-float" role="dialog" aria-label="Notifications">
         <div class="flex items-center justify-between border-b border-line px-4 py-3">
           <span class="text-[14px] font-medium">Notifications</span>
-          <button id="markAllRead" class="text-[12.5px] font-medium text-forest hover:text-leaf">Mark all as read</button>
+          <a href="{% url 'notifications:center' %}" class="text-[12.5px] font-medium text-forest hover:text-leaf">Open center</a>
         </div>
         <ul class="scroll-thin max-h-[360px] divide-y divide-line overflow-y-auto text-[13px]">
           {% for n in gh_notifications %}
@@ -63,7 +63,7 @@
         </div>
         <a href="#" role="menuitem" class="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-user"/></svg>Profile</a>
         <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-pin"/></svg>Location &amp; growing space</a>
-        <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-settings"/></svg>Notification settings</a>
+        <a href="{% url 'notifications:preferences' %}" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist">Notification settings</a>
         <form method="post" action="{% url 'userprofile:logout' %}">
           {% csrf_token %}
           <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[14px] text-rose-700 hover:bg-rose-50"><svg class="ic h-4 w-4"><use href="#i-logout"/></svg>Sign out</button>

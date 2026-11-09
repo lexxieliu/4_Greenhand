@@ -24,6 +24,8 @@ from greenhand.views import Home
 
 
 urlpatterns = [
+    path("calendar/", include("calendar_app.urls")),
+    path("notifications/", include("notifications.urls")),
     path('', Home.as_view(), name='landing'),
     path('admin/', admin.site.urls),
     path("accounts/", include('userprofile.urls')),

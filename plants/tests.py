@@ -1,6 +1,7 @@
 """Plant catalog tests. Run with: python manage.py test --settings=greenhand.settings.test"""
-from datetime import timedelta
+from datetime import date, timedelta
 from io import StringIO
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
@@ -31,13 +32,14 @@ class SeedTests(CatalogTestCase):
         self.assertEqual(PlantProblemSummary.objects.filter(plant=basil).count(), 3)
 
 
+@mock.patch("plants.services.today", return_value=date(2026, 10, 13))
 class SuitabilityTests(CatalogTestCase):
-    """The preview clock is Oct 13 in zone 5b."""
+    """Suitability depends on the month: these cases are for Oct 13 in zone 5b."""
 
     def suit(self, slug):
         return services.suitability(selectors.plant_dict(Plant.objects.get(slug=slug)))["level"]
 
-    def test_badges(self):
+    def test_badges(self, _):
         self.assertEqual(self.suit("lettuce"), "great")          # sown in October in zone 5b
         self.assertEqual(self.suit("microgreens"), "great")      # indoors all year
         self.assertEqual(self.suit("basil"), "care")             # out of season, but can grow indoors
@@ -64,6 +66,9 @@ class FilterTests(CatalogTestCase):
 
 
 class PageTests(CatalogTestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username=DEMO_USERNAME, password="test-pass-123")
+        self.client.force_login(self.user)
     def test_list_and_detail_render(self):
         self.assertContains(self.client.get(reverse("plants:list"), {"category": "fruit"}), "Blueberries")
         detail = self.client.get(reverse("plants:detail", args=["raspberries"]))   # no germination data
@@ -86,8 +91,14 @@ class PageTests(CatalogTestCase):
         self.assertFalse(UserPlant.objects.exists())
         self.assertEqual(self.client.post(reverse("plants:start", args=["no-such-plant"]), {}).status_code, 404)
 
+    def test_start_growing_needs_sign_in(self):
+        self.client.logout()
+        response = self.client.post(reverse("plants:start", args=["kale"]), {"planted_on": today().isoformat(),
+                                                                            "start_method": "seed", "setting": "outdoor"})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserPlant.objects.exists())
+
     def test_in_garden_shows_on_the_plant_page(self):
-        user = User.objects.create(username=DEMO_USERNAME)
-        UserPlant.objects.create(user=user, plant=Plant.objects.get(slug="mint"), nickname="Tea mint",
+        UserPlant.objects.create(user=self.user, plant=Plant.objects.get(slug="mint"), nickname="Tea mint",
                                  planted_on=today(), watering_interval_days=3, status="growing")
         self.assertContains(self.client.get(reverse("plants:detail", args=["mint"])), "Tea mint")

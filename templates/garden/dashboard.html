@@ -5,7 +5,7 @@
 {% block description %}Your Greenhand garden dashboard: plants, today's tasks, weather alerts, and tips from your AI tutor.{% endblock %}
 
 {% block page_title %}Dashboard{% endblock %}
-{% block page_subtitle %}<p class="text-[13px] text-muted">{{ gh_today|date:"l, F j" }} · {{ gh_location.label }} · Zone {{ gh_location.hardiness_zone }}</p>{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">{{ gh_today|date:"l, F j" }} · {{ gh_location.label }}</p>{% endblock %}
 {% block page_actions %}
   <button type="button" data-open-log class="inline-flex h-10 items-center gap-2 rounded-lg bg-forest px-4 text-[14px] font-medium text-white shadow-sm hover:bg-forest-900">
     <svg class="ic h-4 w-4"><use href="#i-plus"/></svg>Log care
@@ -70,8 +70,8 @@
       <span class="orb orb-a bg-[#173523]"></span><span class="orb orb-b bg-[#1f4a2f]"></span>
       <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 text-sky-300"><svg class="ic h-5 w-5"><use href="#{{ weather.current.icon }}"/></svg></span>
       <span>
-        <span class="block text-[17px] font-semibold">{{ weather.current.temp_c }}&deg;C · {{ weather.current.condition }}</span>
-        <span class="block text-[13px] text-emerald-50/65">{{ weather.current.rain_last_24h_mm }} mm today{% if alerts.frost %} · frost risk Thu{% endif %}</span>
+        <span class="block text-[17px] font-semibold">{% if weather.current %}{{ weather.current.temp_c }}&deg;C · {{ weather.current.condition }}{% else %}Weather unavailable{% endif %}</span>
+        <span class="block text-[13px] text-emerald-50/65">{{ weather.current.rain_last_24h_mm }} mm today</span>
       </span>
     </a>
     <a href="{{ my_garden_url }}#tab=problems" class="stat-card is-small flex items-center gap-4 rounded-2xl bg-white p-5 shadow-card">
@@ -141,7 +141,7 @@
 
     <ul id="plantList" class="mt-2 divide-y divide-line">
       {% for row in plant_rows %}
-        <li class="plant-row relative flex items-center gap-3 rounded-lg py-3 hover:bg-mist/70" data-name="{{ row.search }}" data-attention="{{ row.attention|yesno:'true,false' }}" data-href="{{ my_garden_url }}#plant={{ row.id }}">
+        <li class="plant-row relative flex items-center gap-3 rounded-lg py-3 hover:bg-mist/70" data-name="{{ row.search }}" data-attention="{{ row.attention|yesno:'true,false' }}" data-href="{% url 'calendar_app:month' %}?plant={{ row.id }}">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br {{ row.grad }}"><svg class="ic h-5 w-5"><use href="#{{ row.icon }}"/></svg></span>
           <div class="min-w-0 flex-1"><div class="truncate text-[14px] font-medium">{{ row.nickname }}</div><div class="truncate text-[12px] {{ row.sub_cls }}">{{ row.sub }}</div></div>
           <div class="text-right text-[13px] font-medium">{{ row.value }}</div>
@@ -157,83 +157,14 @@
 <!-- ===== Row 3: today + weather/community ===== -->
 <div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-12">
   <section class="min-w-0 rounded-2xl bg-white shadow-card xl:col-span-8" aria-labelledby="tasks-title">
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
-      <div>
-        <h2 id="tasks-title" class="font-display text-[17px] font-semibold tracking-tight">Today</h2>
-        <p class="text-[13px] text-muted">Reminders adjusted for today&rsquo;s weather</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-[13px] text-muted"><span id="tasksDone" class="font-semibold text-ink">0</span>/<span id="tasksTotal">{{ tasks|length }}</span> <span id="tasksHint">done</span></span>
-        <div class="progress w-28"><span id="tasksBar" style="width:0%"></span></div>
-      </div>
-    </div>
-
-    <div class="space-y-3 px-5 pt-4">
-      {% with frost=alerts.frost %}{% if frost %}
-      <article class="alert is-open rounded-xl border border-indigo-200 bg-indigo-50/60" id="frostAlert">
-        <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-indigo-700 ring-1 ring-indigo-200"><svg class="ic h-5 w-5"><use href="#{{ frost.icon }}"/></svg></span>
-          <div class="min-w-0 flex-1">
-            <h3 class="text-[14.5px] font-medium text-indigo-950">{{ frost.title }}</h3>
-            <p class="text-[13px] text-indigo-900/75">{{ frost.message }} Affects {{ frost.plants|join:", " }}.</p>
-          </div>
-          <button type="button" class="alert-toggle inline-flex items-center gap-1 self-start rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-[13px] font-medium text-indigo-900 sm:self-center" aria-expanded="true" aria-controls="frostActions">
-            What to do <svg class="ic alert-chevron h-3.5 w-3.5"><use href="#i-chev-down"/></svg>
-          </button>
-        </div>
-        <div class="alert-actions" id="frostActions">
-          <div>
-            <ul class="space-y-2 border-t border-indigo-200/70 px-4 pb-3 pt-3 text-[13.5px] text-indigo-950">
-              {% for action in frost.actions %}
-                <li><label class="flex cursor-pointer items-center gap-2.5"><input type="checkbox" class="frost-step h-4 w-4 accent-[#14532d]" />{{ action }}</label></li>
-              {% endfor %}
-            </ul>
-            <div class="flex items-center justify-between px-4 pb-4 text-[12.5px] text-indigo-900/70">
-              <span><span id="frostCount">0</span> of {{ frost.actions|length }} steps done</span>
-              <button type="button" id="frostDone" class="rounded-lg bg-indigo-900 px-3 py-1.5 font-medium text-white hover:bg-indigo-950">Mark done</button>
-            </div>
-          </div>
-        </div>
-      </article>
-      {% endif %}{% endwith %}
-
-      {% with rain=alerts.rain_skip %}{% if rain %}
-      <article class="alert flex flex-col gap-3 rounded-xl border border-sky-200 bg-sky-50/60 p-4 sm:flex-row sm:items-center" id="rainAlert">
-        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200"><svg class="ic h-5 w-5"><use href="#{{ rain.icon }}"/></svg></span>
-        <div class="min-w-0 flex-1">
-          <h3 class="text-[14.5px] font-medium text-sky-950">{{ rain.title }}</h3>
-          <p class="text-[13px] text-sky-900/75">{{ rain.message }}</p>
-        </div>
-        <div class="flex gap-2 self-start sm:self-center">
-          <button type="button" id="rainOverride" class="rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-[13px] font-medium text-sky-900 hover:bg-sky-50">Water anyway</button>
-          <button type="button" id="rainAck" class="rounded-lg bg-sky-900 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-sky-950">Got it</button>
-        </div>
-      </article>
-      {% endif %}{% endwith %}
-    </div>
-
-    <ul id="taskList" class="mt-2 divide-y divide-line">
-      {% for task in tasks %}
-        <li class="task {% if task.done %}is-done{% endif %} flex items-center gap-3 px-5 py-3.5" data-task="{{ task.id }}" data-plant="{{ task.plant }}" {% if task.skipped %}data-skipped="{{ task.skipped }}"{% endif %} {% if task.care %}data-care="{{ task.care }}"{% endif %}>
-          <button type="button" class="task-check grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#c9d3cb]" aria-label="Mark “{{ task.title }}” as {% if task.done %}not done{% else %}done{% endif %}"><svg class="ic h-3.5 w-3.5"><use href="#i-check"/></svg></button>
-          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ task.tint }}"><svg class="ic h-4 w-4"><use href="#{{ task.icon }}"/></svg></span>
-          <div class="min-w-0 flex-1">
-            <div class="task-title text-[14.5px] font-medium">{{ task.title }}</div>
-            <div class="text-[12.5px] text-muted">{{ task.detail }}</div>
-          </div>
-          {% if task.skipped == "rain" %}
-            <span class="task-badge inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11.5px] font-medium text-sky-800"><svg class="ic h-3 w-3"><use href="#i-rain"/></svg>Skipped &mdash; rain</span>
-          {% elif task.badge %}
-            <span class="hidden rounded-full px-2 py-0.5 text-[11.5px] sm:inline {{ task.badge.cls }}">{{ task.badge.text }}</span>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+    <div class="p-5"><h2 class="text-lg font-semibold">Today's care &amp; weather</h2><a class="text-forest underline" href="{% url 'calendar_app:month' %}">Open calendar and reminders</a>
+    {% for alert in live_alerts %}<p class="mt-3 rounded-lg bg-leaf-soft p-3">{{ alert.message }} <a class="underline" href="{% url 'weather:index' %}">View alert</a></p>{% endfor %}
+    {% for task in tasks %}<article class="border-b border-line py-3"><b>{{ task.reminder.title }}</b> · {{ task.status_label }}<p>{{ task.skip_reason }}</p><form method="post" action="{% url 'calendar_app:action' task.pk %}">{% csrf_token %}{% if task.status == 'pending' or task.status == 'sent' %}<button name="action" value="done" class="text-forest underline">Done</button>{% elif task.status == 'skipped_rain' or task.status == 'skipped_user' %}<button name="action" value="override" class="text-forest underline">Restore task</button>{% endif %}</form></article>{% empty %}<p class="mt-4 text-muted">No care tasks scheduled today.</p>{% endfor %}</div>
   </section>
 
   <div class="min-w-0 space-y-5 xl:col-span-4">
     <section id="weather" aria-labelledby="weather-title" class="scroll-mt-24 overflow-hidden rounded-2xl bg-white shadow-card">
-      <div class="canvas-gradient p-5">
+      <div class="canvas-gradient p-5">{% if not weather.current %}<p>Weather unavailable. Add a location or wait for the next update.</p>{% endif %}
         <div class="flex items-start justify-between">
           <div>
             <h2 id="weather-title" class="text-[13px] font-medium text-forest/80">Weather · {{ weather.location }}</h2>
@@ -318,7 +249,7 @@
 
   <section id="calendar" aria-labelledby="cal-title" class="min-w-0 scroll-mt-24 rounded-2xl bg-white p-5 shadow-card xl:col-span-4">
     <div class="flex items-center justify-between">
-      <h2 id="cal-title" class="font-display text-[17px] font-semibold tracking-tight"><span id="calMonth">{{ gh_today|date:"F Y" }}</span></h2>
+      <h2 id="cal-title" class="font-display text-[17px] font-semibold tracking-tight"><a href="{% url 'calendar_app:month' %}" class="underline">Full calendar</a> · <span id="calMonth">{{ gh_today|date:"F Y" }}</span></h2>
       <div class="flex gap-1">
         <button type="button" id="calPrev" class="grid h-8 w-8 place-items-center rounded-lg bg-mist hover:bg-leaf-soft" aria-label="Previous month"><svg class="ic h-4 w-4"><use href="#i-chev-left"/></svg></button>
         <button type="button" id="calNext" class="grid h-8 w-8 place-items-center rounded-lg bg-mist hover:bg-leaf-soft" aria-label="Next month"><svg class="ic h-4 w-4"><use href="#i-chev-right"/></svg></button>

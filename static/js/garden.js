@@ -544,8 +544,7 @@
             <label class="flex items-center gap-2 text-[12.5px] text-muted"><span class="hidden sm:inline">${r.active ? 'On' : 'Off'}</span><input type="checkbox" class="switch" data-rem-toggle="active" ${r.active ? 'checked' : ''} aria-label="Reminder on" /></label>
           </div>
           <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-3 text-[12.5px]">
-            <label class="flex items-center gap-2"><input type="checkbox" class="switch" data-rem-toggle="inapp" ${r.inapp ? 'checked' : ''} />In-app</label>
-            <label class="flex items-center gap-2"><input type="checkbox" class="switch" data-rem-toggle="email" ${r.email ? 'checked' : ''} /><svg class="ic h-3.5 w-3.5 text-muted"><use href="#i-mail"/></svg>Email</label>
+            <a href="${SERVER.notificationSettingsUrl}" class="flex items-center gap-1.5 text-muted hover:text-forest"><svg class="ic h-3.5 w-3.5"><use href="#i-mail"/></svg>Email &amp; quiet hours</a>
             ${r.type === 'water' && p.setting === 'outdoor' ? `<label class="flex items-center gap-2"><input type="checkbox" class="switch" data-rem-toggle="weather_aware" ${r.weather_aware ? 'checked' : ''} /><svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#i-rain"/></svg>Skip after rain</label>` : ''}
           </div>
           ${r.history.length ? `<div class="mt-3 flex flex-wrap gap-1.5">${r.history.slice(0, 5).map((h) => `<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${OCC[h.status].cls}" title="${esc(h.reason || '')}"><svg class="ic h-3 w-3"><use href="#${OCC[h.status].icon}"/></svg>${fmt(h.date)} · ${OCC[h.status].label}</span>`).join('')}</div>` : ''}
@@ -737,8 +736,8 @@
 
   // Reminder toggles + add form
   const FLAG_MSG = {
-    active: (on) => (on ? 'Reminder turned on' : 'Reminder paused'), inapp: (on) => `In-app notifications ${on ? 'on' : 'off'}`,
-    email: (on) => `Email ${on ? 'on' : 'off'}`, weather_aware: (on) => (on ? 'Will skip watering after rain' : 'Will remind even after rain'),
+    active: (on) => (on ? 'Reminder turned on' : 'Reminder paused'),
+    weather_aware: (on) => (on ? 'Will skip watering after rain' : 'Will remind even after rain'),
   };
   detail.addEventListener('change', (e) => {
     const sw = e.target.closest('[data-rem-toggle]');

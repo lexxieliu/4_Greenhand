@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}{% block page_header %}{% endblock %}
+{% block content %}<div class="flex flex-wrap justify-between gap-3">
+<h1 class="text-2xl font-semibold">Garden calendar · {{ month|date:"F Y" }}</h1>
+<a class="text-forest underline" href="{% url 'calendar_app:event_create' %}">Add event</a>
+<a class="text-forest underline" href="{% url 'calendar_app:create' %}">New reminder</a>
+</div>
+<form method="get" class="my-4">
+<label>Month <input type="month" name="month" value="{{ month|date:'Y-m' }}">
+</label>
+<label>Plant <select name="plant">
+<option value="">All plants</option>{% for plant in plants %}<option value="{{ plant.pk }}" {% if selected == plant.pk %}selected{% endif %}>{{ plant.nickname }}</option>{% endfor %}</select>
+</label>
+<button>Show</button>
+</form>
+<nav class="my-3 flex justify-between">
+<a href="?month={{ previous }}&amp;plant={{ selected }}">← Previous</a>
+<a href="?month={{ next }}&amp;plant={{ selected }}">Next →</a>
+</nav>
+<div class="overflow-x-auto rounded-xl bg-white">
+<table class="w-full min-w-[650px] table-fixed">
+<thead>
+<tr>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+<th>Sun</th>
+</tr>
+</thead>
+<tbody>{% for week in weeks %}<tr>{% for day in week %}<td class="h-28 border border-line p-2 align-top {% if not day.in_month %}bg-mist text-muted{% endif %}">
+<time datetime="{{ day.date|date:'Y-m-d' }}">{{ day.date.day }}</time>{% for event in day.events %}<div class="mt-1 text-xs">
+<svg class="ic inline h-4 w-4" aria-hidden="true">
+<use href="#{{ event.icon }}"/>
+</svg> {{ event.title }}</div>{% endfor %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table>
+</div>
+<section class="mt-6 rounded-xl bg-white p-5">
+<h2 class="text-xl font-semibold">Care tasks</h2>{% for occurrence in occurrences %}<article class="border-b border-line py-3">
+<b>{{ occurrence.reminder.title }}</b> · {{ occurrence.due_at }} · {{ occurrence.status_label }}<p>{{ occurrence.skip_reason }}</p>
+<form method="post" action="{% url 'calendar_app:action' occurrence.pk %}">{% csrf_token %}{% if occurrence.status == 'pending' or occurrence.status == 'sent' %}<button name="action" value="done" class="mr-4 text-forest underline">Done</button>
+<button name="action" value="skip" class="text-muted underline">Skip</button>{% elif occurrence.status == 'skipped_rain' or occurrence.status == 'skipped_user' %}<button name="action" value="override" class="text-forest underline">Restore task</button>{% endif %}</form>
+</article>{% empty %}<p>No tasks yet. Add your first reminder.</p>{% endfor %}</section>
+<section class="mt-6 rounded-xl bg-white p-5">
+<h2 class="text-xl font-semibold">Active reminders</h2>{% for reminder in reminders %}<form class="my-2" method="post" action="{% url 'calendar_app:pause' reminder.pk %}">{% csrf_token %}{{ reminder.title }} · {{ reminder.recurrence_label }} <button class="text-muted underline">Pause</button>
+</form>{% empty %}<p>No active reminders.</p>{% endfor %}</section>{% endblock %}

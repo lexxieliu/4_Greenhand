@@ -17,5 +17,4 @@ urlpatterns = [
     path('plants/<int:user_plant_id>/reminders/', views.add_reminder, name='add_reminder'),
     path('problems/<int:problem_id>/status/', views.set_problem_status, name='set_problem_status'),
     path('reminders/<int:reminder_id>/', views.set_reminder_flag, name='set_reminder_flag'),
-    path('reminders/<int:reminder_id>/done/', views.complete_reminder, name='complete_reminder'),
 ]

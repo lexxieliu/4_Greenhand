@@ -30,3 +30,7 @@ checkpoints/
 
 # user uploads (garden photos)
 media/
+# Area 3 local job locks and test coverage
+data/area3.lock
+.coverage
+htmlcov/

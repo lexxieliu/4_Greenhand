@@ -2,15 +2,17 @@
 
 Only the minimum the model needs is sent (PRD 8.2): city-level location and hardiness zone,
 growing space, the plant's species/stage/logs and the forecast. Never username, email or
-coordinates. The garden comes from the database (garden.selectors); profile, location and weather
-are still mock data until those areas are built.
+coordinates. The garden and the weather come from the database (garden and weather apps); the
+grower profile and hardiness zone are still mock data until the accounts area is built.
 """
 import re
 from datetime import date, timedelta
 
 from garden import selectors as garden_selectors
+from garden.selectors import FROST_THRESHOLD_C
 from greenhand import mock_data as data
 from greenhand.clock import today
+from weather.selectors import active_alerts, weather_cards
 
 RECENT_DAYS = 14          # PRD FR-31: recent logs = last ~14 days
 FORECAST_DAYS = 3
@@ -67,19 +69,24 @@ def _plant_details(plant):
     return lines
 
 
-def _weather_lines():
-    now = data.WEATHER["current"]
-    lines = [f"Now {now['temp_c']} °C, {now['condition'].lower()}; rain in the last 24h: {now['rain_last_24h_mm']} mm"]
-    for day in data.WEATHER["daily"][:FORECAST_DAYS]:
-        frost = " – FROST RISK" if day["frost"] else ""
-        lines.append(f"{day['day_long']}: {day['condition'].lower()}, high {day['high']} °C, low {day['low']} °C{frost}")
+def _weather_lines(user):
+    """The user's cached weather (weather app, Area 3); empty when no location or data yet."""
+    card = next(iter(weather_cards(user)), None)
+    if not card or not card["snapshot"]:
+        return []
+    snapshot = card["snapshot"]
+    lines = [f"Now {snapshot.current_temp_c:g} °C; rain in the last 24h: {snapshot.rain_last_24h_mm:g} mm; "
+             f"{snapshot.precip_prob_next_12h}% chance of rain in the next 12h"]
+    for day in card["daily"][:FORECAST_DAYS]:
+        frost = " – FROST RISK" if day["low"] <= FROST_THRESHOLD_C else ""
+        lines.append(f"{day['date']:%A, %b} {day['date'].day}: high {day['high']:g} °C, low {day['low']:g} °C{frost}")
     return lines
 
 
-def _alert_lines(plant):
+def _alert_lines(user, plant):
     """Active weather alerts (PRD 3.4 context), limited to the scoped plant when there is one."""
-    alerts = [a for a in data.WEATHER_ALERTS if not plant or plant["nickname"] in a["plants"]]
-    return [f"Active alert: {a['title']} ({a['valid']}); affects {', '.join(a['plants'])}" for a in alerts]
+    alerts = [a for a in active_alerts(user) if not plant or str(a.user_plant_id) == plant["id"]]
+    return [f"Active alert ({a.alert_type.replace('_', ' ')}, until {a.valid_until:%a %b %d}): {a.message}" for a in alerts]
 
 
 def _setting_rule(plant):
@@ -99,8 +106,9 @@ def build_context(user, plant=None):
         f"Grower: {profile['experience_level'].lower()}, {profile['space_type'].lower()}, {profile['sunlight_level'].lower()}",
     ]
     if not plant or plant["setting"] == "outdoor":      # indoor plants: the outdoor forecast is irrelevant (FR-45)
-        lines.append("Weather: " + " | ".join(_weather_lines()))
-        lines += _alert_lines(plant)
+        weather = _weather_lines(user)
+        lines.append("Weather: " + (" | ".join(weather) if weather else "not available (no location set)"))
+        lines += _alert_lines(user, plant)
     if plant:
         lines.append("Plant asked about: " + _plant_line(plant))
         lines.append(_setting_rule(plant))

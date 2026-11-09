@@ -2,15 +2,16 @@
 
 Views validate input with garden/forms.py and call these functions; nothing here touches HTTP.
 Each function takes an already-owned UserPlant (see selectors.get_user_plant), so ownership is
-checked once, at lookup.
+checked once, at lookup. Care reminders are calendar_app reminders (Area 3), created and paused here.
 """
-from datetime import timedelta
+from datetime import time, timedelta
 
 from django.db import transaction
 
+from calendar_app import services as calendar
 from greenhand.clock import now as clock_now, today
 
-from .models import CareLog, Harvest, Problem, Reminder, ReminderOccurrence, TimelineEntry, UserPlant
+from .models import CareLog, Harvest, Problem, TimelineEntry, UserPlant
 
 Status = UserPlant.Status
 ACTIVE = (Status.SPROUTING, Status.GROWING, Status.FLOWERING, Status.FRUITING, Status.PRODUCING)
@@ -25,23 +26,10 @@ FEED_INTERVAL_DAYS = 14                                 # PRD: about every 2–3
 FIRST_FEED_AFTER_DAYS = {"seed": 21, "seedling": 14, "cutting": 14}   # seedlings need true leaves first
 PROBLEM_CHECK_AFTER_DAYS = 3                            # PRD: check_problem 3 days after a problem
 HARVEST_CHECK_INTERVAL_DAYS = {"continuous": 4, "single": 7}         # PRD: every 3–5 days for continuous crops
-CARE_FOR_REMINDER = {Reminder.Type.WATER: CareLog.Action.WATER, Reminder.Type.FERTILIZE: CareLog.Action.FERTILIZE}
 
 
 class GardenError(Exception):
     """A request that is valid input but not allowed in the plant's current state (message is user-facing)."""
-
-
-def _reminder(user_plant, type_, title, interval_days, next_due_on, **extra):
-    return Reminder.objects.create(user=user_plant.user, user_plant=user_plant, type=type_, title=title,
-                                   interval_days=interval_days, next_due_on=next_due_on, **extra)
-
-
-def _deactivate(user_plant, types=None):
-    reminders = user_plant.reminders.filter(is_active=True)
-    if types:
-        reminders = reminders.filter(type__in=types)
-    reminders.update(is_active=False)
 
 
 @transaction.atomic
@@ -60,10 +48,10 @@ def start_growing(user, plant, *, nickname, planted_on, start_method, setting, c
         TimelineEntry.objects.create(user_plant=user_plant, stage="seed" if start_method == "seed" else "seedling",
                                      recorded_on=planted_on, note=f"{verb} {user_plant.nickname}.")
     first_water = planted_on if planned else today() + timedelta(days=1)
-    _reminder(user_plant, Reminder.Type.WATER, f"Water {user_plant.nickname}", user_plant.watering_interval_days,
-              first_water, weather_aware=setting == UserPlant.Setting.OUTDOOR)
-    _reminder(user_plant, Reminder.Type.FERTILIZE, f"Feed {user_plant.nickname}", FEED_INTERVAL_DAYS,
-              planted_on + timedelta(days=FIRST_FEED_AFTER_DAYS[start_method]), notify_email=False)
+    calendar.schedule(user_plant, "water", f"Water {user_plant.nickname}", user_plant.watering_interval_days,
+                      first_water, weather_aware=setting == UserPlant.Setting.OUTDOOR)
+    calendar.schedule(user_plant, "fertilize", f"Feed {user_plant.nickname}", FEED_INTERVAL_DAYS,
+                      planted_on + timedelta(days=FIRST_FEED_AFTER_DAYS[start_method]))
     return user_plant
 
 
@@ -84,11 +72,11 @@ def _advance_status(user_plant, target):
 
 def _start_harvest_checks(user_plant):
     """FR-24: harvest_check reminders begin when the plant starts fruiting."""
-    if user_plant.reminders.filter(type=Reminder.Type.HARVEST_CHECK, is_active=True).exists():
+    if user_plant.reminders.filter(type="harvest_check", is_active=True).exists():
         return
     interval = HARVEST_CHECK_INTERVAL_DAYS[user_plant.plant.harvest_mode]
-    _reminder(user_plant, Reminder.Type.HARVEST_CHECK, f"Check {user_plant.nickname} for harvest", interval,
-              today() + timedelta(days=interval), notify_email=False)
+    calendar.schedule(user_plant, "harvest_check", f"Check {user_plant.nickname} for harvest", interval,
+                      today() + timedelta(days=interval))
 
 
 @transaction.atomic
@@ -105,38 +93,13 @@ def add_timeline_entry(user_plant, *, stage, recorded_on, note="", photo=None, u
     return None
 
 
-def _mark_occurrence_done(reminder, done_on, interval_days):
-    ReminderOccurrence.objects.create(reminder=reminder, due_on=done_on, status=ReminderOccurrence.Status.DONE)
-    if interval_days:
-        reminder.next_due_on = done_on + timedelta(days=interval_days)
-        reminder.save(update_fields=["next_due_on", "updated_at"])
-    else:
-        reminder.is_active = False
-        reminder.save(update_fields=["is_active", "updated_at"])
-
-
 @transaction.atomic
 def log_care(user_plant, *, action, performed_on, amount="", note="", source=CareLog.Source.MANUAL):
-    """FR-22. Watering also completes a watering reminder that is due by the next day."""
+    """FR-22. Watering or feeding also completes the matching task due by the next day."""
     log = CareLog.objects.create(user_plant=user_plant, action=action, performed_on=performed_on, amount=amount,
                                  note=note, source=source)
-    reminder_type = next((t for t, a in CARE_FOR_REMINDER.items() if a == action), None)
-    if reminder_type:
-        reminder = user_plant.reminders.filter(type=reminder_type, is_active=True,
-                                               next_due_on__lte=performed_on + timedelta(days=1)).first()
-        if reminder:
-            _mark_occurrence_done(reminder, performed_on, reminder.interval_days or user_plant.watering_interval_days)
+    calendar.complete_with_care_log(log)
     return log
-
-
-@transaction.atomic
-def complete_reminder(reminder):
-    """One-tap Done on a task (FR-24): log the matching care action, or just record the occurrence."""
-    action = CARE_FOR_REMINDER.get(reminder.type)
-    if action and reminder.user_plant:
-        return log_care(reminder.user_plant, action=action, performed_on=today(), source=CareLog.Source.REMINDER)
-    _mark_occurrence_done(reminder, today(), reminder.interval_days)
-    return None
 
 
 @transaction.atomic
@@ -144,8 +107,8 @@ def log_problem(user_plant, *, title, description="", category="unknown", severi
     """FR-25: log a problem and schedule the 3-day follow-up check."""
     problem = Problem.objects.create(user_plant=user_plant, title=title, description=description, category=category,
                                      severity=severity, photo=photo, opened_on=today())
-    _reminder(user_plant, Reminder.Type.CHECK_PROBLEM, f"Check: {title}", 0,
-              today() + timedelta(days=PROBLEM_CHECK_AFTER_DAYS), time="09:00", notify_email=False)
+    calendar.schedule(user_plant, "check_problem", f"Check: {title}", 0,
+                      today() + timedelta(days=PROBLEM_CHECK_AFTER_DAYS), time_of_day=time(9))
     return problem
 
 
@@ -156,7 +119,7 @@ def set_problem_status(problem, status, resolution_note=""):
         problem.resolved_at = clock_now()
         problem.resolution_note = resolution_note
         if not problem.user_plant.problems.exclude(pk=problem.pk).exclude(status=Problem.Status.RESOLVED).exists():
-            _deactivate(problem.user_plant, [Reminder.Type.CHECK_PROBLEM])
+            calendar.deactivate(problem.user_plant, ["check_problem"])
     else:
         problem.resolved_at = None
     problem.save(update_fields=["status", "resolved_at", "resolution_note", "updated_at"])
@@ -177,7 +140,7 @@ def log_harvest(user_plant, *, harvested_on, quantity=None, unit="g", note="", p
         fields.append("first_harvest_at")
     if final or user_plant.plant.harvest_mode == "single":
         user_plant.status = Status.COMPLETED
-        _deactivate(user_plant)
+        calendar.deactivate(user_plant)
     elif user_plant.status != Status.COMPLETED:
         user_plant.status = Status.PRODUCING
     user_plant.status_source = UserPlant.StatusSource.AUTO
@@ -195,7 +158,7 @@ def change_status(user_plant, status, failure_reason=""):
             raise GardenError("Choose what went wrong before marking the plant as failed.")
         user_plant.failure_reason = failure_reason
         user_plant.failed_at = clock_now()
-        _deactivate(user_plant)
+        calendar.deactivate(user_plant)
     elif user_plant.status == Status.FAILED:
         user_plant.failure_reason = ""
         user_plant.failed_at = None
@@ -208,23 +171,23 @@ def change_status(user_plant, status, failure_reason=""):
     return user_plant
 
 
-def add_reminder(user_plant, *, type_, interval_days, time):
+def add_reminder(user_plant, *, type_, interval_days, time_of_day):
     titles = {"water": f"Water {user_plant.nickname}", "fertilize": f"Feed {user_plant.nickname}",
               "check_problem": f"Check {user_plant.nickname}", "harvest_check": f"Check {user_plant.nickname} for harvest",
               "custom": f"{user_plant.nickname} reminder"}
-    first_due = today() + timedelta(days=interval_days or 1)
-    return _reminder(user_plant, type_, titles[type_], interval_days, first_due, time=time, is_auto=False,
-                     weather_aware=type_ == "water" and user_plant.setting == UserPlant.Setting.OUTDOOR)
-
-
-REMINDER_FLAGS = {"active": "is_active", "inapp": "notify_in_app", "email": "notify_email", "weather_aware": "weather_aware"}
+    return calendar.schedule(user_plant, type_, titles[type_], interval_days, today() + timedelta(days=interval_days or 1),
+                             time_of_day=time_of_day,
+                             weather_aware=type_ == "water" and user_plant.setting == UserPlant.Setting.OUTDOOR)
 
 
 def set_reminder_flag(reminder, flag, value):
-    """Toggle one switch on the Reminders tab. Turning a lapsed reminder back on schedules it from today."""
-    setattr(reminder, REMINDER_FLAGS[flag], value)
-    if flag == "active" and value and reminder.next_due_on < today():
-        reminder.next_due_on = today() + timedelta(days=reminder.interval_days) if reminder.interval_days else today()
-    reminder.is_auto = False                     # user-edited reminders are kept when the schedule is regenerated
-    reminder.save()
+    """Toggle a switch on the Reminders tab (flag is "active" or "weather_aware")."""
+    if flag == "active" and value:
+        calendar.reactivate(reminder, today())
+    elif flag == "active":
+        reminder.is_active = False
+        reminder.save(update_fields=["is_active"])
+    else:
+        reminder.weather_aware = value
+        reminder.save(update_fields=["weather_aware"])
     return reminder

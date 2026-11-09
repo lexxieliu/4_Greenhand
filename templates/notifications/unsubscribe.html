@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stop Greenhand emails</title>
+</head>
+<body>
+<main>
+<h1>Greenhand email preferences</h1>{% if stopped %}<p>These emails have been stopped. Your in-app tasks and notifications are still available.</p>{% else %}<p>Confirm that you want to stop these emails. No login is needed.</p>
+<form method="post">
+<button>Stop emails</button>
+</form>{% endif %}</main>
+</body>
+</html>

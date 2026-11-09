@@ -129,16 +129,5 @@
     return m ? decodeURIComponent(m[1]) : ($('[name=csrfmiddlewaretoken]')?.value || '');
   }
 
-  $('#markAllRead')?.addEventListener('click', () => {
-    $$('.notif[data-unread="true"]').forEach((n) => {
-      n.dataset.unread = 'false';
-      n.classList.remove('bg-leaf-soft/40');
-      $('.notif-dot', n)?.remove();
-    });
-    $('#notifBadge')?.remove();
-    $('#sideBadge')?.remove();
-    $('[aria-controls="notifPanel"]').setAttribute('aria-label', 'Notifications');
-  });
-
   window.GH = { TODAY, $, $$, toast, closePopovers, csrfToken };
 })();

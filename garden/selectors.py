@@ -4,16 +4,22 @@ garden(user) returns the user's plants as plain dicts in the shape the My Garden
 (static/js/garden.js), the weather page, the community composer and the tutor context use.
 """
 from datetime import date, timedelta
+from zoneinfo import ZoneInfo
 
 from django.http import Http404
 
-from greenhand import mock_data
+from calendar_app.models import Reminder
+from calendar_app.recurrence import parse_rule
 from greenhand.clock import today
 from plants import selectors as plant_selectors
 from plants.services import suitability
+from weather.selectors import active_alerts, weather_cards
 
-from .models import Problem, Reminder, UserPlant
+from .models import Problem, UserPlant
 from .services import ACTIVE
+
+FROST_THRESHOLD_C = 2          # PRD default; per-plant thresholds are on plants.Plant
+HISTORY_STATUSES = ("done", "skipped_rain", "skipped_user", "missed")
 
 ENDED_OR_HIDDEN = ("failed", "archived")
 HARVESTED = ("producing", "completed")
@@ -48,10 +54,26 @@ def get_problem(user, problem_id):
 
 
 def get_reminder(user, reminder_id):
-    reminder = Reminder.objects.select_related("user_plant__plant").filter(user=user, pk=reminder_id).first()
+    reminder = (Reminder.objects.select_related("user_plant__plant")
+                .filter(user=user, pk=reminder_id, user_plant__isnull=False).first())
     if not reminder:
         raise Http404("Reminder not found")
     return reminder
+
+
+def _reminder_dict(r):
+    """A calendar_app reminder in the shape the My Garden Reminders tab uses (dates in the reminder's timezone)."""
+    zone = ZoneInfo(r.timezone)
+    occurrences = sorted(r.occurrences.all(), key=lambda o: o.due_at, reverse=True)
+    upcoming = [o.due_at for o in occurrences if o.status in ("pending", "sent")]
+    step = parse_rule(r.recurrence_rule)
+    return {
+        "id": str(r.pk), "type": r.type, "title": r.title, "every": step.days if step else 0,
+        "time": r.time_of_day.strftime("%H:%M"), "weather_aware": r.weather_aware, "active": r.is_active,
+        "next_due": min(upcoming, default=r.next_due_at).astimezone(zone).date().isoformat(),
+        "history": [{"date": o.due_at.astimezone(zone).date().isoformat(), "status": o.status, "reason": o.skip_reason}
+                    for o in occurrences if o.status in HISTORY_STATUSES],
+    }
 
 
 def _photo(field):
@@ -92,12 +114,7 @@ def plant_dict(up):
         "harvests": [{"id": str(h.pk), "date": h.harvested_on.isoformat(),
                       "quantity": float(h.quantity) if h.quantity is not None else None, "unit": h.unit,
                       "note": h.note, "photo": _photo(h.photo)} for h in up.harvests.all()],
-        "reminders": [{
-            "id": str(r.pk), "type": r.type, "title": r.title, "every": r.interval_days, "time": r.time.strftime("%H:%M"),
-            "weather_aware": r.weather_aware, "active": r.is_active, "inapp": r.notify_in_app, "email": r.notify_email,
-            "next_due": r.next_due_on.isoformat(),
-            "history": [{"date": o.due_on.isoformat(), "status": o.status, "reason": o.reason} for o in r.occurrences.all()],
-        } for r in up.reminders.all()],
+        "reminders": [_reminder_dict(r) for r in up.reminders.all()],
     }
 
 
@@ -136,22 +153,23 @@ def garden_catalog():
     }
 
 
-def weather_summary():
-    """Rain-skip / frost info for plant badges. Mock weather until the weather area lands."""
-    alerts = {a["alert_type"]: a for a in mock_data.WEATHER_ALERTS}
-    frost_day = next((d for d in mock_data.WEATHER["daily"] if d["frost"]), None)
+def weather_summary(user):
+    """Rain-skip / frost info for the My Garden plant badges, from the user's cached weather (Area 3)."""
+    card = next(iter(weather_cards(user)), None)
+    snapshot = card["snapshot"] if card else None
+    frost_day = next((d for d in (card["daily"] if card else []) if d["low"] <= FROST_THRESHOLD_C), None)
     return {
-        "rainToday": "rain_skip" in alerts,
-        "rainMm": mock_data.WEATHER["current"]["rain_last_24h_mm"],
-        "frostDate": frost_day["date"] if frost_day else None,
-        "frostLow": frost_day["low"] if frost_day else None,
-        "frostThreshold": mock_data.FROST_THRESHOLD_C,
+        "rainToday": any(a.alert_type == "rain_skip" for a in active_alerts(user)),
+        "rainMm": snapshot.rain_last_24h_mm if snapshot else 0,
+        "frostDate": frost_day["date"].isoformat() if frost_day else None,
+        "frostLow": round(frost_day["low"]) if frost_day else None,
+        "frostThreshold": FROST_THRESHOLD_C,
     }
 
 
 def garden_payload(user):
     """Everything the My Garden page script needs, passed with |json_script."""
-    return {"today": today().isoformat(), "plants": garden(user), "catalog": garden_catalog(), "weather": weather_summary()}
+    return {"today": today().isoformat(), "plants": garden(user), "catalog": garden_catalog(), "weather": weather_summary(user)}
 
 
 # ---------------------------------------------------------------------------
@@ -184,25 +202,37 @@ def stats(plants):
     }
 
 
-def _frost_risk(plant, catalog):
-    return plant["setting"] == "outdoor" and not catalog[plant["plant_slug"]]["frost_tolerant"] and plant["status"] in ACTIVE
+ALERT_BADGE = {
+    "frost": {"icon": "i-snow", "cls": "bg-indigo-100 text-indigo-700", "title": "Frost risk"},
+    "heat": {"icon": "i-sun", "cls": "bg-orange-100 text-orange-700", "title": "Heat"},
+    "rain_skip": {"icon": "i-rain", "cls": "bg-sky-100 text-sky-700", "title": "Watering skipped — rain"},
+}
+ALERT_ORDER = {"frost": 0, "heat": 1, "rain_skip": 2}
 
 
-def dashboard_rows(plants, catalog):
-    """Compact plant rows for the dashboard 'My plants' card."""
+def alerts_by_plant(user):
+    """The most important active weather alert per user plant id (Area 3 rule engine)."""
+    alerts = {}
+    for alert in sorted(active_alerts(user), key=lambda a: ALERT_ORDER.get(a.alert_type, 3)):
+        alerts.setdefault(alert.user_plant_id, alert)
+    return alerts
+
+
+def dashboard_rows(plants, catalog, alerts):
+    """Compact plant rows for the dashboard 'My plants' card. alerts: alerts_by_plant(user)."""
     rows = []
     for p in plants:
         if p["status"] in ENDED_OR_HIDDEN:
             continue
         cat = catalog[p["plant_slug"]]
         problems = open_problems(p)
-        frost = _frost_risk(p, catalog)
+        alert = alerts.get(int(p["id"]))
         if problems:
             sub, sub_cls = f"{problems[0]['title']} · {problems[0]['status']}", "text-amber-700"
             badge = {"icon": "i-alert", "cls": "bg-amber-100 text-amber-700", "title": "Needs attention"}
-        elif frost:
-            sub, sub_cls = f"{p['status'].capitalize()} · frost risk", "text-indigo-700"
-            badge = {"icon": "i-snow", "cls": "bg-indigo-100 text-indigo-700", "title": "Frost risk"}
+        elif alert:
+            sub, sub_cls = alert.message, "text-indigo-700"
+            badge = ALERT_BADGE.get(alert.alert_type, ALERT_BADGE["frost"])
         elif p["status"] in HARVESTED:
             sub, sub_cls = f"{p['status'].capitalize()} · {round(harvest_grams(p))} g harvested", "text-leaf"
             badge = {"icon": "i-basket", "cls": "bg-amber-100 text-amber-700", "title": "Harvested"}
@@ -218,44 +248,10 @@ def dashboard_rows(plants, catalog):
         rows.append({
             "id": p["id"], "nickname": p["nickname"], "icon": cat["icon"], "grad": cat["grad"],
             "sub": sub, "sub_cls": sub_cls, "value": value, "badge": badge,
-            "attention": bool(problems) or frost,
+            "attention": bool(problems) or bool(alert),
             "search": f"{p['nickname']} {cat['common_name']}".lower(),
         })
     return rows
-
-
-TASK_STYLE = {
-    "water": ("i-drop", "bg-sky-50 text-sky-600", "water"),
-    "fertilize": ("i-flask", "bg-lime-50 text-lime-700", "feed"),
-    "check_problem": ("i-alert", "bg-amber-50 text-amber-600", ""),
-    "harvest_check": ("i-basket", "bg-amber-50 text-amber-700", ""),
-    "custom": ("i-bell", "bg-mist text-forest", ""),
-}
-
-
-def tasks(plants):
-    """Today's tasks (FR-24): active reminders due today or overdue, plus ones done or skipped today."""
-    day = today().isoformat()
-    out = []
-    for p in plants:
-        for r in p["reminders"]:
-            done_today = next((h for h in r["history"] if h["date"] == day), None)
-            due = r["active"] and r["next_due"] <= day
-            if not (due or done_today):
-                continue
-            icon, tint, care = TASK_STYLE[r["type"]]
-            overdue = due and r["next_due"] < day
-            out.append({
-                "id": r["id"], "plant": p["id"], "title": r["title"],
-                "detail": f"{p['setting'].capitalize()} · {p['container'] or p['nickname']}"
-                          + (f" · every {r['every']} days" if r["every"] else ""),
-                "icon": icon, "tint": tint, "care": care,
-                "done": bool(done_today and done_today["status"] == "done"),
-                "skipped": "rain" if done_today and done_today["status"] == "skipped_rain" else "",
-                "badge": ({"text": "Overdue", "cls": "bg-rose-100 text-rose-700"} if overdue
-                          else {"text": r["time"], "cls": "bg-mist text-muted"}),
-            })
-    return out
 
 
 ACTIVITY_STYLE = {
@@ -378,7 +374,4 @@ def calendar_events(plants, days_ahead=60):
                 if not r["every"]:
                     break
                 due += timedelta(days=r["every"])
-    for d in mock_data.WEATHER["daily"]:
-        if d["frost"]:
-            add(d["date"], "weather", f"Frost risk tonight · {d['low']} °C")
     return events
