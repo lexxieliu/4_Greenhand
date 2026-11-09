@@ -22,11 +22,7 @@
 
   <form id="loginForm" action="{% url 'userprofile:login' %}" method="post" novalidate class="space-y-5" data-auth-form="login">
     {% csrf_token %}
-<<<<<<< HEAD
     {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
-=======
-    {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}" />{% endif %}
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
     <div>
       <label for="email" class="mb-1.5 block text-[13.5px] font-medium">Email</label>
       <div class="relative">

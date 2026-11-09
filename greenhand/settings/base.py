@@ -130,11 +130,6 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-<<<<<<< HEAD
-# User uploads (avatars). Local disk for now; PRD 6.1 moves this to S3/R2 via django-storages.
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
-=======
 # User uploads (garden photos). Stored on local disk for now; S3/R2 via django-storages later (PRD 6.1).
 MEDIA_URL = 'media/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
@@ -142,7 +137,6 @@ MAX_UPLOAD_MB = 10                        # PRD 6.6: images only, max 10 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
 
 LOGIN_URL = 'userprofile:login'
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

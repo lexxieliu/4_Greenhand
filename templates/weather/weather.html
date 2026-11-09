@@ -150,7 +150,7 @@
       {% for d in weather.daily %}
         <li class="flex items-center gap-3 py-2.5 text-[13.5px] {% if d.frost %}-mx-2 rounded-lg bg-indigo-50 px-2{% endif %}" data-low="{{ d.low }}" data-high="{{ d.high }}">
           <span class="w-12 shrink-0 {% if forloop.first %}font-semibold{% endif %}">{{ d.day_short }}</span>
-          <svg class="ic h-5 w-5 shrink-0 {% if d.icon == 'i-rain' %}text-sky-600{% elif d.icon == 'i-snow' %}text-indigo-600{% elif d.icon == 'i-sun' %}text-amber-500{% else %}text-slate-500{% endif %}" aria-hidden="true"><use href="#{{ d.icon }}"/></svg>
+          <svg aria-hidden="true" class="ic h-5 w-5 shrink-0 {% if d.icon == 'i-rain' %}text-sky-600{% elif d.icon == 'i-snow' %}text-indigo-600{% elif d.icon == 'i-sun' %}text-amber-500{% else %}text-slate-500{% endif %}" aria-hidden="true"><use href="#{{ d.icon }}"/></svg>
           <span class="w-10 shrink-0 text-[12px] {% if d.precip_prob >= 50 %}font-medium text-sky-700{% else %}text-muted{% endif %}" title="Chance of rain">{{ d.precip_prob }}%</span>
           <span class="w-7 shrink-0 text-right tabular-nums {% if d.frost %}font-semibold text-indigo-700{% else %}text-muted{% endif %}">{{ d.low }}&deg;</span>
           <span class="range-track flex-1" aria-hidden="true"><span class="range-fill"></span></span>

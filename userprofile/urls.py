@@ -9,7 +9,6 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("register/", views.signup_view, name="signup"),
-<<<<<<< HEAD
     path("profile/", views.profile, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("profile/location/", views.location_edit, name="location_edit"),
@@ -33,6 +32,3 @@ urlpatterns = [
         template_name="accounts/reset_password_done.html",
     ), name="password_reset_complete"),
 ]
-=======
-]
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5

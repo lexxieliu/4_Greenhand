@@ -10,7 +10,8 @@ from datetime import timedelta
 
 from garden.models import CareLog, UserPlant
 from greenhand.clock import today
-from userprofile.models import Profile
+from plants.selectors import user_zone
+from userprofile.models import GrowingLocation, Profile
 from weather.services import get_snapshot
 
 from .guardrails import clean_text
@@ -110,19 +111,19 @@ class GardenContext:
     def _place_lines(self, plant):
         """Date, location, growing space and the weather that applies to this question."""
         profile = Profile.objects.filter(user=self.user).first() if self.user else None
+        location = GrowingLocation.objects.filter(user=self.user).first() if self.user else None
         lines = [f"Today: {self.today:%A, %B} {self.today.day}, {self.today.year}"]
+        if location:
+            place = ", ".join(_text(p, 100) for p in (location.city, location.region) if p)
+            lines.append(f"Location: {place}, hardiness zone {_text(user_zone(), 5)}")
         if profile:
-            place = ", ".join(_text(p, 100) for p in (profile.city, profile.region) if p)
-            zone = f"hardiness zone {_text(profile.hardiness_zone, 5)}" if profile.hardiness_zone else ""
-            if place or zone:
-                lines.append("Location: " + ", ".join(p for p in (place, zone) if p))
             grower = [profile.get_experience_level_display(), profile.get_space_type_display(),
                       profile.get_sunlight_level_display()]
             if any(grower):
                 lines.append("Grower: " + ", ".join(g.lower() for g in grower if g))
         outdoor = not plant or plant.setting == "outdoor"      # indoor plants: the outdoor forecast is irrelevant
-        if outdoor and profile and profile.latitude is not None and profile.longitude is not None:
-            snapshot = get_snapshot(profile.latitude, profile.longitude)
+        if outdoor and location:
+            snapshot = get_snapshot(location.latitude, location.longitude)
             if snapshot:
                 lines += self._weather_lines(snapshot)
         return lines

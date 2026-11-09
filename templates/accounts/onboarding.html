@@ -17,7 +17,7 @@
 
     {% if error %}
       <div class="mt-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-[13.5px] text-rose-900" role="alert">
-        <svg class="ic mt-0.5 h-4 w-4 text-rose-600"><use href="#i-alert-circle"/></svg><span>{{ error }}</span>
+        <svg aria-hidden="true" class="ic mt-0.5 h-4 w-4 text-rose-600"><use href="#i-alert-circle"/></svg><span>{{ error }}</span>
       </div>
     {% endif %}
 
@@ -26,7 +26,7 @@
       <label for="query" class="block text-[13.5px] font-medium">City or town</label>
       <div class="flex gap-2">
         <div class="relative flex-1">
-          <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-pin"/></svg>
+          <svg aria-hidden="true" class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-pin"/></svg>
           <input id="query" name="query" type="text" autocomplete="address-level2" placeholder="e.g. Champaign" value="{{ search_form.query.value|default_if_none:'' }}"
                  class="field-input has-icon" required aria-describedby="query-error" {% if search_form.query.errors %}aria-invalid="true"{% endif %} />
         </div>
@@ -46,21 +46,21 @@
                 <label class="block cursor-pointer">
                   <input type="radio" name="place" value="{{ place.value }}" class="peer sr-only" required {% if forloop.first %}checked{% endif %} />
                   <span class="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-[14px] shadow-card peer-checked:border-leaf peer-checked:bg-leaf-soft peer-focus-visible:ring-2 peer-focus-visible:ring-leaf">
-                    <svg class="ic h-4 w-4 text-forest"><use href="#i-pin"/></svg>{{ place.label }}
+                    <svg aria-hidden="true" class="ic h-4 w-4 text-forest"><use href="#i-pin"/></svg>{{ place.label }}
                   </span>
                 </label>
               {% endfor %}
             </div>
           </fieldset>
           <button type="submit" class="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-ink text-[15px] font-medium text-white shadow-sm transition hover:bg-forest-900">
-            <span class="btn-label">Continue</span><svg class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
+            <span class="btn-label">Continue</span><svg aria-hidden="true" class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
           </button>
         </form>
       {% else %}
         <p class="mt-6 text-[14px] text-muted">No places found for that name. Check the spelling or try a nearby larger city.</p>
       {% endif %}
     {% elif location %}
-      <a href="{{ continue_url }}" class="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-line bg-white text-[15px] font-medium text-ink shadow-card hover:bg-mist">Keep this location<svg class="ic h-4 w-4"><use href="#i-arrow-right"/></svg></a>
+      <a href="{{ continue_url }}" class="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-line bg-white text-[15px] font-medium text-ink shadow-card hover:bg-mist">Keep this location<svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-arrow-right"/></svg></a>
     {% endif %}
 
   {% else %}
@@ -82,13 +82,13 @@
           {% endfor %}
         </div>
         {% if field.errors %}
-          <p class="mt-3 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert"><svg class="ic h-3.5 w-3.5"><use href="#i-alert-circle"/></svg>{{ field.errors.0 }}</p>
+          <p class="mt-3 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-alert-circle"/></svg>{{ field.errors.0 }}</p>
         {% endif %}
       </fieldset>
       <div class="mt-6 flex gap-3">
-        <a href="{% url 'userprofile:onboarding' step=step|add:'-1' %}" class="flex h-11 items-center justify-center gap-1.5 rounded-lg border border-line bg-white px-4 text-[14px] font-medium text-ink shadow-card hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-arrow-left"/></svg>Back</a>
+        <a href="{% url 'userprofile:onboarding' step=step|add:'-1' %}" class="flex h-11 items-center justify-center gap-1.5 rounded-lg border border-line bg-white px-4 text-[14px] font-medium text-ink shadow-card hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-arrow-left"/></svg>Back</a>
         <button type="submit" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-ink text-[15px] font-medium text-white shadow-sm transition hover:bg-forest-900">
-          <span class="btn-label">{% if step == total %}Finish setup{% else %}Continue{% endif %}</span><svg class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
+          <span class="btn-label">{% if step == total %}Finish setup{% else %}Continue{% endif %}</span><svg aria-hidden="true" class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
         </button>
       </div>
     </form>

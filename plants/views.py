@@ -10,17 +10,21 @@ from garden.forms import StartGrowingForm
 from garden.selectors import in_garden_by_slug
 from greenhand import mock_data as data
 from greenhand.clock import today
-from greenhand.users import current_user
 
 from . import selectors, services
 
 FILTERS = ("q", "category", "difficulty", "season", "container", "indoor", "suitable")
 
 
+def _in_garden(request):
+    """{slug: [nicknames]} of the signed-in user's plants; nothing for visitors."""
+    return in_garden_by_slug(request.user) if request.user.is_authenticated else {}
+
+
 @login_required
 def plant_list(request):
     params = request.GET
-    plants = services.filter_catalog(params, in_garden_by_slug(current_user(request)))
+    plants = services.filter_catalog(params, _in_garden(request))
     all_plants = [services.enrich(p) for p in selectors.catalog()]
     return render(request, "plants/plant_list.html", {
         "plants": plants,
@@ -39,7 +43,7 @@ def plant_detail(request, slug):
     plant = selectors.get_plant(slug)
     if not plant:
         raise Http404("Plant not found")
-    in_garden = in_garden_by_slug(current_user(request))
+    in_garden = _in_garden(request)
     plant = services.enrich(selectors.plant_dict(plant), in_garden.get(slug, ()))
     related = [services.enrich(p) for p in selectors.catalog() if p["category"] == plant["category"] and p["slug"] != slug][:3]
     posts = [p for p in data.POSTS if p["plant_slug"] == slug][:2]
@@ -63,7 +67,7 @@ def start_growing(request, slug):
         return redirect(f"{reverse('plants:detail', args=[slug])}#start")
     d = form.cleaned_data
     user_plant = garden_services.start_growing(
-        current_user(request), d["plant"], nickname=d["nickname"].strip(), planted_on=d["planted_on"],
+        request.user, d["plant"], nickname=d["nickname"].strip(), planted_on=d["planted_on"],
         start_method=d["start_method"], setting=d["setting"], container_type=d["container"].strip(),
         quantity=d["quantity"] or 1,
     )

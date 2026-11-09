@@ -21,7 +21,7 @@ from analytics.models import AnalyticsEvent
 from garden.models import CareLog, Problem, TimelineEntry, UserPlant
 from greenhand.clock import today
 from plants.models import Plant
-from userprofile.models import Profile
+from userprofile.models import GrowingLocation, Profile
 from weather.models import WeatherSnapshot
 
 from . import diagnosis as diagnosis_service
@@ -186,9 +186,11 @@ DIAGNOSIS = {"is_plant": True, "severity": "medium", "category": "pest",
 class RealContextTests(TestCase):
     def setUp(self):
         self.user = grower()
-        Profile.objects.create(user=self.user, city="Madison", region="WI", hardiness_zone="5b", space_type="balcony",
-                               sunlight_level="partial", experience_level="beginner", latitude=Decimal("43.07"),
-                               longitude=Decimal("-89.40"))
+        # signals.py already created the profile; the location lives in GrowingLocation (Area 1)
+        Profile.objects.filter(user=self.user).update(space_type="balcony", sunlight_level="partial",
+                                                      experience_level="beginner")
+        GrowingLocation.objects.create(user=self.user, city="Madison", region="WI", latitude=Decimal("43.07"),
+                                       longitude=Decimal("-89.40"))
         self.basil = grow(self.user, "Basil", nickname="Balcony Basil", planted_on=today() - timedelta(days=20))
         self.source = context.GardenContext(self.user)
 
@@ -354,9 +356,6 @@ class AskTutorTests(TestCase):
 class TutorViewTests(TestCase):
     def setUp(self):
         cache.clear()
-<<<<<<< HEAD
-        self.client.force_login(User.objects.create(username="grower"))
-=======
         self.user = grower()
         self.lettuce = grow(self.user, "Butterhead Lettuce", nickname="Butterhead Lettuce", setting="indoor")
         self.client.force_login(self.user)
@@ -367,7 +366,6 @@ class TutorViewTests(TestCase):
         response = self.client.post(reverse("tutor:api_ask"), {"question": "Hi there"}, content_type="application/json")
         self.assertEqual(response.status_code, 401)
         generate.assert_not_called()
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
     def test_page_renders_with_plant_scope_prefilled(self, *_):
         response = self.client.get(reverse("tutor:ask"), {"plant": self.lettuce.pk, "q": "Water today?"})
@@ -417,17 +415,6 @@ class TutorViewTests(TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["message"], services.UNAVAILABLE_MESSAGE)
 
-<<<<<<< HEAD
-    def test_anonymous_cannot_use_tutor(self, generate, _):
-        self.client.logout()
-        page = self.client.get(reverse("tutor:ask"))
-        self.assertRedirects(page, f"{reverse('userprofile:login')}?next={reverse('tutor:ask')}")
-        api = self.client.post(reverse("tutor:api_ask"), {"question": "Should I water?"}, content_type="application/json")
-        self.assertEqual(api.status_code, 401)
-        self.assertEqual(api.json()["error_kind"], "unauthenticated")
-        generate.assert_not_called()
-        self.assertFalse(User.objects.filter(username="balcony_maya").exists())
-=======
 
 class FeedbackAndActionTests(TestCase):
     def setUp(self):
@@ -587,4 +574,3 @@ class VisionClientTests(SimpleTestCase):
         for response in (self._response("refusal"), self._response("max_tokens"), self._response(text="nope")):
             with self.assertRaises(vision.VisionUnavailable):
                 self._call(response)
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5

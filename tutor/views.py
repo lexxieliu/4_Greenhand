@@ -1,26 +1,13 @@
 import json
 from functools import wraps
 
-<<<<<<< HEAD
-=======
 from django.contrib import messages
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
-<<<<<<< HEAD
-from .forms import QuestionForm
-from .models import AITutorLog
-from .services import ask_tutor
-
-HISTORY_SIZE = 6
-ERROR_STATUS = {"invalid_input": 400, "rate_limited": 429, "invalid_output": 502, "unavailable": 503, "timeout": 504}
-
-
-=======
 from .context import GardenContext
 from .diagnosis import DiagnosisError, run_diagnosis, save_to_problem
 from .forms import DiagnosisForm, QuestionForm, SaveDiagnosisForm
@@ -42,7 +29,6 @@ def _json_login_required(view):
     return wrapper
 
 
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 def _public(result):
     """Drop the raw model text before a result leaves the server."""
     public = {k: v for k, v in result.items() if k != "raw"}
@@ -58,15 +44,10 @@ def _owned_session(user, session_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def ask(request):
-<<<<<<< HEAD
-    """AI Gardening Tutor page (FR-30/32): question + optional plant scope -> grounded answer."""
-    user = request.user
-=======
     """AI Gardening Tutor page (FR-30/32): question + optional plant scope -> grounded answer, kept in a session."""
     user = request.user
     source = request.POST if request.method == "POST" else request.GET
     session = _owned_session(user, source.get("session"))
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
     result = None
     if request.method == "POST":
         form = QuestionForm(request.POST, user=user)
@@ -89,13 +70,7 @@ def ask(request):
 @_json_login_required
 @require_POST
 def api_ask(request):
-<<<<<<< HEAD
-    """JSON endpoint for the dashboard chat and the My Garden drawer: {"question", "plant"} -> result."""
-    if not request.user.is_authenticated:  # a script call gets JSON, not a redirect to the login page
-        return JsonResponse({"status": "error", "error_kind": "unauthenticated", "message": "Sign in to ask the tutor."}, status=401)
-=======
     """JSON endpoint for the dashboard chat and the My Garden drawer: {"question", "plant", "session"} -> result."""
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
     try:
         body = json.loads(request.body or b"{}")
     except json.JSONDecodeError:
@@ -103,12 +78,8 @@ def api_ask(request):
     if not isinstance(body, dict):
         return JsonResponse({"status": "error", "error_kind": "invalid_input", "message": "Invalid request."}, status=400)
     user = request.user
-<<<<<<< HEAD
-    result = ask_tutor(body.get("question"), str(body.get("plant") or ""), user=user, rate_key=user.pk)
-=======
     result = ask_tutor(body.get("question"), str(body.get("plant") or ""), user=user, rate_key=user.pk,
                        session=_owned_session(user, body.get("session")))
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
     return JsonResponse(_public(result), status=ERROR_STATUS.get(result.get("error_kind"), 200))
 
 
