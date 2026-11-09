@@ -1,0 +1,5 @@
+{"model": "HuggingFaceTB/SmolLM-135M", "category": "1 Very Tiny (<0.5B)", "params_b": 0.135, "kind": "base", "load_s": 3.3, "mem_gb": 0.27, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "1", "status": "ok"}
+{"model": "google/flan-t5-small", "category": "1 Very Tiny (<0.5B)", "params_b": 0.077, "kind": "seq2seq", "load_s": 1.3, "mem_gb": 0.31, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "1", "status": "ok"}
+{"model": "openai-community/gpt2", "category": "1 Very Tiny (<0.5B)", "params_b": 0.124, "kind": "base", "load_s": 1.2, "mem_gb": 0.25, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "1", "status": "ok"}
+{"model": "ibm-granite/granite-7b-instruct", "category": "5 Medium-Big (5-7B)", "params_b": 6.7, "kind": "chat", "load_s": 110.3, "mem_gb": 13.48, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "1", "status": "ok"}
+{"model": "01-ai/Yi-6B-200K", "category": "5 Medium-Big (5-7B)", "params_b": 6.7, "kind": "base", "load_s": 96.1, "mem_gb": 12.12, "device": "mps", "dtype": "torch.float16", "four_bit": false, "who": "1", "status": "ok"}

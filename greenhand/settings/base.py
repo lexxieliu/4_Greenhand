@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import dj_database_url
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -74,6 +76,11 @@ WSGI_APPLICATION = 'greenhand.wsgi.application'
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+# GeoDjango needs the GDAL and GEOS libraries. Homebrew on Apple Silicon installs them in
+# /opt/homebrew/lib, which isn't on the default search path; override in .env if yours differ.
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', '/opt/homebrew/lib/libgdal.dylib')
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '/opt/homebrew/lib/libgeos_c.dylib')
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -89,6 +96,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# PostgreSQL (Supabase) with PostGIS and pgvector. The connection string lives in .env.
+DATABASES = {
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
+        engine='django.contrib.gis.db.backends.postgis',
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
