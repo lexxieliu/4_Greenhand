@@ -30,6 +30,30 @@
     return node;
   }
 
+  // Thumbs up/down (FR-36). The server's answer decides which button stays pressed.
+  function rating(url) {
+    const group = el('div', 'mt-2 flex gap-1');
+    [[1, '👍', 'Helpful'], [-1, '👎', 'Not helpful']].forEach(([value, icon, label]) => {
+      const button = el('button', 'rounded px-2 py-1 hover:bg-white/10 aria-pressed:bg-white/20', icon);
+      button.type = 'button';
+      button.value = value;
+      button.setAttribute('aria-label', label);
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+          body: JSON.stringify({ value }),
+        });
+        if (!response.ok) return;
+        const { feedback } = await response.json();
+        group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.value) === feedback)));
+      });
+      group.append(button);
+    });
+    return group;
+  }
+
   function fill(body, result) {
     body.textContent = '';
     if (result.status === 'refused') {
@@ -49,8 +73,9 @@
     if (result.safety_warning) body.append(el('p', 'mt-2 rounded-lg bg-amber-300/15 p-2 text-[12px] text-amber-100', `Safety: ${result.safety_warning}`));
     const cited = result.sources.filter((s) => s.cited);
     const basedOn = (cited.length ? cited : result.sources).map((s) => s.title).join(' · ');
-    body.append(el('p', 'mt-2 text-[11.5px] text-emerald-50/55', result.grounded ? `Based on: ${basedOn}` : 'No Greenhand guide matched — general advice, please double-check.'));
-    body.append(el('p', 'mt-1 text-[11px] text-emerald-50/40', `${result.disclaimer} · ${(result.latency_ms / 1000).toFixed(1)} s`));
+    body.append(el('p', 'mt-2 text-[11.5px] text-emerald-50/80', result.grounded ? `Based on: ${basedOn}` : 'No Greenhand guide matched — general advice, please double-check.'));
+    body.append(el('p', 'mt-1 text-[11px] text-emerald-50/80', `${result.disclaimer} · ${(result.latency_ms / 1000).toFixed(1)} s`));
+    if (result.feedback_url) body.append(rating(result.feedback_url));
   }
 
   window.GHTutor = { ask, fill };

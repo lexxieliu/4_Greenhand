@@ -1,106 +1,141 @@
-"""Garden context for the tutor prompt (PRD 3.4 "Context injected into every conversation").
+"""Garden context for the tutor prompt (PRD 3.4 "Context injected into every conversation"), from the
+signed-in user's real data.
 
-Only the minimum the model needs is sent (PRD 8.2): city-level location and hardiness zone,
-growing space, the plant's species/stage/logs and the forecast. Never username, email or
-coordinates. Reads the same mock data as the rest of the preview app.
+Only the minimum the model needs is sent (PRD 8.2): city-level location and hardiness zone, growing space,
+the plant's species/stage/logs and the forecast. Never username, email or coordinates. Everything the user
+typed is cleaned first, so a nickname or note cannot close the <garden> tag it is placed in.
 """
 import re
-from datetime import date, timedelta
+from datetime import timedelta
 
-from greenhand import mock_data as data
+from django.utils import timezone
+
+from garden.models import CareLog, Garden
+from userprofile.models import Profile
+from weather.services import get_snapshot
+
+from .guardrails import clean_text
 
 RECENT_DAYS = 14          # PRD FR-31: recent logs = last ~14 days
 FORECAST_DAYS = 3
+MAX_GARDEN_LOGS = 8       # whole-garden questions: the model is small, keep the context short
 HIDDEN_STATUSES = ("failed", "archived")
+FROST_THRESHOLD_C = 2     # PRD FR-42 default
+RAIN_SKIP_MM = 5          # PRD FR-41 default
+RAIN_SKIP_PROB = 70
 
 
-def garden_plants():
-    """Plants the user can ask about (not failed or archived)."""
-    return [p for p in data.GARDEN if p["status"] not in HIDDEN_STATUSES]
+def _text(value, limit=160):
+    return clean_text(value or "", limit)
 
 
-def find_plant(plant_id):
-    return next((p for p in garden_plants() if p["id"] == plant_id), None)
+class GardenContext:
+    """The context for one user. A user of None (e.g. the warm-up command) has an empty garden."""
 
+    def __init__(self, user):
+        self.user = user
+        self.today = timezone.localdate()
+        self.since = self.today - timedelta(days=RECENT_DAYS)
 
-def detect_plant(question):
-    """The garden plant the question mentions by its full nickname or a species word ('my tomatoes' -> tomato),
-    or None. Single nickname words are ignored: 'balcony' must not select 'Balcony Basil'."""
-    text = question.lower()
-    words = re.findall(r"[a-z]+", text)
-    for plant in garden_plants():
-        species = data.CATALOG_BY_SLUG[plant["plant_slug"]]["common_name"].lower()
-        keys = {w for w in re.findall(r"[a-z]+", species) if len(w) >= 4}
-        if plant["nickname"].lower() in text or any(word.startswith(key) for word in words for key in keys):
-            return plant
-    return None
+    def plants(self):
+        """Plants the user can ask about (not failed or archived)."""
+        if self.user is None:
+            return Garden.objects.none()
+        return Garden.objects.filter(user=self.user).exclude(status__in=HIDDEN_STATUSES).select_related("plant")
 
+    def find(self, plant_id):
+        return self.plants().filter(pk=plant_id).first() if str(plant_id).isdigit() else None
 
-def _days_since(iso_day):
-    return (data.TODAY - date.fromisoformat(iso_day)).days
+    def detect(self, question):
+        """The garden plant the question mentions by its full nickname or a species word ('my tomatoes' -> tomato),
+        or None. Single nickname words are ignored: 'balcony' must not select 'Balcony Basil'."""
+        text = question.lower()
+        words = re.findall(r"[a-z]+", text)
+        for plant in self.plants():
+            keys = {w for w in re.findall(r"[a-z]+", plant.plant.plant_name.lower()) if len(w) >= 4}
+            if (plant.nickname and plant.nickname.lower() in text) or any(w.startswith(k) for w in words for k in keys):
+                return plant
+        return None
 
+    def describe(self, plant):
+        return {"id": plant.pk, "nickname": plant.label, "species": plant.plant.plant_name}
 
-def _plant_line(plant):
-    species = data.CATALOG_BY_SLUG[plant["plant_slug"]]["common_name"]
-    when = (f"planned for {plant['planted_on']}" if plant["status"] == "planned"
-            else f"day {_days_since(plant['planted_on'])} since planting")
-    open_problems = [p["title"] for p in plant["problems"] if p["status"] != "resolved"]
-    problems = f"; open problem: {', '.join(open_problems)}" if open_problems else ""
-    return (f"{plant['nickname']} ({species}{', ' + plant['variety'] if plant['variety'] else ''}): "
-            f"{plant['status']}, {when}, {plant['setting']}, {plant['container'] or 'no container noted'}{problems}")
+    def _plant_line(self, plant):
+        if plant.status == "planned":
+            when = f"planned for {plant.planted_on}" if plant.planted_on else "planned"
+        else:
+            start = plant.planted_on or plant.added_at.date()
+            when = f"day {(self.today - start).days} since planting"
+        open_problems = [_text(p.title, 80) for p in plant.problems.exclude(status="resolved")]
+        problems = f"; open problem: {', '.join(open_problems)}" if open_problems else ""
+        return f"{_text(plant.label, 60)} ({plant.plant.plant_name}): {plant.status}, {when}, {plant.setting}{problems}"
 
+    def _plant_details(self, plant):
+        """Recent care logs, timeline notes and open problems for a scoped plant."""
+        logs = plant.care_logs.filter(performed_at__date__gte=self.since)
+        lines = [f"Care logs (last {RECENT_DAYS} days): " + ("; ".join(self._log_text(log) for log in logs) or "none")]
+        lines += [f"Timeline note {t.recorded_on} ({t.stage}): {_text(t.note)}"
+                  for t in plant.timeline_entries.filter(recorded_on__gte=self.since)]
+        lines += [f"Open problem since {p.created_at.date()}: {_text(p.title, 80)} – {_text(p.description)}"
+                  for p in plant.problems.exclude(status="resolved")]
+        return lines
 
-def _plant_details(plant):
-    """Recent care logs, timeline notes and open problems for a scoped plant."""
-    since = data.TODAY - timedelta(days=RECENT_DAYS)
-    recent = lambda items: [i for i in items if date.fromisoformat(i["date"]) >= since]
-    lines = [f"Care logs (last {RECENT_DAYS} days): " + ("; ".join(
-        f"{c['date']} {c['action']}{' ' + c['amount'] if c['amount'] else ''}{' (' + c['note'] + ')' if c['note'] else ''}"
-        for c in recent(plant["care"])) or "none")]
-    lines += [f"Timeline note {t['date']} ({t['stage']}): {t['note']}" for t in recent(plant["timeline"])]
-    for problem in plant["problems"]:
-        if problem["status"] != "resolved":
-            lines.append(f"Open problem since {problem['opened']}: {problem['title']} – {problem['description']}")
-    return lines
+    @staticmethod
+    def _log_text(log):
+        amount = f" {_text(log.amount, 50)}" if log.amount else ""
+        note = f" ({_text(log.note, 100)})" if log.note else ""
+        return f"{log.performed_at.date()} {log.action}{amount}{note}"
 
+    def _garden_logs(self):
+        logs = (CareLog.objects.filter(garden__in=self.plants(), performed_at__date__gte=self.since)
+                .select_related("garden__plant")[:MAX_GARDEN_LOGS])
+        return "; ".join(f"{_text(log.garden.label, 60)}: {self._log_text(log)}" for log in logs)
 
-def _weather_lines():
-    now = data.WEATHER["current"]
-    lines = [f"Now {now['temp_c']} °C, {now['condition'].lower()}; rain in the last 24h: {now['rain_last_24h_mm']} mm"]
-    for day in data.WEATHER["daily"][:FORECAST_DAYS]:
-        frost = " – FROST RISK" if day["frost"] else ""
-        lines.append(f"{day['day_long']}: {day['condition'].lower()}, high {day['high']} °C, low {day['low']} °C{frost}")
-    return lines
+    @staticmethod
+    def _weather_lines(snapshot):
+        forecast = " | ".join(f"{d['date']}: high {d['high']} °C, low {d['low']} °C, {d['precip_prob']}% chance of rain"
+                              for d in snapshot.forecast[:FORECAST_DAYS])
+        lines = [f"Weather: Now {snapshot.current_temp_c} °C; rain in the last 24h: {snapshot.rain_last_24h_mm} mm"
+                 + (f" | {forecast}" if forecast else "")]
+        if snapshot.min_temp_next_48h_c <= FROST_THRESHOLD_C:
+            lines.append(f"Active alert: frost risk within 48h (low {snapshot.min_temp_next_48h_c} °C)")
+        if snapshot.rain_last_24h_mm >= RAIN_SKIP_MM or snapshot.precip_prob_next_12h >= RAIN_SKIP_PROB:
+            lines.append("Active alert: enough rain to skip watering outdoor plants today")
+        return lines
 
+    @staticmethod
+    def _setting_rule(plant):
+        """The app's weather rules (FR-41/42): rain and frost only apply to outdoor plants."""
+        if plant.setting == "outdoor":
+            return "Setting rule: outdoor plant, so rain counts as watering and frost can damage it."
+        return f"Setting rule: {plant.setting} plant, so rain and frost do NOT affect it; water it by checking its soil."
 
-def _alert_lines(plant):
-    """Active weather alerts (PRD 3.4 context), limited to the scoped plant when there is one."""
-    alerts = [a for a in data.WEATHER_ALERTS if not plant or plant["nickname"] in a["plants"]]
-    return [f"Active alert: {a['title']} ({a['valid']}); affects {', '.join(a['plants'])}" for a in alerts]
-
-
-def _setting_rule(plant):
-    """The app's weather rules (FR-41/42/45): rain and frost only apply to outdoor plants."""
-    if plant["setting"] == "outdoor":
-        return "Setting rule: outdoor plant, so rain counts as watering and frost can damage it."
-    return f"Setting rule: {plant['setting']} plant, so rain and frost do NOT affect it; water it by checking its soil."
-
-
-def build_context(plant=None):
-    """Plain-text context block. With a plant, it is scoped to that plant (PRD FR-32)."""
-    user = data.USER
-    lines = [
-        f"Today: {data.TODAY:%A, %B} {data.TODAY.day}, {data.TODAY.year}",
-        f"Location: {data.LOCATION['label']}, hardiness zone {data.LOCATION['hardiness_zone']}",
-        f"Grower: {user['experience_level'].lower()}, {user['space_type'].lower()}, {user['sunlight_level'].lower()}",
-    ]
-    if not plant or plant["setting"] == "outdoor":      # indoor plants: the outdoor forecast is irrelevant (FR-45)
-        lines.append("Weather: " + " | ".join(_weather_lines()))
-        lines += _alert_lines(plant)
-    if plant:
-        lines.append("Plant asked about: " + _plant_line(plant))
-        lines.append(_setting_rule(plant))
-        lines += _plant_details(plant)
-    else:
-        lines.append("Garden: " + " | ".join(_plant_line(p) for p in garden_plants()))
-    return "\n".join(lines)
+    def build(self, plant=None):
+        """Plain-text context block. With a plant, it is scoped to that plant (PRD FR-32)."""
+        profile = Profile.objects.filter(user=self.user).first() if self.user else None
+        lines = [f"Today: {self.today:%A, %B} {self.today.day}, {self.today.year}"]
+        if profile:
+            place = ", ".join(_text(p, 100) for p in (profile.city, profile.region) if p)
+            zone = f"hardiness zone {_text(profile.hardiness_zone, 5)}" if profile.hardiness_zone else ""
+            if place or zone:
+                lines.append("Location: " + ", ".join(p for p in (place, zone) if p))
+            grower = [profile.get_experience_level_display(), profile.get_space_type_display(),
+                      profile.get_sunlight_level_display()]
+            if any(grower):
+                lines.append("Grower: " + ", ".join(g.lower() for g in grower if g))
+        outdoor = not plant or plant.setting == "outdoor"      # indoor plants: the outdoor forecast is irrelevant
+        if outdoor and profile and profile.latitude is not None and profile.longitude is not None:
+            snapshot = get_snapshot(profile.latitude, profile.longitude)
+            if snapshot:
+                lines += self._weather_lines(snapshot)
+        if plant:
+            lines.append("Plant asked about: " + self._plant_line(plant))
+            lines.append(self._setting_rule(plant))
+            lines += self._plant_details(plant)
+        else:
+            plants = self.plants()
+            lines.append("Garden: " + (" | ".join(self._plant_line(p) for p in plants) or "no plants yet"))
+            logs = self._garden_logs()
+            if logs:
+                lines.append(f"Recent care (last {RECENT_DAYS} days): {logs}")
+        return "\n".join(lines)

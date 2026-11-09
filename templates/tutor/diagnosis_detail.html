@@ -1,0 +1,56 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Diagnosis result — Greenhand{% endblock %}
+{% block breadcrumb %}{% url 'tutor:diagnose' as diagnose_url %}{% include "partials/breadcrumb.html" with parent="Photo diagnosis" parent_url=diagnose_url current="Result" %}{% endblock %}
+{% block page_title %}Diagnosis result{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">AI-generated. It may be wrong: check again with a follow-up photo, and ask a local extension office about serious problems.</p>{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-5 lg:grid-cols-12">
+  <div class="lg:col-span-4">
+    <img src="{{ diagnosis.image.url }}" alt="Your uploaded plant photo{% if diagnosis.garden %} of {{ diagnosis.garden.label }}{% endif %}" class="w-full rounded-2xl object-cover shadow-card" />
+  </div>
+  <div class="min-w-0 space-y-5 lg:col-span-8">
+    {% if not result.is_plant %}
+      <div class="rounded-2xl bg-amber-50 p-4 text-[14px] text-amber-900 ring-1 ring-amber-200" role="status">I couldn't see a plant in this photo. Please try again with a clear, close photo of the leaves or stem.</div>
+    {% else %}
+      <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="issues-title">
+        <div class="flex items-center justify-between gap-2">
+          <h2 id="issues-title" class="font-display text-[17px] font-semibold tracking-tight">Likely issues</h2>
+          <span class="rounded-full bg-mist px-2.5 py-0.5 text-[12px] capitalize">Severity: {{ result.severity }}</span>
+        </div>
+        <ul class="mt-3 space-y-3">
+          {% for issue in result.issues %}
+            <li><div class="text-[14.5px] font-medium">{{ issue.name }} <span class="text-[12.5px] font-normal capitalize text-muted">· {{ issue.confidence }} confidence</span></div><p class="mt-0.5 text-[13.5px]">{{ issue.reasoning }}</p></li>
+          {% empty %}
+            <li class="text-[14px]">No clear problem is visible. Your plant looks healthy in this photo.</li>
+          {% endfor %}
+        </ul>
+        {% if result.immediate_actions %}
+          <h3 class="mt-4 text-[13.5px] font-semibold">What to do now</h3>
+          <ol class="mt-1 list-decimal space-y-1 pl-5 text-[13.5px]">{% for action in result.immediate_actions %}<li>{{ action }}</li>{% endfor %}</ol>
+        {% endif %}
+        {% if result.watch_for %}
+          <h3 class="mt-4 text-[13.5px] font-semibold">Watch for</h3>
+          <ul class="mt-1 list-disc space-y-1 pl-5 text-[13.5px]">{% for item in result.watch_for %}<li>{{ item }}</li>{% endfor %}</ul>
+        {% endif %}
+      </section>
+      <section class="rounded-2xl bg-white p-5 shadow-card" aria-labelledby="save-title">
+        <h2 id="save-title" class="font-display text-[17px] font-semibold tracking-tight">Problem log</h2>
+        {% if diagnosis.problem %}
+          <p class="mt-2 text-[14px]">Saved to {{ diagnosis.problem.garden.label }}'s Problem log.</p>
+        {% elif form.fields.plant.choices %}
+          <form method="post" action="{% url 'tutor:save_diagnosis' diagnosis.pk %}" class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+            {% csrf_token %}
+            <div class="min-w-0 flex-1"><label for="{{ form.plant.id_for_label }}" class="mb-1.5 block text-[13px] font-medium">{{ form.plant.label }}</label>{{ form.plant }}</div>
+            <button type="submit" class="h-11 rounded-lg bg-forest px-5 text-[14px] font-medium text-white hover:bg-forest-900">Save to Problem log</button>
+          </form>
+        {% else %}
+          <p class="mt-2 text-[14px] text-muted">Add a plant to My Garden to save this diagnosis.</p>
+        {% endif %}
+      </section>
+    {% endif %}
+    <p class="text-[12px] text-muted">{{ diagnosis.model_name }} · AI-generated advice</p>
+  </div>
+</div>
+{% endblock %}

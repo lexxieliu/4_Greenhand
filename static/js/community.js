@@ -5,14 +5,15 @@
   const { $, $$, toast, csrfToken } = window.GH;
 
   // ---------- Composer ----------
+  // Signed-out visitors have no composer.
   const body = $('#postBody');
   const count = $('#charCount');
   const autosize = () => { body.style.height = 'auto'; body.style.height = `${Math.min(body.scrollHeight, 320)}px`; };
-  body.addEventListener('input', () => { count.textContent = `${body.value.length} / 2000`; autosize(); });
+  if (body) body.addEventListener('input', () => { count.textContent = `${body.value.length} / 2000`; autosize(); });
 
   const images = $('#postImages');
   const preview = $('#imagePreview');
-  images.addEventListener('change', () => {
+  if (images) images.addEventListener('change', () => {
     const files = [...images.files].slice(0, 4);
     if (images.files.length > 4) toast('Only the first 4 photos will be posted', { icon: 'i-image' });
     preview.innerHTML = files.map((f) => `<img src="${URL.createObjectURL(f)}" alt="Selected photo preview" class="h-20 w-full rounded-lg object-cover" />`).join('');
@@ -20,7 +21,7 @@
     preview.classList.toggle('grid', files.length > 0);
   });
 
-  $$('[data-focus-composer]').forEach((a) => a.addEventListener('click', () => setTimeout(() => body.focus(), 300)));
+  if (body) $$('[data-focus-composer]').forEach((a) => a.addEventListener('click', () => setTimeout(() => body.focus(), 300)));
 
   // ---------- Like / save (FR-52) ----------
   $$('[data-toggle-url]').forEach((btn) =>
@@ -57,7 +58,8 @@
       const post = btn.closest('[data-post]');
       const open = $('.comments', post).classList.contains('hidden');
       setComments(post, open);
-      if (open) $('input[name="body"]', post).focus();
+      const input = $('input[name="body"]', post);
+      if (open && input) input.focus();
     })
   );
   // Open the thread when arriving at #post-N (e.g. after adding a comment)

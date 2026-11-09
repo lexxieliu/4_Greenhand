@@ -1,6 +1,7 @@
 import re
 
 from django import forms
+from django.contrib.auth.models import User
 
 
 class LoginForm(forms.Form):
@@ -19,7 +20,15 @@ class SignupForm(forms.Form):
         username = self.cleaned_data["username"]
         if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", username):
             raise forms.ValidationError("Use 3–30 letters, numbers, or underscores.")
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("That username is taken.")
         return username
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with that email already exists.")
+        return email
 
     def clean_password(self):
         password = self.cleaned_data["password"]

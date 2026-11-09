@@ -205,3 +205,9 @@ textarea.dash-input { height: auto; padding: 0.6rem 0.8rem; resize: vertical; }
     radial-gradient(70% 90% at 90% 90%, rgba(110, 231, 183, .8), transparent 60%),
     #dcfce7;
 }
+
+/* Accessibility: a visible keyboard focus ring everywhere (WCAG 2.4.7). */
+a:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--gh-leaf);
+  outline-offset: 2px;
+}

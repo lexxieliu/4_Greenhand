@@ -98,6 +98,15 @@ def _run(tokenizer, model, device, messages):
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
+def usage(messages, output):
+    """(prompt_tokens, completion_tokens) for a finished call, or (None, None) if the model is not loaded."""
+    if not _state:
+        return None, None
+    tokenizer = _state["tokenizer"]
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    return len(tokenizer(prompt, add_special_tokens=False)["input_ids"]), len(tokenizer(output, add_special_tokens=False)["input_ids"])
+
+
 def generate(messages):
     """Run the local model on chat messages and return its raw text."""
     try:

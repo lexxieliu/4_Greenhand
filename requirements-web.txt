@@ -1,0 +1,10 @@
+# Everything the web app needs except the local AI models (used by CI and the test suite).
+Django==6.1.1
+django-environ==0.14.0
+dj-database-url==3.1.2
+psycopg[binary]==3.3.2
+Pillow==12.3.0
+numpy==2.5.3
+anthropic==2.7.0
+gunicorn==26.2.0
+whitenoise==6.12.0

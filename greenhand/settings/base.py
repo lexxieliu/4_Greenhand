@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import dj_database_url
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -40,10 +41,12 @@ INSTALLED_APPS = [
     'post',
     'weather',
     'community',
+    'analytics',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,8 +81,10 @@ WSGI_APPLICATION = 'greenhand.wsgi.application'
 
 # GeoDjango needs the GDAL and GEOS libraries. Homebrew on Apple Silicon installs them in
 # /opt/homebrew/lib, which isn't on the default search path; override in .env if yours differ.
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', '/opt/homebrew/lib/libgdal.dylib')
-GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '/opt/homebrew/lib/libgeos_c.dylib')
+# Elsewhere (Linux, Docker) Django finds them itself.
+_on_mac = sys.platform == 'darwin'
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', '/opt/homebrew/lib/libgdal.dylib' if _on_mac else None)
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '/opt/homebrew/lib/libgeos_c.dylib' if _on_mac else None)
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -125,9 +130,18 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = env('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
+
+LOGIN_URL = 'userprofile:login'
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # AI Gardening Tutor (tutor app). Public Hugging Face models, downloaded to ~/.cache/huggingface on first use.
 LOCAL_MODEL_ID = env("LOCAL_MODEL_ID", default="Qwen/Qwen2.5-3B-Instruct")
 EMBEDDING_MODEL_ID = env("EMBEDDING_MODEL_ID", default="sentence-transformers/all-MiniLM-L6-v2")
 TUTOR_TIMEOUT_SECONDS = env.int("TUTOR_TIMEOUT_SECONDS", default=60)
+
+# Photo diagnosis uses the Claude API (needs ANTHROPIC_API_KEY); text chat stays on the local model above.
+DIAGNOSIS_MODEL = env("DIAGNOSIS_MODEL", default="claude-opus-5-5")
+DIAGNOSIS_TIMEOUT_SECONDS = env.int("DIAGNOSIS_TIMEOUT_SECONDS", default=30)

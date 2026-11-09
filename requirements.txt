@@ -2,15 +2,13 @@
 # These are the versions the team tested together; install with:  pip install -r requirements.txt
 
 # --- Web app ---
-Django==6.1.1
-django-environ==0.14.0
+-r requirements-web.txt
 
 # --- AI Gardening Tutor (local, public Hugging Face models; weights download on first use) ---
 torch==2.14.1
 transformers==5.20.1
 accelerate==1.15.0
 sentence-transformers==6.2.0
-numpy==2.5.3
 
 # --- Retrieval evaluation only (python manage.py evaluate_retrieval: TF-IDF baseline) ---
 scikit-learn==1.9.1
