@@ -27,3 +27,6 @@ checkpoints/
 
 # notebooks
 .ipynb_checkpoints/
+
+# user uploads (garden photos)
+media/

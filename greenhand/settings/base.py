@@ -125,6 +125,12 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# User uploads (garden photos). Stored on local disk for now; S3/R2 via django-storages later (PRD 6.1).
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / "media"
+MAX_UPLOAD_MB = 10                        # PRD 6.6: images only, max 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # AI Gardening Tutor (tutor app). Public Hugging Face models, downloaded to ~/.cache/huggingface on first use.

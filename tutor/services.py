@@ -11,8 +11,9 @@ import logging
 import time
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
-from greenhand import mock_data as data
+from greenhand.users import DEMO_USERNAME
 
 from . import guardrails, knowledge, llm, prompts
 from .context import build_context, detect_plant, find_plant
@@ -33,7 +34,7 @@ def _retrieve(question, plant):
     """Top notes for the question. The plant's species is added to vague scoped questions
     ("Should I water today?") so its own guide can be found. Retrieval failing is not fatal:
     the tutor then answers without notes and says it is not certain."""
-    species = data.CATALOG_BY_SLUG[plant["plant_slug"]]["common_name"] if plant else ""
+    species = plant["species"] if plant else ""
     query = question if species.lower() in question.lower() else f"{question} {species}".strip()
     try:
         return knowledge.search(query)
@@ -56,9 +57,10 @@ def ask_tutor(question, plant_id="", user=None, rate_key=None):
         return _error(question, RATE_LIMIT_MESSAGE, "rate_limited")
 
     cleaned = guardrails.clean_text(question)
-    plant = find_plant(plant_id) if plant_id else detect_plant(cleaned)
+    garden_user = user or User.objects.get_or_create(username=DEMO_USERNAME)[0]    # evaluation runs pass no user
+    plant = find_plant(plant_id, garden_user) if plant_id else detect_plant(cleaned, garden_user)
     hits = _retrieve(cleaned, plant)
-    messages = prompts.build_messages(cleaned, build_context(plant), hits)
+    messages = prompts.build_messages(cleaned, build_context(garden_user, plant), hits)
 
     start = time.perf_counter()
     try:

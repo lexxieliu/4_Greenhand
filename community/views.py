@@ -4,7 +4,10 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from garden.selectors import garden
 from greenhand import mock_data as data
+from greenhand.users import current_user
+from plants.selectors import catalog_by_slug
 
 REPORT_REASONS = {"spam": "Spam", "harmful_advice": "Harmful advice", "harassment": "Harassment", "other": "Something else"}
 
@@ -16,8 +19,8 @@ def _post(post_id):
     return post
 
 
-def _decorate(p):
-    plant = data.CATALOG_BY_SLUG.get(p["plant_slug"])
+def _decorate(p, catalog):
+    plant = catalog.get(p["plant_slug"])
     return {
         **p,
         "author_info": data.AUTHORS[p["author"]],
@@ -32,7 +35,9 @@ def _decorate(p):
 def post_list(request):
     feed = request.GET.get("feed", "latest")
     post_type = request.GET.get("type", "")
-    my_slugs = {g["plant_slug"] for g in data.GARDEN}
+    catalog = catalog_by_slug()
+    my_plants = [g for g in garden(current_user(request)) if g["status"] not in ("failed", "archived")]
+    my_slugs = {g["plant_slug"] for g in my_plants}
     posts = sorted(data.POSTS, key=lambda p: -p["id"])
     if feed == "same":
         posts = [p for p in posts if p["plant_slug"] in my_slugs]
@@ -40,14 +45,22 @@ def post_list(request):
         posts = [p for p in posts if p["saved"]]
     if post_type in data.POST_TYPES:
         posts = [p for p in posts if p["post_type"] == post_type]
+    share_type = request.GET.get("share_type", "")
+    prefill = {  # FR-26: "Share to Posts" from My Garden opens the composer filled in
+        "body": request.GET.get("share_text", "")[:2000],
+        "post_type": share_type if share_type in data.POST_TYPES else "",
+        "user_plant": request.GET.get("share_plant", ""),
+    }
     return render(request, "community/post_list.html", {
-        "posts": [_decorate(p) for p in posts],
+        "prefill": prefill,
+        "posts": [_decorate(p, catalog) for p in posts],
         "feed": feed if feed in ("latest", "same", "saved") else "latest",
         "post_type": post_type,
         "post_types": data.POST_TYPES,
-        "my_plants": [g for g in data.GARDEN if g["status"] not in ("failed", "archived")],
+        "my_plants": my_plants,
         "report_reasons": REPORT_REASONS,
-        "trending": [{"name": data.CATALOG_BY_SLUG[s]["common_name"], "slug": s, "count": sum(1 for p in data.POSTS if p["plant_slug"] == s)} for s in ("cherry-tomato", "basil", "lettuce", "kale")],
+        "trending": [{"name": catalog[s]["common_name"], "slug": s, "count": sum(1 for p in data.POSTS if p["plant_slug"] == s)}
+                     for s in ("cherry-tomato", "basil", "lettuce", "kale") if s in catalog],
     })
 
 
@@ -58,7 +71,7 @@ def create_post(request):
     if not body:
         messages.error(request, "Write something before posting.")
         return redirect("community:feed")
-    garden_plant = next((g for g in data.GARDEN if g["id"] == request.POST.get("user_plant")), None)
+    garden_plant = next((g for g in garden(current_user(request)) if g["id"] == request.POST.get("user_plant")), None)
     new_id = max(p["id"] for p in data.POSTS) + 1
     ai = ""
     if post_type == "question":

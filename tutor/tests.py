@@ -2,13 +2,18 @@
 Answer quality with the real models is measured by `python manage.py evaluate_tutor` instead."""
 import json
 import re
+from io import StringIO
 from unittest import mock
 
 import numpy as np
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+
+from garden.models import UserPlant
+from greenhand.users import DEMO_USERNAME
 
 from . import context, guardrails as g, knowledge, llm, prompts, services
 from .models import AITutorLog
@@ -38,6 +43,19 @@ def fake_index():
     texts = [f"{c.title}. {c.text}" for c in chunks]
     model = FakeEmbedder(texts)
     return {"model": model, "chunks": chunks, "vectors": model.encode(texts)}
+
+
+class SeededTestCase(TestCase):
+    """The catalog (seed_plants) and the demo account's garden (seed_demo_garden), as in the running app."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_plants", stdout=StringIO())
+        call_command("seed_demo_garden", stdout=StringIO())
+        cls.demo = User.objects.get(username=DEMO_USERNAME)
+
+    def pid(self, nickname):
+        return str(UserPlant.objects.get(user=self.demo, nickname=nickname).pk)
 
 
 class CleanAndCheckInputTests(SimpleTestCase):
@@ -102,7 +120,7 @@ class SafetyAndRateLimitTests(SimpleTestCase):
         self.assertFalse(g.rate_limited("u2", limit=3))
 
 
-class KnowledgeTests(SimpleTestCase):
+class KnowledgeTests(SeededTestCase):
     def test_chunks_have_unique_ids_and_cover_guides_and_catalog(self):
         chunks = knowledge.load_chunks()
         ids = [c.id for c in chunks]
@@ -119,17 +137,26 @@ class KnowledgeTests(SimpleTestCase):
         self.assertEqual(knowledge.search("zzz qqq", min_score=0.1), [])
 
 
-class ContextTests(SimpleTestCase):
+class ContextTests(SeededTestCase):
+    def detect(self, question):
+        plant = context.detect_plant(question, self.demo)
+        return plant and plant["nickname"]
+
     def test_detects_plant_from_question(self):
-        self.assertEqual(context.detect_plant("When will my tomatoes be ripe?")["id"], "tomato")
-        self.assertEqual(context.detect_plant("My basil has spots")["id"], "basil")
-        self.assertIsNone(context.detect_plant("How do I grow carrots?"))
-        self.assertIsNone(context.detect_plant("Why did my cilantro die?"))     # failed plants are hidden
-        self.assertIsNone(context.detect_plant("What can I plant on my balcony?"))  # not 'Balcony Basil'
-        self.assertEqual(context.detect_plant("Is Balcony Basil ok?")["id"], "basil")
+        self.assertEqual(self.detect("When will my tomatoes be ripe?"), "Cherry Tomato ‘Sungold’")
+        self.assertEqual(self.detect("My basil has spots"), "Balcony Basil")
+        self.assertIsNone(self.detect("How do I grow carrots?"))
+        self.assertIsNone(self.detect("Why did my cilantro die?"))     # failed plants are hidden
+        self.assertIsNone(self.detect("What can I plant on my balcony?"))  # not 'Balcony Basil'
+        self.assertEqual(self.detect("Is Balcony Basil ok?"), "Balcony Basil")
+
+    def test_other_users_plants_are_never_found(self):
+        stranger = User.objects.create(username="stranger")
+        self.assertIsNone(context.find_plant(self.pid("Balcony Basil"), stranger))
+        self.assertIsNone(context.detect_plant("My basil has spots", stranger))
 
     def test_scoped_context_is_minimal_and_specific(self):
-        text = context.build_context(context.find_plant("lettuce"))
+        text = context.build_context(self.demo, context.find_plant(self.pid("Butterhead Lettuce"), self.demo))
         self.assertIn("Butterhead Lettuce", text)
         self.assertIn("indoor", text)
         self.assertIn("hardiness zone 5b", text)
@@ -143,17 +170,17 @@ class ContextTests(SimpleTestCase):
 
 
 @mock.patch.object(knowledge, "_get_index", side_effect=fake_index)
-class AskTutorTests(TestCase):
+class AskTutorTests(SeededTestCase):
     def setUp(self):
         cache.clear()
 
     def test_answer_is_grounded_and_logged(self, _):
-        user = User.objects.create(username="grower")
+        user = self.demo
         hits = [knowledge.Hit(knowledge.Chunk("watering-3", "Watering basics › Signs of overwatering", "..."), 0.7)]
         with mock.patch.object(knowledge, "search", return_value=hits), mock.patch.object(llm, "generate", return_value=GOOD):
             result = services.ask_tutor("Why is my basil yellow?", user=user)
         self.assertEqual(result["status"], "answer")
-        self.assertEqual(result["plant"]["id"], "basil")
+        self.assertEqual(result["plant"]["nickname"], "Balcony Basil")
         self.assertEqual(result["sources"][0]["cited"], True)
         self.assertTrue(result["grounded"])
         self.assertEqual(AITutorLog.objects.get().thinking_process, GOOD)
@@ -194,12 +221,12 @@ class AskTutorTests(TestCase):
 
 @mock.patch.object(knowledge, "_get_index", side_effect=fake_index)
 @mock.patch.object(llm, "generate", return_value=GOOD)
-class TutorViewTests(TestCase):
+class TutorViewTests(SeededTestCase):
     def setUp(self):
         cache.clear()
 
     def test_page_renders_with_plant_scope_prefilled(self, *_):
-        response = self.client.get(reverse("tutor:ask"), {"plant": "lettuce", "q": "Water today?"})
+        response = self.client.get(reverse("tutor:ask"), {"plant": self.pid("Butterhead Lettuce"), "q": "Water today?"})
         self.assertContains(response, "Butterhead Lettuce")
         self.assertContains(response, "Water today?")
 
@@ -215,7 +242,7 @@ class TutorViewTests(TestCase):
         generate.assert_not_called()
 
     def test_api_answer_hides_raw_model_text(self, *_):
-        response = self.client.post(reverse("tutor:api_ask"), {"question": "Should I water?", "plant": "lettuce"},
+        response = self.client.post(reverse("tutor:api_ask"), {"question": "Should I water?", "plant": self.pid("Butterhead Lettuce")},
                                     content_type="application/json")
         body = response.json()
         self.assertEqual(response.status_code, 200)

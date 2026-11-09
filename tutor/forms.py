@@ -14,8 +14,8 @@ class QuestionForm(forms.Form):
     )
     plant = forms.ChoiceField(label="About", required=False, widget=forms.Select(attrs={"class": "dash-input"}))
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["plant"].choices = [("", "My whole garden (auto-detect the plant)")] + [
-            (p["id"], p["nickname"]) for p in garden_plants()
+            (p["id"], p["nickname"]) for p in garden_plants(user)
         ]
