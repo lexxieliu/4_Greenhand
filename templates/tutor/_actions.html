@@ -1,0 +1,7 @@
+{# Suggested actions the user confirms with one click (FR-35). #}
+{% for action in actions %}{% if action.type == "log_problem" and not action.done %}
+  <form method="post" action="{% url 'tutor:log_problem' message_id %}" class="mt-3">
+    {% csrf_token %}
+    <button type="submit" class="rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-medium text-forest-900">{{ action.label }}</button>
+  </form>
+{% endif %}{% endfor %}

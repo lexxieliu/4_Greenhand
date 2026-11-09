@@ -2,6 +2,7 @@ import datetime
 import re
 
 from django import forms
+<<<<<<< HEAD
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import UploadedFile
@@ -15,6 +16,9 @@ def check_password_rule(password):
     if len(password) < 8 or not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
         raise forms.ValidationError("Use 8+ characters with at least one letter and one number.")
     return password
+=======
+from django.contrib.auth.models import User
+>>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 
 class LoginForm(forms.Form):
@@ -40,7 +44,11 @@ class SignupForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data["email"]
         if User.objects.filter(email__iexact=email).exists():
+<<<<<<< HEAD
             raise forms.ValidationError("An account with this email already exists.")
+=======
+            raise forms.ValidationError("An account with that email already exists.")
+>>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
         return email
 
     def clean_password(self):

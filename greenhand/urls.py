@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -24,6 +26,7 @@ from greenhand.views import Home
 
 urlpatterns = [
     path('', Home.as_view(), name='landing'),
+    path('admin/', admin.site.urls),
     path("accounts/", include('userprofile.urls')),
     path("garden/", include('garden.urls')),
     path("plants/", include('plants.urls')),
@@ -32,5 +35,10 @@ urlpatterns = [
     path("tutor/", include('tutor.urls')),
 ]
 
+<<<<<<< HEAD
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+=======
+# Serve uploaded photos while developing (production serves them from object storage).
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+>>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5

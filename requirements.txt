@@ -2,16 +2,19 @@
 # These are the versions the team tested together; install with:  pip install -r requirements.txt
 
 # --- Web app ---
+<<<<<<< HEAD
 Django==6.1.1
 django-environ==0.14.0
 Pillow==13.0.0          # avatar uploads (ImageField, EXIF stripping)
+=======
+-r requirements-web.txt
+>>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 # --- AI Gardening Tutor (local, public Hugging Face models; weights download on first use) ---
 torch==2.14.1
 transformers==5.20.1
 accelerate==1.15.0
 sentence-transformers==6.2.0
-numpy==2.5.3
 
 # --- Retrieval evaluation only (python manage.py evaluate_retrieval: TF-IDF baseline) ---
 scikit-learn==1.9.1

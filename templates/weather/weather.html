@@ -8,7 +8,7 @@
 {% block page_title %}Weather{% endblock %}
 {% block page_subtitle %}<p class="text-[13px] text-muted">{{ weather.location }} · Updated {{ weather.updated }} · {{ weather.provider }}</p>{% endblock %}
 {% block page_actions %}
-  <a href="#" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-pin"/></svg>Change location</a>
+  <a href="#" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-pin"/></svg>Change location</a>
 {% endblock %}
 
 {% block content %}
@@ -25,13 +25,13 @@
         </div>
         <p class="mt-2 text-[13.5px] text-emerald-50/65">Feels like {{ now.feels_like }}&deg; · High {{ now.high }}&deg; · Low {{ now.low }}&deg;</p>
       </div>
-      <span class="grid h-16 w-16 place-items-center rounded-2xl bg-white/10 text-sky-300"><svg class="ic h-8 w-8"><use href="#{{ now.icon }}"/></svg></span>
+      <span class="grid h-16 w-16 place-items-center rounded-2xl bg-white/10 text-sky-300"><svg aria-hidden="true" class="ic h-8 w-8"><use href="#{{ now.icon }}"/></svg></span>
     </div>
     <dl class="mt-6 grid grid-cols-2 gap-2 text-[12.5px] sm:grid-cols-4">
-      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg class="ic h-3.5 w-3.5"><use href="#i-drop"/></svg>Humidity</dt><dd class="mt-1 font-medium text-white">{{ now.humidity }}%</dd></div>
-      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg class="ic h-3.5 w-3.5"><use href="#i-wind"/></svg>Wind</dt><dd class="mt-1 font-medium text-white">{{ now.wind_kmh }} km/h</dd></div>
-      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg class="ic h-3.5 w-3.5"><use href="#i-sunrise"/></svg>Sunrise</dt><dd class="mt-1 font-medium text-white">{{ now.sunrise }}</dd></div>
-      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg class="ic h-3.5 w-3.5"><use href="#i-sunset"/></svg>Sunset</dt><dd class="mt-1 font-medium text-white">{{ now.sunset }}</dd></div>
+      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-drop"/></svg>Humidity</dt><dd class="mt-1 font-medium text-white">{{ now.humidity }}%</dd></div>
+      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-wind"/></svg>Wind</dt><dd class="mt-1 font-medium text-white">{{ now.wind_kmh }} km/h</dd></div>
+      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-sunrise"/></svg>Sunrise</dt><dd class="mt-1 font-medium text-white">{{ now.sunrise }}</dd></div>
+      <div class="rounded-xl bg-white/[0.06] p-3"><dt class="flex items-center gap-1 text-emerald-50/55"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-sunset"/></svg>Sunset</dt><dd class="mt-1 font-medium text-white">{{ now.sunset }}</dd></div>
     </dl>
   </section>
 
@@ -39,29 +39,29 @@
     {# Each tile shows the rule-engine input next to its threshold (PRD 6.4 C) #}
     <section class="stat-card rounded-2xl bg-white p-5 shadow-card">
       <span class="orb orb-a bg-sky-50"></span><span class="orb orb-b bg-sky-100/60"></span>
-      <span class="grid h-10 w-10 place-items-center rounded-xl bg-sky-100 text-sky-700"><svg class="ic h-5 w-5"><use href="#i-rain"/></svg></span>
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-sky-100 text-sky-700"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#i-rain"/></svg></span>
       <p class="mt-4 text-[13px] text-muted">Rain, last 24h</p>
       <p class="font-display text-[28px] font-semibold leading-tight tracking-tight">{{ now.rain_last_24h_mm }} mm</p>
       {% if now.rain_last_24h_mm >= thresholds.rain_mm %}
-        <p class="mt-2 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11.5px] font-medium text-sky-800"><svg class="ic h-3 w-3"><use href="#i-check"/></svg>Outdoor watering skipped</p>
+        <p class="mt-2 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11.5px] font-medium text-sky-800"><svg aria-hidden="true" class="ic h-3 w-3"><use href="#i-check"/></svg>Outdoor watering skipped</p>
       {% else %}
         <p class="mt-2 text-[12px] text-muted">Skips watering at {{ thresholds.rain_mm }} mm</p>
       {% endif %}
     </section>
     <section class="stat-card rounded-2xl bg-white p-5 shadow-card">
       <span class="orb orb-a bg-lime-50"></span><span class="orb orb-b bg-lime-100/60"></span>
-      <span class="grid h-10 w-10 place-items-center rounded-xl bg-lime-100 text-forest"><svg class="ic h-5 w-5"><use href="#i-umbrella"/></svg></span>
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-lime-100 text-forest"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#i-umbrella"/></svg></span>
       <p class="mt-4 text-[13px] text-muted">Rain chance, next 12h</p>
       <p class="font-display text-[28px] font-semibold leading-tight tracking-tight">{{ now.precip_prob_next_12h }}%</p>
       <p class="mt-2 text-[12px] text-muted">Skips watering at {{ thresholds.rain_prob }}%</p>
     </section>
     <section class="stat-card rounded-2xl bg-white p-5 shadow-card">
       <span class="orb orb-a bg-indigo-50"></span><span class="orb orb-b bg-indigo-100/60"></span>
-      <span class="grid h-10 w-10 place-items-center rounded-xl bg-indigo-100 text-indigo-700"><svg class="ic h-5 w-5"><use href="#i-snow"/></svg></span>
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-indigo-100 text-indigo-700"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#i-snow"/></svg></span>
       <p class="mt-4 text-[13px] text-muted">Lowest, next 48h</p>
       <p class="font-display text-[28px] font-semibold leading-tight tracking-tight {% if now.min_temp_next_48h_c <= thresholds.frost_c %}text-indigo-700{% endif %}">{{ now.min_temp_next_48h_c }}&deg;C</p>
       {% if now.min_temp_next_48h_c <= thresholds.frost_c %}
-        <p class="mt-2 inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11.5px] font-medium text-indigo-800"><svg class="ic h-3 w-3"><use href="#i-alert"/></svg>Below {{ thresholds.frost_c }} &deg;C frost line</p>
+        <p class="mt-2 inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11.5px] font-medium text-indigo-800"><svg aria-hidden="true" class="ic h-3 w-3"><use href="#i-alert"/></svg>Below {{ thresholds.frost_c }} &deg;C frost line</p>
       {% else %}
         <p class="mt-2 text-[12px] text-muted">Frost alert at {{ thresholds.frost_c }} &deg;C</p>
       {% endif %}
@@ -76,14 +76,14 @@
     {% if alert.alert_type == "frost" %}
       <article class="alert is-open rounded-2xl border border-indigo-200 bg-indigo-50/70" data-alert="{{ alert.id }}">
         <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-          <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-indigo-700 ring-1 ring-indigo-200"><svg class="ic h-5 w-5"><use href="#{{ alert.icon }}"/></svg></span>
+          <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-indigo-700 ring-1 ring-indigo-200"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#{{ alert.icon }}"/></svg></span>
           <div class="min-w-0 flex-1">
             <h2 class="text-[15px] font-medium text-indigo-950">{{ alert.title }}</h2>
             <p class="text-[13px] text-indigo-900/75">{{ alert.message }} {{ alert.valid }}</p>
             <div class="mt-2 flex flex-wrap gap-1.5">{% for name in alert.plants %}<span class="rounded-full bg-white px-2 py-0.5 text-[11.5px] font-medium text-indigo-800 ring-1 ring-indigo-200">{{ name }}</span>{% endfor %}</div>
           </div>
           <button type="button" class="alert-toggle inline-flex items-center gap-1 self-start rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-[13px] font-medium text-indigo-900 sm:self-center" aria-expanded="true" aria-controls="actions-{{ alert.id }}">
-            Protective steps <svg class="ic alert-chevron h-3.5 w-3.5"><use href="#i-chev-down"/></svg>
+            Protective steps <svg aria-hidden="true" class="ic alert-chevron h-3.5 w-3.5"><use href="#i-chev-down"/></svg>
           </button>
         </div>
         <div class="alert-actions" id="actions-{{ alert.id }}">
@@ -100,7 +100,7 @@
       </article>
     {% else %}
       <article class="alert flex flex-col gap-3 rounded-2xl border border-sky-200 bg-sky-50/70 p-4 sm:flex-row sm:items-center" data-alert="{{ alert.id }}">
-        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200"><svg class="ic h-5 w-5"><use href="#{{ alert.icon }}"/></svg></span>
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#{{ alert.icon }}"/></svg></span>
         <div class="min-w-0 flex-1">
           <h2 class="text-[15px] font-medium text-sky-950">{{ alert.title }}</h2>
           <p class="text-[13px] text-sky-900/75">{{ alert.message }}</p>
@@ -124,13 +124,13 @@
         <p class="text-[13px] text-muted">Every 3 hours · dashed line is the {{ thresholds.frost_c }} &deg;C frost threshold</p>
       </div>
       <button type="button" id="wxTableToggle" class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-forest hover:bg-mist" aria-expanded="false" aria-controls="wxTable">
-        <svg class="ic h-3.5 w-3.5"><use href="#i-table"/></svg><span>View as table</span>
+        <svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-table"/></svg><span>View as table</span>
       </button>
     </div>
     <div id="wxCharts" class="relative mt-4">
-      <p class="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-muted"><svg class="ic h-3.5 w-3.5 text-amber-600"><use href="#i-thermo"/></svg>Temperature (&deg;C)</p>
+      <p class="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-muted"><svg aria-hidden="true" class="ic h-3.5 w-3.5 text-amber-600"><use href="#i-thermo"/></svg>Temperature (&deg;C)</p>
       <svg id="tempChart" class="block h-[200px] w-full" role="img" aria-label="Temperature forecast for the next 72 hours"></svg>
-      <p class="mb-1 mt-4 flex items-center gap-1.5 text-[12px] font-medium text-muted"><svg class="ic h-3.5 w-3.5 text-sky-600"><use href="#i-rain"/></svg>Rain (mm per 3 hours)</p>
+      <p class="mb-1 mt-4 flex items-center gap-1.5 text-[12px] font-medium text-muted"><svg aria-hidden="true" class="ic h-3.5 w-3.5 text-sky-600"><use href="#i-rain"/></svg>Rain (mm per 3 hours)</p>
       <svg id="rainChart" class="block h-[80px] w-full" role="img" aria-label="Rain forecast for the next 72 hours"></svg>
       <div id="wxTip" class="wx-tip absolute z-10 min-w-[140px] rounded-xl bg-ink px-3 py-2 text-[12px] text-white opacity-0 shadow-float"></div>
     </div>
@@ -182,12 +182,12 @@
           {% for i in impacts %}
             <tr>
               <td class="px-5 py-3"><a href="{% url 'garden:my_garden' %}#plant={{ i.id }}" class="flex items-center gap-3 hover:text-forest">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br {{ i.grad }}"><svg class="ic h-4 w-4"><use href="#{{ i.icon }}"/></svg></span>
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br {{ i.grad }}"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#{{ i.icon }}"/></svg></span>
                 <span><span class="block font-medium">{{ i.nickname }}</span><span class="block text-[12px] text-muted">{{ i.setting|capfirst }}</span></span></a></td>
-              <td class="px-3 py-3"><span class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] {{ i.today.cls }}"><svg class="ic h-3.5 w-3.5"><use href="#{{ i.today.icon }}"/></svg>{{ i.today.text }}</span></td>
+              <td class="px-3 py-3"><span class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] {{ i.today.cls }}"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#{{ i.today.icon }}"/></svg>{{ i.today.text }}</span></td>
               <td class="px-3 py-3 text-[13px] {{ i.frost.cls }}">{{ i.frost.text }}</td>
               <td class="px-3 py-3 text-[13px]">{{ i.next_water|default:"—" }}</td>
-              <td class="px-5 py-3 text-right text-[12px]">{% if i.weather_aware %}<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-800"><svg class="ic h-3 w-3"><use href="#i-check"/></svg>On</span>{% elif i.setting == "outdoor" %}<span class="text-muted">Off</span>{% else %}<span class="text-muted">n/a</span>{% endif %}</td>
+              <td class="px-5 py-3 text-right text-[12px]">{% if i.weather_aware %}<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-800"><svg aria-hidden="true" class="ic h-3 w-3"><use href="#i-check"/></svg>On</span>{% elif i.setting == "outdoor" %}<span class="text-muted">Off</span>{% else %}<span class="text-muted">n/a</span>{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -199,9 +199,9 @@
     <h2 id="rules-title" class="font-display text-[17px] font-semibold tracking-tight">How Greenhand uses weather</h2>
     <p class="text-[13px] text-muted">Forecasts refresh every 3 hours. You can override any change.</p>
     <ul class="mt-4 space-y-3 text-[13px]">
-      <li class="flex gap-3 rounded-xl bg-sky-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-sky-700"><svg class="ic h-4 w-4"><use href="#i-rain"/></svg></span><span><span class="block font-medium text-sky-950">Rain skip</span><span class="text-sky-900/75">{{ thresholds.rain_mm }} mm in 24h or {{ thresholds.rain_prob }}% chance in 12h skips outdoor watering. Indoor plants are never affected.</span></span></li>
-      <li class="flex gap-3 rounded-xl bg-indigo-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-indigo-700"><svg class="ic h-4 w-4"><use href="#i-snow"/></svg></span><span><span class="block font-medium text-indigo-950">Frost alert</span><span class="text-indigo-900/75">A low at or below {{ thresholds.frost_c }} &deg;C within 48h alerts you for frost-sensitive outdoor plants.</span></span></li>
-      <li class="flex gap-3 rounded-xl bg-orange-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-orange-700"><svg class="ic h-4 w-4"><use href="#i-flame"/></svg></span><span><span class="block font-medium text-orange-950">Heat wave <span class="ml-1 rounded bg-white px-1.5 text-[10.5px] font-normal text-orange-800">Soon</span></span><span class="text-orange-900/75">{{ thresholds.heat_c }} &deg;C and up will suggest extra watering and shade.</span></span></li>
+      <li class="flex gap-3 rounded-xl bg-sky-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-sky-700"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-rain"/></svg></span><span><span class="block font-medium text-sky-950">Rain skip</span><span class="text-sky-900/75">{{ thresholds.rain_mm }} mm in 24h or {{ thresholds.rain_prob }}% chance in 12h skips outdoor watering. Indoor plants are never affected.</span></span></li>
+      <li class="flex gap-3 rounded-xl bg-indigo-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-indigo-700"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-snow"/></svg></span><span><span class="block font-medium text-indigo-950">Frost alert</span><span class="text-indigo-900/75">A low at or below {{ thresholds.frost_c }} &deg;C within 48h alerts you for frost-sensitive outdoor plants.</span></span></li>
+      <li class="flex gap-3 rounded-xl bg-orange-50 p-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-orange-700"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-flame"/></svg></span><span><span class="block font-medium text-orange-950">Heat wave <span class="ml-1 rounded bg-white px-1.5 text-[10.5px] font-normal text-orange-800">Soon</span></span><span class="text-orange-900/75">{{ thresholds.heat_c }} &deg;C and up will suggest extra watering and shade.</span></span></li>
     </ul>
   </section>
 </div>

@@ -11,6 +11,8 @@ __pycache__/
 
 # django (collectstatic output is rebuilt on the server)
 staticfiles/
+media/
+.coverage
 
 # user uploads
 media/
@@ -30,3 +32,6 @@ checkpoints/
 
 # notebooks
 .ipynb_checkpoints/
+
+# user uploads (garden photos)
+media/

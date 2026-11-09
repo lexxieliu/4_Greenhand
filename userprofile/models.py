@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
 class Profile(models.Model):
@@ -37,12 +38,26 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True, default="")
     birthdate = models.DateField(null=True, blank=True)
     pronouns = models.CharField(max_length=30, blank=True, default="")
+<<<<<<< HEAD
     experience_level = models.CharField(max_length=20, choices=Experience.choices, default=Experience.BEGINNER)
     space_type = models.CharField(max_length=20, choices=Space.choices, blank=True, default="")
     sunlight_level = models.CharField(max_length=20, choices=Sunlight.choices, blank=True, default="")
     units = models.CharField(max_length=10, choices=Units.choices, default=Units.METRIC)
     notification_prefs = models.JSONField(default=dict, blank=True)
     onboarding_completed = models.BooleanField(default=False)
+=======
+    city = models.CharField(max_length=100, blank=True, default="")
+    region = models.CharField(max_length=100, blank=True, default="")
+    latitude = models.DecimalField(max_digits=8, decimal_places=5, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=8, decimal_places=5, null=True, blank=True)
+    hardiness_zone = models.CharField(max_length=5, blank=True, default="")
+    space_type = models.CharField(max_length=20, blank=True, default="", choices=[
+        (s, s.capitalize()) for s in ("backyard", "balcony", "windowsill", "indoor")])
+    sunlight_level = models.CharField(max_length=20, blank=True, default="", choices=[
+        ("full_sun", "Full sun"), ("partial", "Partial"), ("shade", "Shade")])
+    experience_level = models.CharField(max_length=20, blank=True, default="", choices=[
+        ("beginner", "Beginner"), ("some_experience", "Some experience"), ("experienced", "Experienced")])
+>>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_related_profile')
 
