@@ -1,0 +1,11 @@
+{% extends "layouts/app.html" %}{% block page_header %}{% endblock %}
+{% block content %}<h1 class="text-2xl font-semibold">Notifications</h1>
+<a href="{% url 'notifications:preferences' %}" class="text-forest underline">Email and quiet-hour settings</a>
+<form method="post" action="{% url 'notifications:read_all' %}" class="my-4">{% csrf_token %}<button class="text-forest underline">Mark all as read</button>
+</form>
+<section class="rounded-2xl bg-white p-5">{% for notification in notifications %}<article class="border-b border-line py-4">
+<h2 class="font-semibold">{% if notification.unread %}● {% endif %}{{ notification.title }}</h2>
+<p>{{ notification.body }}</p>
+<p class="text-xs text-muted">{{ notification.created_at }}</p>
+<a href="{{ notification.link_url }}" class="text-forest underline">View</a>{% if notification.unread %}<form method="post" action="{% url 'notifications:read' notification.pk %}">{% csrf_token %}<button class="text-forest underline">Mark read</button>
+</form>{% endif %}</article>{% empty %}<p>You're all caught up.</p>{% endfor %}</section>{% endblock %}

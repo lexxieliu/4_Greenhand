@@ -28,3 +28,10 @@ class Garden(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s {self.plant.plant_name}"
+
+class CareLog(models.Model):
+    """Persisted care completion; reminders create one log per completed occurrence."""
+    user_plant = models.ForeignKey(Garden, on_delete=models.CASCADE, related_name="care_logs")
+    action = models.CharField(max_length=30)
+    performed_at = models.DateTimeField()
+    note = models.TextField(blank=True)

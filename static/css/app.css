@@ -205,3 +205,12 @@ textarea.dash-input { height: auto; padding: 0.6rem 0.8rem; resize: vertical; }
     radial-gradient(70% 90% at 90% 90%, rgba(110, 231, 183, .8), transparent 60%),
     #dcfce7;
 }
+
+/* Area 3 forms: preserve the shared app's spacing and focus treatment. */
+.area3-form { max-width: 38rem; margin-top: 1.25rem; }
+.area3-form p { margin: 0 0 1rem; }
+.area3-form label { display: block; font-weight: 500; margin-bottom: .35rem; }
+.area3-form input:not([type="checkbox"]), .area3-form select { width: 100%; padding: .65rem; border: 1px solid #dce5dc; border-radius: .5rem; background: white; }
+.area3-form input:focus, .area3-form select:focus { outline: 2px solid #4a7c59; outline-offset: 2px; }
+.area3-form .errorlist { color: #9f1239; margin-bottom: .75rem; }
+.area3-form .helptext { display: block; font-size: .85rem; color: #526359; }

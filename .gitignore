@@ -27,3 +27,8 @@ checkpoints/
 
 # notebooks
 .ipynb_checkpoints/
+
+# Area 3 local job locks and test coverage
+data/area3.lock
+.coverage
+htmlcov/

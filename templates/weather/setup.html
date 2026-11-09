@@ -1,0 +1,15 @@
+{% extends "layouts/app.html" %}{% block page_header %}{% endblock %}
+{% block content %}<h1 class="text-2xl font-semibold">Weather locations &amp; plants</h1>
+<div class="mt-5 grid gap-6 md:grid-cols-2">
+<section class="rounded-2xl bg-white p-6">
+<h2>Add a growing location</h2>
+<p>Use city-level coordinates and an IANA timezone, such as America/Chicago.</p>
+<form class="area3-form" method="post">{% csrf_token %}<input type="hidden" name="kind" value="location">{{ location_form.as_p }}<button class="rounded-lg bg-forest px-4 py-2 text-white">Add location</button>
+</form>
+</section>
+<section class="rounded-2xl bg-white p-6">
+<h2>Set plant weather rules</h2>
+<form class="area3-form" method="post">{% csrf_token %}<input type="hidden" name="kind" value="plant">{{ plant_form.as_p }}<button class="rounded-lg bg-forest px-4 py-2 text-white">Save plant settings</button>
+</form>
+</section>
+</div>{% endblock %}
