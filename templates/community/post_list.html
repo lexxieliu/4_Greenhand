@@ -26,7 +26,7 @@
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[14px] font-semibold text-forest">{{ gh_user.initial }}</span>
           <div class="min-w-0 flex-1">
             <label for="postBody" class="sr-only">What's growing?</label>
-            <textarea id="postBody" name="body" rows="2" maxlength="2000" required placeholder="Share progress, a harvest, a tip, or ask a question…" class="w-full resize-none rounded-xl border border-line px-3.5 py-2.5 text-[14.5px] placeholder:text-muted/70 focus:border-leaf focus:outline-none focus:ring-4 focus:ring-leaf/15"></textarea>
+            <textarea id="postBody" name="body" rows="2" maxlength="2000" required placeholder="Share progress, a harvest, a tip, or ask a question…" class="w-full resize-none rounded-xl border border-line px-3.5 py-2.5 text-[14.5px] placeholder:text-muted/70 focus:border-leaf focus:outline-none focus:ring-4 focus:ring-leaf/15" {% if prefill.body %}autofocus{% endif %}>{{ prefill.body }}</textarea>
             <div id="imagePreview" class="mt-2 hidden grid-cols-4 gap-2"></div>
           </div>
         </div>
@@ -34,13 +34,13 @@
           <fieldset class="flex flex-wrap gap-1.5 text-[12.5px]">
             <legend class="sr-only">Post type</legend>
             {% for value, t in post_types.items %}
-              <label class="filter-pill"><input type="radio" name="post_type" value="{{ value }}" {% if forloop.first %}checked{% endif %} /><span>{{ t.label }}</span></label>
+              <label class="filter-pill"><input type="radio" name="post_type" value="{{ value }}" {% if prefill.post_type == value or not prefill.post_type and forloop.first %}checked{% endif %} /><span>{{ t.label }}</span></label>
             {% endfor %}
           </fieldset>
           <label for="userPlant" class="sr-only">Link a plant</label>
           <select id="userPlant" name="user_plant" class="dash-input !h-9 !w-auto py-0 text-[13px]">
             <option value="">No plant linked</option>
-            {% for p in my_plants %}<option value="{{ p.id }}">{{ p.nickname }}</option>{% endfor %}
+            {% for p in my_plants %}<option value="{{ p.id }}" {% if p.id == prefill.user_plant %}selected{% endif %}>{{ p.nickname }}</option>{% endfor %}
           </select>
           <label class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] text-muted hover:bg-mist">
             <svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-image"/></svg>Photos

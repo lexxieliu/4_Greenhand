@@ -98,7 +98,7 @@
   <!-- ================= Dialogs ================= -->
 
   <!-- Timeline entry (FR-21) -->
-  {# Real endpoint: /api/garden/plants/{id}/timeline/ (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/{id}/timeline/ (garden.views.add_timeline_entry) #}
   <dialog id="timelineDialog" class="sheet" aria-labelledby="tl-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(500px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="timeline">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -123,7 +123,7 @@
             <label for="tlDate" class="mb-1.5 block text-[13.5px] font-medium">Date</label>
             <input id="tlDate" name="date" type="date" class="dash-input" required />
           </div>
-          <label class="flex items-end gap-2 pb-2.5 text-[13px] text-muted"><input type="checkbox" name="updateStatus" class="h-4 w-4 accent-[#14532d]" checked />Update plant status</label>
+          <label class="flex items-end gap-2 pb-2.5 text-[13px] text-muted"><input type="checkbox" name="update_status" class="h-4 w-4 accent-[#14532d]" checked />Update plant status</label>
         </div>
         <div>
           <label for="tlNote" class="mb-1.5 block text-[13.5px] font-medium">Note</label>
@@ -138,7 +138,7 @@
   </dialog>
 
   <!-- Care log (FR-22) -->
-  {# Real endpoint: /api/garden/plants/{id}/care-logs/ (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/{id}/care-logs/ (garden.views.log_care) #}
   <dialog id="careDialog" class="sheet" aria-labelledby="care-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(500px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="care">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -173,7 +173,7 @@
   </dialog>
 
   <!-- Problem (FR-25) -->
-  {# Real endpoint: /api/garden/plants/{id}/problems/ (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/{id}/problems/ (garden.views.log_problem) #}
   <dialog id="problemDialog" class="sheet" aria-labelledby="prob-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(540px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="problem">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -233,7 +233,7 @@
   </dialog>
 
   <!-- Harvest (FR-27) -->
-  {# Real endpoint: /api/garden/plants/{id}/harvests/ (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/{id}/harvests/ (garden.views.log_harvest) #}
   <dialog id="harvestDialog" class="sheet" aria-labelledby="harv-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(480px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="harvest">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -263,7 +263,7 @@
         </div>
         <label class="flex items-start gap-2.5 rounded-xl bg-amber-50 p-3 text-[13px] text-amber-900">
           <input type="checkbox" name="final" class="mt-0.5 h-4 w-4 accent-[#14532d]" />
-          <span><span class="font-medium">Mark plant as harvested</span><br /><span class="text-amber-900/75">Use this for the final harvest. Herbs you keep picking can stay &ldquo;Growing&rdquo;.</span></span>
+          <span><span class="font-medium">This was the final harvest</span><br /><span class="text-amber-900/75">Marks the plant as completed. Leave it unticked for crops you keep picking (basil, lettuce, beans): they stay &ldquo;Producing&rdquo;.</span></span>
         </label>
       </div>
       <div class="flex justify-end gap-2 border-t border-line px-5 py-4">
@@ -274,7 +274,7 @@
   </dialog>
 
   <!-- Mark failed -->
-  {# Real endpoint: /api/garden/plants/{id}/  (PATCH status=failed) (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/{id}/status/ (garden.views.change_status) #}
   <dialog id="failDialog" class="sheet" aria-labelledby="fail-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(440px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="fail">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -285,7 +285,10 @@
         <p class="text-[13.5px] text-muted">It happens to every gardener. Noting what went wrong helps your tutor give better advice next time.</p>
         <div>
           <label for="failReason" class="mb-1.5 block text-[13.5px] font-medium">What happened?</label>
-          <input id="failReason" name="reason" type="text" maxlength="200" required placeholder="e.g. Frost damage, root rot, eaten by pests" class="dash-input" />
+          <select id="failReason" name="failure_reason" required class="dash-input">
+            <option value="">Choose a reason…</option>
+            {% for value, label in failure_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+          </select>
         </div>
       </div>
       <div class="flex justify-end gap-2 border-t border-line px-5 py-4">
@@ -296,7 +299,7 @@
   </dialog>
 
   <!-- Add plant (FR-13: date, method, location in garden) -->
-  {# Real endpoint: /api/garden/plants/ (PRD 6.5). In the preview, garden.js handles the submit. #}
+  {# Saved by garden.js via POST /garden/plants/ (garden.views.add_plant) #}
   <dialog id="addPlantDialog" class="sheet" aria-labelledby="add-title">
     <form method="dialog" class="sheet-panel m-4 w-[min(540px,calc(100vw-2rem))] rounded-2xl bg-white shadow-float" data-form="add">
       <div class="flex items-center justify-between border-b border-line px-5 py-4">
@@ -306,7 +309,7 @@
       <div class="scroll-thin max-h-[70vh] space-y-5 overflow-y-auto px-5 py-5">
         <div>
           <label for="addType" class="mb-1.5 block text-[13.5px] font-medium">Plant</label>
-          <select id="addType" name="type" class="dash-input" required></select>
+          <select id="addType" name="plant" class="dash-input" required></select>
           <p id="addSuit" class="mt-1.5 text-[12.5px]"></p>
         </div>
         <div>
@@ -316,7 +319,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label for="addDate" class="mb-1.5 block text-[13.5px] font-medium">Planting date</label>
-            <input id="addDate" name="date" type="date" class="dash-input" required />
+            <input id="addDate" name="planted_on" type="date" class="dash-input" required />
           </div>
           <div>
             <label for="addQty" class="mb-1.5 block text-[13.5px] font-medium">Quantity</label>
@@ -326,9 +329,9 @@
         <fieldset>
           <legend class="mb-1.5 block text-[13.5px] font-medium">Starting from</legend>
           <div class="seg grid grid-cols-3 gap-2 text-[13px]">
-            <div class="relative"><input type="radio" name="method" id="m-seed" value="seed" checked /><label for="m-seed" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-seed"/></svg>Seed</label></div>
-            <div class="relative"><input type="radio" name="method" id="m-seedling" value="seedling" /><label for="m-seedling" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-sprout"/></svg>Seedling</label></div>
-            <div class="relative"><input type="radio" name="method" id="m-cutting" value="cutting" /><label for="m-cutting" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-scissors"/></svg>Cutting</label></div>
+            <div class="relative"><input type="radio" name="start_method" id="m-seed" value="seed" checked /><label for="m-seed" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-seed"/></svg>Seed</label></div>
+            <div class="relative"><input type="radio" name="start_method" id="m-seedling" value="seedling" /><label for="m-seedling" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-sprout"/></svg>Seedling</label></div>
+            <div class="relative"><input type="radio" name="start_method" id="m-cutting" value="cutting" /><label for="m-cutting" class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line py-2.5"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-scissors"/></svg>Cutting</label></div>
           </div>
         </fieldset>
         <fieldset>

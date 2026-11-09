@@ -2,8 +2,9 @@
 Django==6.1.1
 django-environ==0.14.0
 dj-database-url==3.1.2
-psycopg[binary]==3.3.2
-Pillow==12.3.0
+psycopg[binary]==3.3.8
+Pillow==12.3.0                # photo uploads: validation, EXIF stripping, resizing
+# The PostGIS backend also needs the GDAL and GEOS system libraries (macOS: brew install gdal geos)
 numpy==2.5.3
 anthropic==2.7.0
 gunicorn==26.2.0

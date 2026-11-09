@@ -25,12 +25,20 @@ python3.12 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 2. Settings: copy the example env file and set SECRET_KEY to any long random string
+# 2. System libraries for the PostGIS database backend (macOS; on Linux: apt install gdal-bin libgeos-dev)
+brew install gdal geos
+
+# 3. Settings: copy the example env file, set SECRET_KEY to any long random string and
+#    DATABASE_URL to the team's Supabase connection string
 cp .env.example .env
 
-# 3. Database: the SQLite file in data/ is committed; this only applies any missing migrations
+# 4. Database: apply migrations, then load the plant catalog (50 plants) and the demo garden
 python manage.py migrate
+python manage.py seed_plants
+python manage.py seed_demo_garden
 ```
+
+`seed_plants` is safe to run again (it updates plants by slug). `seed_demo_garden` replaces the demo account's garden, so only run it when you want to reset the demo. Plant data can be edited in Django admin at `/admin/` (create an account with `python manage.py createsuperuser`). `python manage.py import_perenual` optionally links plants to Perenual species when `PERENUAL_API_KEY` is set.
 
 ## Run the server
 
@@ -38,9 +46,9 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Open <http://127.0.0.1:8000/>. `manage.py` uses `greenhand.settings.development` by default, with DEBUG on and SQLite in `data/db.sqlite3`.
+Open <http://127.0.0.1:8000/>. `manage.py` uses `greenhand.settings.development` by default, with DEBUG on and the database from `DATABASE_URL`.
 
-The garden, plant, weather and community pages run on mock data (`greenhand/mock_data.py`) for the user *Maya (balcony_maya, Chicago, zone 5b)*, so every page works without signing in.
+The plant catalog and My Garden are stored in the database. Until login is wired up, every visitor acts as the demo account *Maya (balcony_maya, Chicago, zone 5b)*. Weather, community posts and notifications still come from mock data (`greenhand/mock_data.py`), and the app's "today" is fixed to Oct 13, 2026 (`greenhand/clock.py`) so the garden lines up with the mock forecast.
 
 ## Use the AI feature
 
@@ -75,7 +83,7 @@ Questions to try: *"Why are the lower leaves on my basil turning yellow?"*, *"Ho
 ## Tests and evaluation
 
 ```bash
-python manage.py test tutor                   # 30 unit tests; the models are mocked, so this takes ~1 s
+python manage.py test --settings=greenhand.settings.test   # all tests on in-memory SQLite (no Supabase, no model weights)
 python manage.py evaluate_tutor --label me    # runs the real models on 11 test cases -> docs/ai_eval/results_me.md
 python manage.py evaluate_retrieval           # TF-IDF vs. embedding retrievers -> docs/ai_eval/retrieval.md
 ```

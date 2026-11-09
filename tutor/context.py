@@ -8,9 +8,8 @@ typed is cleaned first, so a nickname or note cannot close the <garden> tag it i
 import re
 from datetime import timedelta
 
-from django.utils import timezone
-
-from garden.models import CareLog, Garden
+from garden.models import CareLog, UserPlant
+from greenhand.clock import today
 from userprofile.models import Profile
 from weather.services import get_snapshot
 
@@ -34,14 +33,14 @@ class GardenContext:
 
     def __init__(self, user):
         self.user = user
-        self.today = timezone.localdate()
+        self.today = today()        # the garden's own clock, so "last 14 days" matches the dates it logs
         self.since = self.today - timedelta(days=RECENT_DAYS)
 
     def plants(self):
         """Plants the user can ask about (not failed or archived)."""
         if self.user is None:
-            return Garden.objects.none()
-        return Garden.objects.filter(user=self.user).exclude(status__in=HIDDEN_STATUSES).select_related("plant")
+            return UserPlant.objects.none()
+        return UserPlant.objects.filter(user=self.user).exclude(status__in=HIDDEN_STATUSES).select_related("plant")
 
     def find(self, plant_id):
         return self.plants().filter(pk=plant_id).first() if str(plant_id).isdigit() else None
@@ -52,31 +51,29 @@ class GardenContext:
         text = question.lower()
         words = re.findall(r"[a-z]+", text)
         for plant in self.plants():
-            keys = {w for w in re.findall(r"[a-z]+", plant.plant.plant_name.lower()) if len(w) >= 4}
-            if (plant.nickname and plant.nickname.lower() in text) or any(w.startswith(k) for w in words for k in keys):
+            keys = {w for w in re.findall(r"[a-z]+", plant.plant.common_name.lower()) if len(w) >= 4}
+            if plant.nickname.lower() in text or any(w.startswith(k) for w in words for k in keys):
                 return plant
         return None
 
     def describe(self, plant):
-        return {"id": plant.pk, "nickname": plant.label, "species": plant.plant.plant_name}
+        return {"id": plant.pk, "nickname": plant.nickname, "species": plant.plant.common_name}
 
     def _plant_line(self, plant):
-        if plant.status == "planned":
-            when = f"planned for {plant.planted_on}" if plant.planted_on else "planned"
-        else:
-            start = plant.planted_on or plant.added_at.date()
-            when = f"day {(self.today - start).days} since planting"
+        when = (f"planned for {plant.planted_on}" if plant.status == "planned"
+                else f"day {(self.today - plant.planted_on).days} since planting")
         open_problems = [_text(p.title, 80) for p in plant.problems.exclude(status="resolved")]
         problems = f"; open problem: {', '.join(open_problems)}" if open_problems else ""
-        return f"{_text(plant.label, 60)} ({plant.plant.plant_name}): {plant.status}, {when}, {plant.setting}{problems}"
+        variety = f", {_text(plant.variety, 100)}" if plant.variety else ""
+        return f"{_text(plant.nickname, 60)} ({plant.plant.common_name}{variety}): {plant.status}, {when}, {plant.setting}{problems}"
 
     def _plant_details(self, plant):
         """Recent care logs, timeline notes and open problems for a scoped plant."""
-        logs = plant.care_logs.filter(performed_at__date__gte=self.since)
+        logs = plant.care_logs.filter(performed_on__gte=self.since)
         lines = [f"Care logs (last {RECENT_DAYS} days): " + ("; ".join(self._log_text(log) for log in logs) or "none")]
         lines += [f"Timeline note {t.recorded_on} ({t.stage}): {_text(t.note)}"
-                  for t in plant.timeline_entries.filter(recorded_on__gte=self.since)]
-        lines += [f"Open problem since {p.created_at.date()}: {_text(p.title, 80)} – {_text(p.description)}"
+                  for t in plant.timeline.filter(recorded_on__gte=self.since)]
+        lines += [f"Open problem since {p.opened_on}: {_text(p.title, 80)} – {_text(p.description)}"
                   for p in plant.problems.exclude(status="resolved")]
         return lines
 
@@ -84,12 +81,12 @@ class GardenContext:
     def _log_text(log):
         amount = f" {_text(log.amount, 50)}" if log.amount else ""
         note = f" ({_text(log.note, 100)})" if log.note else ""
-        return f"{log.performed_at.date()} {log.action}{amount}{note}"
+        return f"{log.performed_on} {log.action}{amount}{note}"
 
     def _garden_logs(self):
-        logs = (CareLog.objects.filter(garden__in=self.plants(), performed_at__date__gte=self.since)
-                .select_related("garden__plant")[:MAX_GARDEN_LOGS])
-        return "; ".join(f"{_text(log.garden.label, 60)}: {self._log_text(log)}" for log in logs)
+        logs = (CareLog.objects.filter(user_plant__in=self.plants(), performed_on__gte=self.since)
+                .select_related("user_plant")[:MAX_GARDEN_LOGS])
+        return "; ".join(f"{_text(log.user_plant.nickname, 60)}: {self._log_text(log)}" for log in logs)
 
     @staticmethod
     def _weather_lines(snapshot):
@@ -110,8 +107,8 @@ class GardenContext:
             return "Setting rule: outdoor plant, so rain counts as watering and frost can damage it."
         return f"Setting rule: {plant.setting} plant, so rain and frost do NOT affect it; water it by checking its soil."
 
-    def build(self, plant=None):
-        """Plain-text context block. With a plant, it is scoped to that plant (PRD FR-32)."""
+    def _place_lines(self, plant):
+        """Date, location, growing space and the weather that applies to this question."""
         profile = Profile.objects.filter(user=self.user).first() if self.user else None
         lines = [f"Today: {self.today:%A, %B} {self.today.day}, {self.today.year}"]
         if profile:
@@ -128,6 +125,11 @@ class GardenContext:
             snapshot = get_snapshot(profile.latitude, profile.longitude)
             if snapshot:
                 lines += self._weather_lines(snapshot)
+        return lines
+
+    def build(self, plant=None):
+        """Plain-text context block. With a plant, it is scoped to that plant (PRD FR-32)."""
+        lines = self._place_lines(plant)
         if plant:
             lines.append("Plant asked about: " + self._plant_line(plant))
             lines.append(self._setting_rule(plant))

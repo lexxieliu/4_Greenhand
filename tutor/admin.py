@@ -22,4 +22,4 @@ class ChatMessageAdmin(admin.ModelAdmin):
 
 @admin.register(Diagnosis)
 class DiagnosisAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'garden', 'problem', 'model_name', 'latency_ms', 'created_at')
+    list_display = ('id', 'user', 'user_plant', 'problem', 'model_name', 'latency_ms', 'created_at')

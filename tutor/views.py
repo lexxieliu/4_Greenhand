@@ -138,7 +138,7 @@ def diagnose(request):
 @login_required
 def diagnosis_detail(request, diagnosis_id):
     diagnosis = get_object_or_404(Diagnosis, pk=diagnosis_id, user=request.user)
-    form = SaveDiagnosisForm(user=request.user, initial={"plant": diagnosis.garden_id})
+    form = SaveDiagnosisForm(user=request.user, initial={"plant": diagnosis.user_plant_id})
     return render(request, "tutor/diagnosis_detail.html", {"diagnosis": diagnosis, "result": diagnosis.result, "form": form})
 
 

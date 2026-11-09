@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from garden.models import Garden
+from garden.models import UserPlant
 
 from .models import ChatMessage, ChatSession
 
@@ -12,11 +12,11 @@ WELCOME = (
 )
 
 
-@receiver(post_save, sender=Garden)
+@receiver(post_save, sender=UserPlant)
 def welcome_first_plant(sender, instance, created, raw=False, **kwargs):
     """Tutor welcome after the user's first plant (PRD 4.1). A template, so adding a plant never waits on the model."""
-    if not created or raw or Garden.objects.filter(user=instance.user).exclude(pk=instance.pk).exists():
+    if not created or raw or UserPlant.objects.filter(user=instance.user).exclude(pk=instance.pk).exists():
         return
-    session = ChatSession.objects.create(user=instance.user, scoped_plant=instance, title=f"Welcome, {instance.label} grower")
+    session = ChatSession.objects.create(user=instance.user, scoped_plant=instance, title=f"Welcome, {instance.nickname} grower")
     ChatMessage.objects.create(session=session, role="assistant", model_name="welcome",
-                               content=WELCOME.format(label=instance.label))
+                               content=WELCOME.format(label=instance.nickname))

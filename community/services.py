@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def attach_ai_suggestion(post_id):
     post = Post.objects.select_related("plant").get(pk=post_id)
-    suggestion = suggest_for_post(post.body, post.plant.plant_name if post.plant else "")
+    suggestion = suggest_for_post(post.body, post.plant.common_name if post.plant else "")
     if suggestion:
         Post.objects.filter(pk=post_id).update(ai_suggestion=suggestion)
 

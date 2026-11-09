@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from garden.models import Garden
+from garden.models import UserPlant
 from plants.models import Plant
 
 User = settings.AUTH_USER_MODEL
@@ -14,7 +14,7 @@ class Post(models.Model):
     TYPES = [("progress", "Progress"), ("harvest", "Harvest"), ("question", "Question"), ("tip", "Tip")]
 
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="community_posts")
-    user_plant = models.ForeignKey(Garden, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts")
+    user_plant = models.ForeignKey(UserPlant, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts")
     plant = models.ForeignKey(Plant, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts")
     post_type = models.CharField(max_length=10, choices=TYPES, default="progress")
     body = models.TextField(max_length=2000)

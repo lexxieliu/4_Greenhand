@@ -15,7 +15,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from analytics.services import track
-from garden.models import Garden, Problem
+from garden.models import UserPlant
+from garden.services import log_problem
 
 from . import guardrails, knowledge, llm, prompts
 from .context import GardenContext
@@ -75,7 +76,7 @@ def _save_turn(user, session, question, plant, result, raw, context_text, messag
     with transaction.atomic():
         if session is None:
             session = ChatSession.objects.create(user=user, title=question[:120],
-                                                 scoped_plant=plant if isinstance(plant, Garden) else None)
+                                                 scoped_plant=plant if isinstance(plant, UserPlant) else None)
         asked = ChatMessage.objects.create(session=session, role="user", content=question)
         answer = ChatMessage.objects.create(
             session=session, role="assistant", content=result.get("answer") or result.get("reason", ""), result=result,
@@ -148,11 +149,11 @@ def apply_log_problem(message):
     if action is None or plant is None:
         return None
     asked = message.session.messages.filter(role="user", pk__lt=message.pk).last()
-    garden = message.session.user.my_garden_plants.filter(pk=plant["id"]).first()
+    garden = message.session.user.user_plants.filter(pk=plant["id"]).first()
     if asked is None or garden is None:
         return None
     with transaction.atomic():
-        problem = Problem.objects.create(garden=garden, title=asked.content[:120], description=message.content)
+        problem = log_problem(garden, title=asked.content[:120], description=message.content)
         action["done"] = True
         message.save(update_fields=["suggested_actions"])
     return problem

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import DateTimeField, Exists, ExpressionWrapper, OuterRef
 from django.utils import timezone
 
-from garden.models import Garden
+from garden.models import UserPlant
 
 from .models import AnalyticsEvent
 
@@ -15,15 +15,15 @@ MEANINGFUL_EVENTS = ("care_logged", "photo_uploaded", "tutor_message_sent", "dia
 
 
 def north_star():
-    """Plants grown to harvest: status "harvested" with at least one harvest log."""
-    return Garden.objects.filter(status="harvested", harvests__isnull=False).distinct().count()
+    """Plants grown to harvest: at least one harvest log (Area 2 has no "harvested" status; plants keep producing)."""
+    return UserPlant.objects.filter(harvests__isnull=False).distinct().count()
 
 
 def harvest_success_rate():
     """harvested / (harvested + failed), or None with no finished plants. The PRD also counts active plants
     past their days_to_harvest_max in the denominator; Plant has no such field yet, so they are left out."""
     harvested = north_star()
-    finished = harvested + Garden.objects.filter(status="failed").count()
+    finished = harvested + UserPlant.objects.filter(status="failed").count()
     return harvested / finished if finished else None
 
 

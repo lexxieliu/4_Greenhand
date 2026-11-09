@@ -174,11 +174,12 @@
     })
   );
 
-  // ---------- Featured plant: tomato height area chart ----------
-  const HEIGHT = DATA.height;
+  // ---------- Featured plant: care actions per week (sparkline) ----------
+  const HEIGHT = DATA.featured;   // [[week label, actions], …] from garden.selectors.weekly_care
   (function renderHeight() {
     const svg = $('#heightChart');
-    const W = 300, H = 96, maxV = Math.max(...HEIGHT.map(([, v]) => v)) * 1.15;
+    if (!svg || HEIGHT.length < 2) return;
+    const W = 300, H = 96, maxV = Math.max(1, ...HEIGHT.map(([, v]) => v)) * 1.15;
     const pts = HEIGHT.map(([, v], i) => [(i / (HEIGHT.length - 1)) * W, H - 6 - (v / maxV) * (H - 18)]);
     const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
     const step = W / (HEIGHT.length - 1);
@@ -190,7 +191,7 @@
       HEIGHT.map((_, i) => `<rect data-i="${i}" x="${Math.max(0, i * step - step / 2)}" y="0" width="${step}" height="${H}" fill="transparent"/>`).join('');
     const cursor = $('#hgCursor');
     const setPoint = (i) => {
-      $('#heightValue').textContent = `${HEIGHT[i][1]} cm`;
+      $('#heightValue').textContent = `${HEIGHT[i][1]} action${HEIGHT[i][1] === 1 ? '' : 's'}`;
       $('#heightDate').textContent = HEIGHT[i][0];
       cursor.setAttribute('x1', pts[i][0]);
       cursor.setAttribute('x2', pts[i][0]);
@@ -250,8 +251,8 @@
     const done = tasks.filter((t) => t.classList.contains('is-done')).length;
     $('#tasksDone').textContent = done;
     $('#tasksTotal').textContent = tasks.length;
-    $('#tasksHint').textContent = done === tasks.length ? 'all done!' : 'done';
-    $('#tasksBar').style.width = `${Math.round((done / tasks.length) * 100)}%`;
+    $('#tasksHint').textContent = tasks.length && done === tasks.length ? 'all done!' : 'done';
+    $('#tasksBar').style.width = `${tasks.length ? Math.round((done / tasks.length) * 100) : 0}%`;
   }
 
   function setTaskDone(task, done) {
@@ -267,9 +268,12 @@
     const check = e.target.closest('.task-check');
     if (!check) return;
     const task = check.closest('.task');
-    const nowDone = !task.classList.contains('is-done');
-    setTaskDone(task, nowDone);
-    if (nowDone) toast(`Logged: ${$('.task-title', task).textContent}`, { undo: () => setTaskDone(task, false) });
+    if (task.classList.contains('is-done')) return toast('Already done today', { icon: 'i-check' });
+    setTaskDone(task, true);
+    post(`reminders/${task.dataset.task}/done/`, new FormData()).then((d) => {
+      if (d) toast(d.message, { icon: 'i-check' });
+      else setTaskDone(task, false);
+    });
   });
 
   // ---------- Weather alerts (rendered only when the rule engine raised one) ----------
@@ -442,6 +446,20 @@
     renderCalendar();
   });
 
+  // ---------- Saving to the server (garden/views.py JSON endpoints) ----------
+  const GARDEN_API = JSON.parse(document.getElementById('garden-api').textContent);   // "/garden/"
+  async function post(path, body) {
+    try {
+      const res = await fetch(GARDEN_API + path, { method: 'POST', headers: { 'X-CSRFToken': window.GH.csrfToken() }, body });
+      const data = await res.json();
+      if (res.ok) return data;
+      toast(data.error || 'Couldn’t save that. Please try again.', { icon: 'i-alert' });
+    } catch (err) {
+      toast('Couldn’t save that. Check your connection and try again.', { icon: 'i-alert' });
+    }
+    return null;
+  }
+
   // ---------- Log care dialog ----------
   const dialog = $('#logDialog');
   const logForm = $('#logForm');
@@ -453,13 +471,21 @@
   $$('[data-close-log]').forEach((btn) => btn.addEventListener('click', () => dialog.close()));
   dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
-  logForm.addEventListener('submit', () => {
+  logForm.addEventListener('submit', (e) => {
+    e.preventDefault();
     const data = new FormData(logForm);
+    const day = new Date(TODAY);
+    day.setDate(day.getDate() - Number(data.get('when')));
+    data.set('date', `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`);
+    post(`plants/${data.get('plant')}/care-logs/`, data).then((d) => d && showLoggedCare(data));
+  });
+
+  function showLoggedCare(data) {
     const plantId = data.get('plant');
     const plant = $('#logPlant').selectedOptions[0].textContent;
     const action = data.get('action');
     const amount = data.get('amount').trim();
-    const when = data.get('when');
+    const when = $('#logWhen').selectedOptions[0].textContent;
     const [icon, tint] = ACTION_ICONS[action];
 
     const li = document.createElement('li');
@@ -472,8 +498,8 @@
     $('#activityList').prepend(li);
 
     // Ticking a matching task already counts the action in the chart
-    const matchingTask = action === 'water' ? $(`.task[data-plant="${plantId}"][data-task^="water"]`) : null;
-    const countsToday = when !== 'Yesterday';
+    const matchingTask = action === 'water' ? $(`.task[data-plant="${plantId}"][data-care="water"]`) : null;
+    const countsToday = data.get('when') === '0';
     if (matchingTask && countsToday && !matchingTask.classList.contains('is-done')) {
       matchingTask.dataset.care ||= 'water';
       setTaskDone(matchingTask, true);
@@ -481,9 +507,10 @@
       bumpCare(ACTION_CAT[action], 1);
     }
 
-    toast(`${ACTION_LABELS[action]} ${plant}`, { icon, undo: () => li.remove() });
+    toast(`${ACTION_LABELS[action]} ${plant}`, { icon });
     logForm.reset();
-  });
+    dialog.close();
+  }
 
   // ---------- Initial render ----------
   renderChart();

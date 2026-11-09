@@ -11,7 +11,8 @@ from django.urls import reverse
 from PIL import Image
 
 from analytics.models import AnalyticsEvent
-from garden.models import Garden
+from garden.models import UserPlant
+from greenhand.clock import today
 from plants.models import Plant
 
 from . import services, views
@@ -30,11 +31,14 @@ class CommunityBase(TestCase):
         cache.clear()
         self.me = User.objects.create_user("me", "me@example.com", "pass12345")
         self.them = User.objects.create_user("them", "them@example.com", "pass12345")
-        self.basil = Plant.objects.create(plant_name="Basil", category="herb")
-        self.kale = Plant.objects.create(plant_name="Kale", category="veg")
-        self.garden = Garden.objects.create(user=self.me, plant=self.basil, nickname="Balcony Basil")
+        self.basil = Plant.objects.create(common_name="Basil", slug="basil")
+        self.kale = Plant.objects.create(common_name="Kale", slug="kale")
+        self.garden = self.grow(self.me, self.basil, "Balcony Basil")
         self.client.force_login(self.me)
         self.feed = reverse("community:feed")
+
+    def grow(self, user, plant, nickname):
+        return UserPlant.objects.create(user=user, plant=plant, nickname=nickname, planted_on=today(), watering_interval_days=3)
 
     def post(self, author=None, plant=None, **fields):
         return Post.objects.create(author=author or self.them, plant=plant, body=fields.pop("body", "Hello growers"), **fields)
@@ -94,7 +98,7 @@ class CreatePostTests(CommunityBase):
         self.assertTrue(AnalyticsEvent.objects.filter(name="post_created", user=self.me).exists())
 
     def test_cannot_link_another_users_plant(self):
-        theirs = Garden.objects.create(user=self.them, plant=self.kale)
+        theirs = self.grow(self.them, self.kale, "Kale")
         self._create(user_plant=theirs.pk)
         self.assertIsNone(Post.objects.get().user_plant)
 

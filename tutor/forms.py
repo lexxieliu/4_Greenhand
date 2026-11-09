@@ -5,7 +5,7 @@ from .guardrails import MAX_RAW_CHARS
 
 
 def _plant_choices(user):
-    return [(str(p.pk), p.label) for p in GardenContext(user).plants()]
+    return [(str(p.pk), p.nickname) for p in GardenContext(user).plants()]
 
 
 class QuestionForm(forms.Form):

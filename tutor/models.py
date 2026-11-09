@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from garden.models import Garden, Problem
+from garden.models import Problem, UserPlant
 
 class AITutorLog(models.Model):
     """
@@ -29,7 +29,7 @@ class AITutorLog(models.Model):
 class ChatSession(models.Model):
     """One conversation with the tutor, optionally scoped to a plant (FR-32)."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_sessions")
-    scoped_plant = models.ForeignKey(Garden, on_delete=models.SET_NULL, null=True, blank=True, related_name="chat_sessions")
+    scoped_plant = models.ForeignKey(UserPlant, on_delete=models.SET_NULL, null=True, blank=True, related_name="chat_sessions")
     title = models.CharField(max_length=120)
     last_message_at = models.DateTimeField(default=timezone.now, db_index=True)
 
@@ -66,7 +66,7 @@ class ChatMessage(models.Model):
 class Diagnosis(models.Model):
     """Structured result of a photo diagnosis (FR-33); can be saved to a plant's Problem log."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="diagnoses")
-    garden = models.ForeignKey(Garden, on_delete=models.SET_NULL, null=True, blank=True, related_name="diagnoses")
+    user_plant = models.ForeignKey(UserPlant, on_delete=models.SET_NULL, null=True, blank=True, related_name="diagnoses")
     problem = models.ForeignKey(Problem, on_delete=models.SET_NULL, null=True, blank=True, related_name="diagnoses")
     image = models.ImageField(upload_to="diagnoses/")
     note = models.CharField(max_length=300, blank=True, default="")

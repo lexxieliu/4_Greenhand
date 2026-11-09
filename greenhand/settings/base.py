@@ -130,8 +130,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# User uploads (garden photos). Stored on local disk for now; S3/R2 via django-storages later (PRD 6.1).
 MEDIA_URL = 'media/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
+MAX_UPLOAD_MB = 10                        # PRD 6.6: images only, max 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
 
 LOGIN_URL = 'userprofile:login'
 

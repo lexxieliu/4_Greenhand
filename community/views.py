@@ -7,14 +7,13 @@ from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.text import slugify
 from django.utils.timesince import timesince
 from django.views.decorators.http import require_POST
 
 from analytics.services import track
-from garden.models import Garden
+from garden.images import clean_photo
+from garden.models import UserPlant
 from greenhand import mock_data as data
-from greenhand.images import process_upload
 from plants.models import Plant
 from tutor.guardrails import rate_limited
 
@@ -43,19 +42,13 @@ def _visible_posts(user):
     return posts.annotate(liked=Value(False, BooleanField()), saved=Value(False, BooleanField()))
 
 
-def _catalog_slug(plant):
-    """Plant pages still come from the mock catalog, so only link plants that exist there."""
-    slug = slugify(plant.plant_name) if plant else ""
-    return slug if slug in data.CATALOG_BY_SLUG else ""
-
-
 def _decorate(post, user):
     comments = [c for c in post.comments.all() if not c.is_hidden]
     return {
         "id": post.pk, "author": post.author.username, "author_info": _author_info(post.author),
         "type_info": data.POST_TYPES[post.post_type], "created": timesince(post.created_at).split(",")[0],
         "body": post.body, "ai_suggestion": post.ai_suggestion,
-        "plant_name": post.plant.plant_name if post.plant else "", "plant_slug": _catalog_slug(post.plant),
+        "plant_name": post.plant.common_name if post.plant else "", "plant_slug": post.plant.slug if post.plant else "",
         "plant_icon": "i-leaf", "likes": post.num_likes, "liked": post.liked, "saved": post.saved,
         "images": [{"url": i.image.url, "alt": i.alt_text or f"Photo shared by {post.author.username}"} for i in post.images.all()],
         "comments": [{"id": c.pk, "author": c.author.username, "author_info": _author_info(c.author), "body": c.body,
@@ -71,24 +64,31 @@ def post_list(request):
         feed = "latest"
     post_type = request.GET.get("type", "")
     posts = _visible_posts(user)
-    my_plants = Garden.objects.none()
+    my_plants = UserPlant.objects.none()
     if user.is_authenticated:
-        my_plants = Garden.objects.filter(user=user).exclude(status__in=("failed", "archived")).select_related("plant")
+        my_plants = UserPlant.objects.filter(user=user).exclude(status__in=("failed", "archived")).select_related("plant")
     if feed == "same":
-        posts = posts.filter(plant__in=Garden.objects.filter(user=user).values("plant"))
+        posts = posts.filter(plant__in=UserPlant.objects.filter(user=user).values("plant"))
     elif feed == "saved":
         posts = posts.filter(saved=True)
     if post_type in data.POST_TYPES:
         posts = posts.filter(post_type=post_type)
     trending = Plant.objects.annotate(count=Count("posts", filter=Q(posts__is_hidden=False))).filter(count__gt=0).order_by("-count")[:TRENDING_SIZE]
+    share_type = request.GET.get("share_type", "")
+    prefill = {  # FR-26: "Share to Posts" from My Garden opens the composer filled in
+        "body": request.GET.get("share_text", "")[:2000],
+        "post_type": share_type if share_type in data.POST_TYPES else "",
+        "user_plant": request.GET.get("share_plant", ""),
+    }
     return render(request, "community/post_list.html", {
+        "prefill": prefill,
         "posts": [_decorate(p, user) for p in posts[:FEED_SIZE]],
         "feed": feed,
         "post_type": post_type,
         "post_types": data.POST_TYPES,
-        "my_plants": [{"id": p.pk, "nickname": p.label} for p in my_plants],
+        "my_plants": [{"id": str(p.pk), "nickname": p.nickname} for p in my_plants],
         "report_reasons": REPORT_REASONS,
-        "trending": [{"name": p.plant_name, "slug": _catalog_slug(p), "count": p.count} for p in trending],
+        "trending": [{"name": p.common_name, "slug": p.slug, "count": p.count} for p in trending],
     })
 
 
@@ -106,12 +106,12 @@ def create_post(request):
         messages.error(request, "You have reached today's post limit. Please come back tomorrow.")
         return redirect("community:feed")
     try:
-        photos = [process_upload(f) for f in request.FILES.getlist("images")[:MAX_POST_IMAGES]]
+        photos = [clean_photo(f) for f in request.FILES.getlist("images")[:MAX_POST_IMAGES]]
     except ValidationError as exc:
         messages.error(request, exc.message)
         return redirect("community:feed")
     plant_id = request.POST.get("user_plant", "")
-    garden = Garden.objects.filter(user=request.user, pk=plant_id).select_related("plant").first() if plant_id.isdigit() else None
+    garden = UserPlant.objects.filter(user=request.user, pk=plant_id).select_related("plant").first() if plant_id.isdigit() else None
     alt_text = request.POST.get("image_alt", "").strip()[:200]
     with transaction.atomic():
         post = Post.objects.create(author=request.user, user_plant=garden, plant=garden.plant if garden else None,

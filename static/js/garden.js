@@ -1,8 +1,9 @@
 // Greenhand "My Garden" page (templates/garden/my_garden.html; PRD 3.3, FR-20 – FR-27). Loads after shell.js.
-// Server data arrives via {{ garden_data|json_script:"garden-data" }} (apps/garden/services.garden_payload):
-//   plants  -> UserPlant + TimelineEntry, CareLog, Problem/Diagnosis, Harvest, Reminder/ReminderOccurrence
-//   catalog -> plants.Plant subset keyed by slug        weather -> rain-skip / frost info
-// Edits made on the page stay in memory until the DRF endpoints (PRD 6.5) are wired up.
+// Server data arrives via {{ garden_data|json_script:"garden-data" }} (garden/selectors.garden_payload):
+//   plants  -> UserPlant + TimelineEntry, CareLog, Problem, Harvest, Reminder/ReminderOccurrence
+//   catalog -> plants.Plant subset keyed by slug        weather -> rain-skip / frost info (mock)
+// Every change is POSTed to the JSON endpoints in garden/urls.py; each returns the saved plant, which
+// replaces the local copy before re-rendering, so the page always shows what is in the database.
 
 (function () {
   const { TODAY, $, $$, toast } = window.GH;
@@ -25,8 +26,6 @@
     return fmt(isoDate);
   }
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-  let uid = 100;
-  const nextId = (p) => `${p}${++uid}`;
 
   // ---------- Reference data ----------
   const STAGES = [
@@ -45,12 +44,14 @@
     growing:   { label: 'Growing',   cls: 'bg-emerald-100 text-emerald-800' },
     flowering: { label: 'Flowering', cls: 'bg-pink-100 text-pink-800' },
     fruiting:  { label: 'Fruiting',  cls: 'bg-orange-100 text-orange-800' },
-    harvested: { label: 'Harvested', cls: 'bg-amber-100 text-amber-800' },
+    producing: { label: 'Producing', cls: 'bg-amber-100 text-amber-800' },
+    completed: { label: 'Completed', cls: 'bg-amber-50 text-amber-900 ring-1 ring-amber-200' },
     failed:    { label: 'Failed',    cls: 'bg-rose-100 text-rose-700' },
     archived:  { label: 'Archived',  cls: 'bg-slate-100 text-slate-600' },
   };
-  const ACTIVE = ['sprouting', 'growing', 'flowering', 'fruiting'];
-  const STATUS_TO_STAGE = { planned: -1, sprouting: 1, growing: 2, flowering: 3, fruiting: 4, harvested: 5 };
+  const ACTIVE = ['sprouting', 'growing', 'flowering', 'fruiting', 'producing'];
+  const HARVESTED = ['producing', 'completed'];   // PRD v1.1: continuous crops keep producing, single ones complete
+  const STATUS_TO_STAGE = { planned: -1, sprouting: 1, growing: 2, flowering: 3, fruiting: 4, producing: 5, completed: 5 };
 
   const ACTIONS = {
     water:      { label: 'Water',      past: 'Watered',          icon: 'i-drop',     tint: 'bg-sky-100 text-sky-700' },
@@ -95,7 +96,7 @@
   const openProblems = (p) => p.problems.filter((x) => x.status !== 'resolved');
   function currentStage(p) {
     const fromTimeline = Math.max(-1, ...p.timeline.map((t) => stageIndex(t.stage)));
-    if (p.status === 'harvested') return 5;
+    if (HARVESTED.includes(p.status)) return 5;
     return Math.max(fromTimeline, STATUS_TO_STAGE[p.status] ?? -1);
   }
   function nextTask(p) {
@@ -134,7 +135,7 @@
     `<span class="grid ${size} shrink-0 place-items-center rounded-xl bg-gradient-to-br ${cat(p).grad}"><svg class="ic ${icon}"><use href="#${cat(p).icon}"/></svg></span>`;
 
   // ---------- State ----------
-  let selectedId = 'basil';
+  let selectedId = (PLANTS.find(isActive) || PLANTS[0])?.id;   // open on a growing plant, not a failed one
   let currentTab = 'timeline';
   let statusFilter = 'all';
   let settingFilter = 'all';
@@ -148,14 +149,14 @@
     { key: 'all', label: 'All', test: (p) => p.status !== 'archived' },
     { key: 'active', label: 'Active', test: isActive },
     { key: 'planned', label: 'Planned', test: (p) => p.status === 'planned' },
-    { key: 'harvested', label: 'Harvested', test: (p) => p.status === 'harvested' },
+    { key: 'harvested', label: 'Harvested', test: (p) => HARVESTED.includes(p.status) },
     { key: 'failed', label: 'Failed', test: (p) => p.status === 'failed' },
   ];
 
   function renderSummary() {
     $('#sumActive').textContent = PLANTS.filter(isActive).length;
     $('#sumPlanned').textContent = PLANTS.filter((p) => p.status === 'planned').length;
-    $('#sumHarvested').textContent = PLANTS.filter((p) => p.status === 'harvested').length;
+    $('#sumHarvested').textContent = PLANTS.filter((p) => HARVESTED.includes(p.status)).length;
     $('#sumProblems').textContent = PLANTS.reduce((n, p) => n + openProblems(p).length, 0);
   }
 
@@ -179,7 +180,7 @@
       const sub =
         p.status === 'planned' ? `Planned for ${fmt(p.planted_on)}`
         : p.status === 'failed' ? esc(p.failure_reason || 'Failed')
-        : p.status === 'harvested' ? `${p.harvests.length} harvest${p.harvests.length === 1 ? '' : 's'} · ${harvestTotals(p)}`
+        : HARVESTED.includes(p.status) ? `${p.harvests.length} harvest${p.harvests.length === 1 ? '' : 's'} · ${harvestTotals(p)}`
         : `${cat(p).name} · Day ${day(p)}`;
       const task = isActive(p) || p.status === 'planned' ? nextTask(p) : null;
       const badges = [
@@ -211,16 +212,25 @@
 
   function renderDetail() {
     const p = selected();
+    if (!p) {
+      $('#plantDetail').innerHTML = `<div class="rounded-2xl bg-white p-10 text-center shadow-card">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-leaf-soft text-forest"><svg class="ic h-6 w-6"><use href="#i-sprout"/></svg></span>
+        <h2 class="mt-3 font-display text-[19px] font-semibold">Your garden is empty</h2>
+        <p class="mt-1 text-[13.5px] text-muted">Add your first plant and Greenhand builds its care schedule for you.</p>
+        <button type="button" data-open="addPlantDialog" class="mt-4 inline-flex h-10 items-center gap-1.5 rounded-lg bg-ink px-4 text-[14px] font-medium text-white">Add a plant</button></div>`;
+      return;
+    }
     const c = cat(p);
     const stage = currentStage(p);
     const d = day(p);
     const planned = p.status === 'planned';
-    const ended = ['harvested', 'failed', 'archived'].includes(p.status);
+    const ended = ['completed', 'failed', 'archived'].includes(p.status);
     const [hMin, hMax] = c.harvest;
-    const progress = planned ? 0 : Math.min(100, Math.round((d / hMax) * 100));
-    const progressText = planned
+    const progress = planned || !hMax ? 0 : Math.min(100, Math.round((d / hMax) * 100));
+    const progressText = !hMax ? (planned ? `Starts ${rel(p.planted_on)}` : `Day ${d}`)
+      : planned
       ? `Starts ${rel(p.planted_on)} · harvest in about ${hMin}–${hMax} days after sowing`
-      : p.status === 'harvested' ? `Harvested · ${harvestTotals(p) || 'quantity not logged'}`
+      : HARVESTED.includes(p.status) ? `${STATUS[p.status].label} · ${harvestTotals(p) || 'quantity not logged'}`
       : p.status === 'failed' ? `Ended on day ${p.timeline.length ? diffDays(p.planted_on, p.timeline.at(-1).date) : d}`
       : d >= hMin ? `Day ${d} · in the harvest window (day ${hMin}–${hMax})`
       : `Day ${d} · about ${hMin - d}–${hMax - d} days to harvest`;
@@ -271,7 +281,7 @@
               <span class="step-label block">${s.label}</span></li>`).join('')}
           </ol>
           <div class="mt-4 flex items-center justify-between gap-3 text-[12.5px]"><span class="text-muted">${progressText}</span></div>
-          <div class="progress mt-1.5"><span style="width:${p.status === 'harvested' ? 100 : progress}%"></span></div>
+          <div class="progress mt-1.5"><span style="width:${HARVESTED.includes(p.status) ? 100 : progress}%"></span></div>
         </div>
 
         <!-- Quick actions -->
@@ -405,7 +415,7 @@
           <div class="problem-actions mt-3 flex flex-wrap gap-2 text-[13px]">
             ${x.status === 'open' ? `<button type="button" data-pstatus="monitoring" data-pid="${x.id}" class="rounded-lg border border-line px-3 py-1.5 font-medium hover:bg-mist">Monitoring</button>` : ''}
             ${x.status !== 'resolved' ? `<button type="button" data-resolve="${x.id}" class="rounded-lg bg-forest px-3 py-1.5 font-medium text-white hover:bg-forest-900">Mark resolved</button>` : `<button type="button" data-pstatus="open" data-pid="${x.id}" class="rounded-lg border border-line px-3 py-1.5 font-medium hover:bg-mist">Reopen</button>`}
-            ${x.shared ? '' : `<button type="button" data-share-problem="${x.id}" class="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 font-medium hover:bg-mist"><svg class="ic h-3.5 w-3.5"><use href="#i-share"/></svg>Ask the community</button>`}
+            ${x.status === 'resolved' ? '' : `<button type="button" data-share-problem="${x.id}" class="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 font-medium hover:bg-mist"><svg class="ic h-3.5 w-3.5"><use href="#i-share"/></svg>Ask the community</button>`}
             <button type="button" data-ask="${esc(`What should I do about the ${x.title.toLowerCase()}?`)}" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-forest hover:bg-leaf-soft"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg>Ask tutor</button>
           </div>
         </article>`).join('')}</div>`;
@@ -416,7 +426,8 @@
     const c = cat(p);
     if (!p.harvests.length) {
       const d = day(p);
-      const hint = p.status === 'planned' ? `Expect your first harvest about ${c.harvest[0]}–${c.harvest[1]} days after sowing.`
+      const hint = !c.harvest[1] ? 'Log what you pick here.'
+        : p.status === 'planned' ? `Expect your first harvest about ${c.harvest[0]}–${c.harvest[1]} days after sowing.`
         : p.status === 'failed' ? 'This plant didn’t make it to harvest. Your notes will help next time.'
         : d >= c.harvest[0] ? `You’re in the harvest window (day ${c.harvest[0]}–${c.harvest[1]}). Log what you pick here.`
         : `About ${c.harvest[0] - d} days until the harvest window opens (day ${c.harvest[0]}–${c.harvest[1]}).`;
@@ -432,10 +443,11 @@
       <ul class="divide-y divide-line rounded-xl border border-line">${list.map((h) => `
         <li class="flex items-center gap-3 p-3.5">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-amber-100 text-amber-700"><svg class="ic h-4 w-4"><use href="#i-basket"/></svg></span>
+          ${typeof h.photo === 'string' ? `<img src="${h.photo}" alt="Harvest photo" class="h-9 w-9 shrink-0 rounded-lg object-cover" />` : ''}
           <div class="min-w-0 flex-1"><div class="text-[14px] font-medium">${h.quantity ? qty(h.quantity, h.unit) : 'Quantity not logged'}</div>${h.note ? `<div class="text-[13px] text-muted">${esc(h.note)}</div>` : ''}</div>
           <div class="shrink-0 text-[12.5px] text-muted">${fmt(h.date, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
         </li>`).join('')}</ul>
-      <button type="button" data-share class="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-medium hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-share"/></svg>Share this harvest to Posts</button>`;
+      <button type="button" data-share="harvest" class="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-medium hover:bg-mist"><svg class="ic h-4 w-4"><use href="#i-share"/></svg>Share this harvest to Posts</button>`;
   }
 
   // Calendar (FR-23): icon-based, per plant or garden-wide
@@ -553,6 +565,54 @@
       </form>`;
   }
 
+  // ---------- Server calls (garden/views.py JSON endpoints) ----------
+  const API = SERVER.api;   // "/garden/"
+  const GENERIC_ERROR = 'Couldn’t save that. Check your connection and try again.';
+  function formOf(obj) {
+    const f = new FormData();
+    Object.entries(obj).forEach(([k, v]) => f.append(k, v));
+    return f;
+  }
+  // POST a form; on success replace the saved plant locally, re-render, and resolve with the response
+  async function send(path, body) {
+    let data;
+    try {
+      const res = await fetch(API + path, { method: 'POST', headers: { 'X-CSRFToken': window.GH.csrfToken() }, body });
+      data = await res.json();
+      if (!res.ok) {
+        toast(data.error || GENERIC_ERROR, { icon: 'i-alert' });
+        return null;
+      }
+    } catch (err) {
+      toast(GENERIC_ERROR, { icon: 'i-alert' });
+      return null;
+    }
+    const i = PLANTS.findIndex((x) => x.id === data.plant.id);
+    if (i === -1) PLANTS.unshift(data.plant);
+    else PLANTS[i] = data.plant;
+    refreshDetail();
+    return data;
+  }
+  // Dialog forms: keep the dialog open until the server accepts the data
+  function submitDialog(form, path, { tab, icon } = {}) {
+    const btn = form.querySelector('[type="submit"]');
+    btn.disabled = true;
+    return send(path, new FormData(form)).then((data) => {
+      btn.disabled = false;
+      if (!data) return null;
+      form.closest('dialog').close();
+      if (tab) setTab(tab);
+      if (data.message) toast(data.message, { icon });
+      return data;
+    });
+  }
+
+  // FR-26: open the community composer pre-filled (the Post model belongs to the community area)
+  function shareToPosts(p, type, text) {
+    const q = new URLSearchParams({ share_type: type, share_text: text, share_plant: p.id });
+    window.location.href = `${SERVER.communityUrl}?${q}#composer`;
+  }
+
   // ---------- Render all ----------
   function renderAll() {
     renderSummary();
@@ -618,7 +678,8 @@
     const ask = t.closest('[data-ask]');
     if (ask) return openTutor(ask.dataset.ask || '');
 
-    if (t.closest('[data-share]')) return sharePost(p);
+    const share = t.closest('[data-share]');
+    if (share) return sharePost(p, share.dataset.share);
 
     const cf = t.closest('[data-care-filter]');
     if (cf) { careFilter = cf.dataset.careFilter; return renderDetail(); }
@@ -637,14 +698,7 @@
 
     // Problems
     const ps = t.closest('[data-pstatus]');
-    if (ps) {
-      const x = p.problems.find((y) => y.id === ps.dataset.pid);
-      const prev = { status: x.status, resolved: x.resolved };
-      x.status = ps.dataset.pstatus;
-      if (x.status !== 'resolved') delete x.resolved;
-      refreshDetail();
-      return toast(x.status === 'open' ? 'Problem reopened' : 'Marked as monitoring', { icon: 'i-alert', undo: () => { Object.assign(x, prev); refreshDetail(); } });
-    }
+    if (ps) return send(`problems/${ps.dataset.pid}/status/`, formOf({ status: ps.dataset.pstatus })).then((d) => d && toast(d.message, { icon: 'i-alert' }));
     const rs = t.closest('[data-resolve]');
     if (rs) {
       const card = rs.closest('[data-problem]');
@@ -659,20 +713,14 @@
     }
     const cr = t.closest('[data-confirm-resolve]');
     if (cr) {
-      const x = p.problems.find((y) => y.id === cr.dataset.confirmResolve);
-      x.status = 'resolved';
-      x.resolved = TODAY_ISO;
-      x.resolution_note = $('textarea', cr.closest('[data-problem]')).value.trim();
-      p.reminders.filter((r) => r.type === 'check_problem' && r.active).forEach((r) => (r.active = false));
-      refreshDetail();
-      return toast('Problem resolved — nice work', { icon: 'i-check-circle' });
+      const note = $('textarea', cr.closest('[data-problem]')).value.trim();
+      return send(`problems/${cr.dataset.confirmResolve}/status/`, formOf({ status: 'resolved', resolution_note: note }))
+        .then((d) => d && toast('Problem resolved — nice work', { icon: 'i-check-circle' }));
     }
     const sp = t.closest('[data-share-problem]');
     if (sp) {
       const x = p.problems.find((y) => y.id === sp.dataset.shareProblem);
-      x.shared = true;
-      renderDetail();
-      return toast('Posted to the community as a Question', { icon: 'i-share', undo: () => { x.shared = false; renderDetail(); } });
+      return shareToPosts(p, 'question', `Help with my ${cat(p).name.toLowerCase()} (${p.nickname}): ${x.title}.${x.description ? ` ${x.description}` : ''} Any ideas?`);
     }
   });
 
@@ -688,55 +736,52 @@
   });
 
   // Reminder toggles + add form
+  const FLAG_MSG = {
+    active: (on) => (on ? 'Reminder turned on' : 'Reminder paused'), inapp: (on) => `In-app notifications ${on ? 'on' : 'off'}`,
+    email: (on) => `Email ${on ? 'on' : 'off'}`, weather_aware: (on) => (on ? 'Will skip watering after rain' : 'Will remind even after rain'),
+  };
   detail.addEventListener('change', (e) => {
     const sw = e.target.closest('[data-rem-toggle]');
     if (!sw) return;
-    const r = selected().reminders.find((x) => x.id === sw.closest('[data-reminder]').dataset.reminder);
-    const field = sw.dataset.remToggle;
-    r[field] = sw.checked;
-    if (field === 'active' && sw.checked && r.next_due < TODAY_ISO) r.next_due = r.every ? addDays(TODAY_ISO, r.every) : TODAY_ISO;
-    renderDetail();
-    renderList();
-    const msg = { active: sw.checked ? 'Reminder turned on' : 'Reminder paused', inapp: `In-app notifications ${sw.checked ? 'on' : 'off'}`, email: `Email ${sw.checked ? 'on' : 'off'}`, weather_aware: sw.checked ? 'Will skip watering after rain' : 'Will remind even after rain' }[field];
-    toast(msg, { icon: 'i-bell' });
+    const id = sw.closest('[data-reminder]').dataset.reminder;
+    const flag = sw.dataset.remToggle;
+    send(`reminders/${id}/`, formOf({ flag, value: sw.checked ? 'on' : '' })).then((d) => d && toast(FLAG_MSG[flag](sw.checked), { icon: 'i-bell' }));
   });
   detail.addEventListener('submit', (e) => {
     if (e.target.id !== 'addReminder') return;
     e.preventDefault();
-    const p = selected();
-    const f = new FormData(e.target);
-    const type = f.get('type');
-    const every = Number(f.get('every'));
-    const titles = { water: `Water ${p.nickname}`, fertilize: `Feed ${p.nickname}`, check_problem: `Check ${p.nickname}`, harvest_check: `Check ${p.nickname} for harvest`, custom: `${p.nickname} reminder` };
-    p.reminders.push({ id: nextId('r'), type, title: titles[type], every, time: f.get('time') || '08:00', weather_aware: type === 'water' && p.setting === 'outdoor', active: true, inapp: true, email: true, next_due: every ? addDays(TODAY_ISO, every) : addDays(TODAY_ISO, 1), history: [] });
-    refreshDetail();
-    toast('Reminder added', { icon: 'i-bell' });
+    send(`plants/${selected().id}/reminders/`, new FormData(e.target)).then((d) => d && toast(d.message, { icon: 'i-bell' }));
   });
 
   // ---------- Status changes ----------
   function changeStatus(p, status) {
     window.GH.closePopovers();
     if (status === p.status) return;
-    if (status === 'harvested' && !p.harvests.length) {
-      openDialog('harvestDialog', { final: true });
-      return toast('Log the harvest to mark this plant as harvested', { icon: 'i-basket' });
+    if (HARVESTED.includes(status) && !p.harvests.length) {
+      openDialog('harvestDialog', { final: status === 'completed' });
+      return toast('Log the harvest first. It sets the plant to producing or completed.', { icon: 'i-basket' });
     }
     if (status === 'failed') return openDialog('failDialog');
     const prev = p.status;
-    p.status = status;
-    refreshDetail();
-    toast(`Status changed to ${STATUS[status].label}`, { undo: () => { p.status = prev; refreshDetail(); } });
+    send(`plants/${p.id}/status/`, formOf({ status })).then((d) => d && toast(d.message, {
+      undo: () => send(`plants/${p.id}/status/`, formOf({ status: prev })),
+    }));
   }
 
-  function sharePost(p) {
-    toast(`Draft post created for ${p.nickname}`, { icon: 'i-share' });
+  function sharePost(p, kind) {
+    if (kind === 'harvest') {
+      const latest = [...p.harvests].sort((a, b) => b.date.localeCompare(a.date))[0];
+      return shareToPosts(p, 'harvest', `Harvested my ${p.nickname}${latest?.quantity ? `: ${qty(latest.quantity, latest.unit)}` : ''}! ${latest?.note || ''}`.trim());
+    }
+    return shareToPosts(p, 'progress', `${p.nickname} update: day ${day(p)}, ${STATUS[p.status].label.toLowerCase()}. `);
   }
 
   // ---------- Dialogs ----------
   const STAGE_PICK = STAGES.map((s) => `<div class="relative"><input type="radio" name="stage" id="st-${s.key}" value="${s.key}" /><label for="st-${s.key}" class="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-line py-2"><svg class="ic h-4 w-4"><use href="#${s.icon}"/></svg>${s.label}</label></div>`).join('');
   $('#stagePicker').innerHTML = STAGE_PICK;
   $('#actionPicker').innerHTML = Object.entries(ACTIONS).map(([k, a], i) => `<div class="relative"><input type="radio" name="action" id="ac-${k}" value="${k}" ${i === 0 ? 'checked' : ''} /><label for="ac-${k}" class="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-line px-1 py-2 text-center"><svg class="ic h-4 w-4"><use href="#${a.icon}"/></svg>${a.label}</label></div>`).join('');
-  $('#addType').innerHTML = Object.entries(CATALOG).map(([k, c]) => `<option value="${k}">${c.name}</option>`).join('');
+  $('#addType').innerHTML = Object.entries(CATALOG).filter(([, c]) => c.published).sort(([, a], [, b]) => a.name.localeCompare(b.name))
+    .map(([k, c]) => `<option value="${k}">${esc(c.name)}</option>`).join('');
   const showSuit = () => {
     const c = CATALOG[$('#addType').value];
     $('#addSuit').className = `mt-1.5 text-[12.5px] font-medium ${SUIT_CLS[c.suit]}`;
@@ -750,7 +795,7 @@
     const p = selected();
     form.reset();
     $$('.photo-preview', dlg).forEach((pv) => (pv.innerHTML = '<svg class="ic h-5 w-5"><use href="#i-camera"/></svg>'));
-    $$('[data-plant-name]', dlg).forEach((el) => (el.textContent = p.nickname));
+    $$('[data-plant-name]', dlg).forEach((el) => (el.textContent = p?.nickname || ''));
     $$('input[type="date"]', dlg).forEach((inp) => { inp.value = TODAY_ISO; inp.max = id === 'addPlantDialog' ? '' : TODAY_ISO; });
     if (id === 'timelineDialog') {
       const cur = Math.max(0, currentStage(p));
@@ -785,48 +830,19 @@
       pv.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Selected photo preview" class="h-full w-full object-cover" />`;
     })
   );
-  const photoOf = (form) => {
-    const file = form.querySelector('input[type="file"]')?.files[0];
-    return file ? URL.createObjectURL(file) : false;
-  };
-
   // Timeline entry
   $('[data-form="timeline"]').addEventListener('submit', (e) => {
-    const p = selected();
-    const f = new FormData(e.target);
-    const stage = f.get('stage');
-    p.timeline.push({ id: nextId('t'), stage, date: f.get('date'), note: f.get('note').trim(), photo: photoOf(e.target) });
-    const target = STAGES[stageIndex(stage)].status;
-    let msg = 'Timeline entry added';
-    if (f.get('updateStatus') && target && !['harvested', 'failed'].includes(p.status) && stageIndex(stage) >= currentStage(p) - 0 && p.status !== target) {
-      p.status = target;
-      msg = `Entry added · status now ${STATUS[target].label}`;
-    }
-    if (p.status === 'planned' && stageIndex(stage) >= 0) p.status = target || 'sprouting';
-    currentTab = 'timeline';
-    refreshDetail();
-    toast(msg, { icon: 'i-camera' });
-    if (stage === 'harvest') setTimeout(() => openDialog('harvestDialog'), 250);
+    e.preventDefault();
+    const stage = new FormData(e.target).get('stage');
+    submitDialog(e.target, `plants/${selected().id}/timeline/`, { tab: 'timeline', icon: 'i-camera' }).then((d) => {
+      if (d && stage === 'harvest') setTimeout(() => openDialog('harvestDialog'), 250);
+    });
   });
 
-  // Care log
+  // Care log (watering also completes a due watering reminder on the server)
   $('[data-form="care"]').addEventListener('submit', (e) => {
-    const p = selected();
-    const f = new FormData(e.target);
-    const action = f.get('action');
-    const date = f.get('date');
-    p.care.push({ action, amount: f.get('amount').trim(), note: f.get('note').trim(), date, source: 'manual' });
-    // Logging watering satisfies today's watering reminder occurrence
-    if (action === 'water') {
-      const r = p.reminders.find((x) => x.type === 'water' && x.active);
-      if (r && r.next_due <= addDays(date, 1)) {
-        r.history.unshift({ date, status: 'done' });
-        r.next_due = addDays(date, r.every || p.watering_interval_days);
-      }
-    }
-    currentTab = 'care';
-    refreshDetail();
-    toast(`${ACTIONS[action].past} ${p.nickname}`, { icon: ACTIONS[action].icon });
+    e.preventDefault();
+    submitDialog(e.target, `plants/${selected().id}/care-logs/`, { tab: 'care', icon: ACTIONS[new FormData(e.target).get('action')].icon });
   });
 
   // Problem + AI suggestion (mock of the vision/LLM diagnosis)
@@ -896,81 +912,49 @@
     setTimeout(() => {
       pendingDiagnosis = diagnose(text, selected(), form.severity.value);
       const top = pendingDiagnosis.issues[0];
-      box.innerHTML = `<div class="text-emerald-50"><span class="font-medium text-white">Likely: ${esc(top.name)}</span> <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium ${CONF[top.confidence]}">${cap(top.confidence)} confidence</span></div><div class="mt-1">${esc(top.reasoning)}</div><div class="mt-1.5 text-emerald-50/60">Full steps are saved with the problem.</div>`;
+      box.innerHTML = `<div class="text-emerald-50"><span class="font-medium text-white">Likely: ${esc(top.name)}</span> <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium ${CONF[top.confidence]}">${cap(top.confidence)} confidence</span></div><div class="mt-1">${esc(top.reasoning)}</div><div class="mt-1.5 text-emerald-50/60">Quick preview only. Use “Ask tutor” on the saved problem for a full answer.</div>`;
     }, 800);
   });
   $('[data-form="problem"]').addEventListener('submit', (e) => {
-    const p = selected();
-    const f = new FormData(e.target);
-    const title = f.get('title').trim();
-    const description = f.get('description').trim();
-    const x = {
-      id: nextId('p'), title, description, category: f.get('category'), severity: f.get('severity'), status: 'open', opened: TODAY_ISO,
-      photo: photoOf(e.target), diagnosis: pendingDiagnosis || diagnose(`${title} ${description}`, p, f.get('severity')),
-    };
-    p.problems.push(x);
-    // Follow-up reminder (PRD 4.2: diagnosis → problem log → follow-up reminder)
-    p.reminders.push({ id: nextId('r'), type: 'check_problem', title: `Check: ${title}`, every: 0, time: '09:00', weather_aware: false, active: true, inapp: true, email: false, next_due: addDays(TODAY_ISO, 3), history: [] });
-    currentTab = 'problems';
-    refreshDetail();
-    toast('Problem logged · follow-up reminder set for 3 days', { icon: 'i-alert' });
+    e.preventDefault();
+    submitDialog(e.target, `plants/${selected().id}/problems/`, { tab: 'problems', icon: 'i-alert' });
   });
 
-  // Harvest
+  // Harvest (FR-27): the first one sets the North Star date; continuous crops become "producing"
   $('[data-form="harvest"]').addEventListener('submit', (e) => {
-    const p = selected();
-    const f = new FormData(e.target);
-    const q = f.get('quantity');
-    p.harvests.push({ date: f.get('date'), quantity: q ? Number(q) : null, unit: f.get('unit'), note: f.get('note').trim() });
-    if (f.get('final')) {
-      p.status = 'harvested';
-      p.harvested_at = f.get('date');
-      p.reminders.forEach((r) => { if (r.type !== 'custom') r.active = false; });
-    }
-    currentTab = 'harvests';
-    refreshDetail();
-    toast(f.get('final') ? `${p.nickname} harvested — congratulations!` : 'Harvest logged', { icon: 'i-basket' });
+    e.preventDefault();
+    submitDialog(e.target, `plants/${selected().id}/harvests/`, { tab: 'harvests', icon: 'i-basket' });
   });
 
-  // Failed
+  // Failed (FR-28): a reason from the fixed list is required
   $('[data-form="fail"]').addEventListener('submit', (e) => {
-    const p = selected();
-    const prev = { status: p.status, reason: p.failure_reason };
-    p.status = 'failed';
-    p.failure_reason = new FormData(e.target).get('reason').trim();
-    p.reminders.forEach((r) => (r.active = false));
-    refreshDetail();
-    toast('Marked as failed. Your notes will help next time.', { icon: 'i-x-circle', undo: () => { p.status = prev.status; p.failure_reason = prev.reason; refreshDetail(); } });
-  });
-
-  // Add plant (auto-generated care schedule)
-  $('[data-form="add"]').addEventListener('submit', (e) => {
+    e.preventDefault();
     const f = new FormData(e.target);
-    const type = f.get('type');
-    const c = CATALOG[type];
-    const date = f.get('date');
-    const method = f.get('method');
-    const setting = f.get('setting');
-    const nickname = f.get('nickname').trim() || c.name;
-    const future = date > TODAY_ISO;
-    const id = `${type}-${++uid}`;
-    PLANTS.unshift({
-      id, type, nickname, variety: '', planted_on: date, start_method: method, setting, container: f.get('container').trim(), quantity: Number(f.get('quantity')) || 1,
-      status: future ? 'planned' : method === 'seed' ? 'sprouting' : 'growing', watering_interval_days: c.water,
-      tip: `Your tutor will tailor tips for ${nickname} as you log its progress.`,
-      timeline: future ? [] : [{ id: nextId('t'), stage: method === 'seed' ? 'seed' : 'seedling', date, note: `${method === 'seed' ? 'Sowed' : 'Planted'} ${nickname}.`, photo: false }],
-      care: [], problems: [], harvests: [],
-      reminders: [{ id: nextId('r'), type: 'water', title: `Water ${nickname}`, every: c.water, time: '08:00', weather_aware: setting === 'outdoor', active: true, inapp: true, email: true, next_due: future ? date : addDays(TODAY_ISO, 1), history: [] }],
+    f.append('status', 'failed');
+    const btn = e.target.querySelector('[type="submit"]');
+    btn.disabled = true;
+    send(`plants/${selected().id}/status/`, f).then((d) => {
+      btn.disabled = false;
+      if (!d) return;
+      e.target.closest('dialog').close();
+      toast('Marked as failed. Your notes will help next time.', { icon: 'i-x-circle' });
     });
-    statusFilter = 'all';
-    currentTab = 'timeline';
-    selectedId = id;
-    renderAll();
-    history.replaceState(null, '', `#plant=${id}&tab=timeline`);
-    toast(`${nickname} added · watering every ${c.water} days`, { icon: 'i-sprout' });
   });
 
-  // ---------- Tutor drawer: real answers scoped to this plant (FR-32), see tutor_client.js ----------
+  // Add plant (Start Growing with an automatic care schedule, FR-13 / FR-24)
+  $('[data-form="add"]').addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitDialog(e.target, 'plants/', { icon: 'i-sprout' }).then((d) => {
+      if (!d) return;
+      statusFilter = 'all';
+      currentTab = 'timeline';
+      selectedId = d.plant.id;
+      renderAll();
+      history.replaceState(null, '', `#plant=${d.plant.id}&tab=timeline`);
+    });
+  });
+
+    // ---------- Tutor drawer: real answers scoped to this plant (FR-32), see tutor_client.js ----------
   const drawer = $('#tutorDrawer');
   const drawerLog = $('#drawerLog');
   function drawerMsg(role, text) {

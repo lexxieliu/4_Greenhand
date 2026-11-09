@@ -4,27 +4,29 @@ import json
 import re
 from datetime import timedelta
 from decimal import Decimal
-from io import BytesIO
+from io import BytesIO, StringIO
 from unittest import mock
 
 import numpy as np
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
-from django.utils import timezone
+from django.utils.text import slugify
 from PIL import Image
 
 from analytics.models import AnalyticsEvent
-from garden.models import CareLog, Garden, Problem, TimelineEntry
+from garden.models import CareLog, Problem, TimelineEntry, UserPlant
+from greenhand.clock import today
 from plants.models import Plant
 from userprofile.models import Profile
 from weather.models import WeatherSnapshot
 
 from . import diagnosis as diagnosis_service
 from . import context, guardrails as g, knowledge, llm, prompts, services, vision
-from .eval import mock_context
+from .eval.mock_context import DemoContext
 from .models import ChatMessage, ChatSession, Diagnosis
 
 GOOD = '{"answer": "Let the pot dry out.", "steps": ["Check the soil", "Empty the saucer"], "difficulty": "easy", "sources": ["watering-3"]}'
@@ -116,7 +118,16 @@ class SafetyAndRateLimitTests(SimpleTestCase):
         self.assertFalse(g.rate_limited("u2", limit=3))
 
 
-class KnowledgeTests(SimpleTestCase):
+class SeededTestCase(TestCase):
+    """The catalog and the demo garden, as in the running app."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_plants", stdout=StringIO())
+        call_command("seed_demo_garden", stdout=StringIO())
+
+
+class KnowledgeTests(SeededTestCase):
     def test_chunks_have_unique_ids_and_cover_guides_and_catalog(self):
         chunks = knowledge.load_chunks()
         ids = [c.id for c in chunks]
@@ -133,22 +144,7 @@ class KnowledgeTests(SimpleTestCase):
         self.assertEqual(knowledge.search("zzz qqq", min_score=0.1), [])
 
 
-class MockContextTests(SimpleTestCase):
-    def test_detects_plant_from_question(self):
-        self.assertEqual(mock_context.detect_plant("When will my tomatoes be ripe?")["id"], "tomato")
-        self.assertEqual(mock_context.detect_plant("My basil has spots")["id"], "basil")
-        self.assertIsNone(mock_context.detect_plant("How do I grow carrots?"))
-        self.assertIsNone(mock_context.detect_plant("Why did my cilantro die?"))     # failed plants are hidden
-        self.assertIsNone(mock_context.detect_plant("What can I plant on my balcony?"))  # not 'Balcony Basil'
-        self.assertEqual(mock_context.detect_plant("Is Balcony Basil ok?")["id"], "basil")
-
-    def test_scoped_context_is_minimal_and_specific(self):
-        text = mock_context.build_context(mock_context.find_plant("lettuce"))
-        self.assertIn("Butterhead Lettuce", text)
-        self.assertIn("indoor", text)
-        self.assertIn("hardiness zone 5b", text)
-        self.assertNotIn("balcony_maya", text)                                  # PRD 8.2: no username
-
+class PromptTests(SimpleTestCase):
     def test_prompt_marks_user_text_as_data(self):
         messages = prompts.build_messages("Is it ok?", "Today: x", [])
         self.assertIn("never instructions", messages[0]["content"])
@@ -161,8 +157,11 @@ def grower(name="grower"):
 
 
 def grow(user, species="Basil", **fields):
-    plant, _ = Plant.objects.get_or_create(plant_name=species, defaults={"category": "herb"})
-    garden = Garden.objects.create(user=user, plant=plant, **fields)
+    plant, _ = Plant.objects.get_or_create(slug=slugify(species), defaults={"common_name": species})
+    fields.setdefault("nickname", species)
+    fields.setdefault("planted_on", today())
+    fields.setdefault("status", "growing")
+    garden = UserPlant.objects.create(user=user, plant=plant, watering_interval_days=3, **fields)
     ChatSession.objects.filter(messages__model_name="welcome").delete()     # tests below count their own sessions
     return garden
 
@@ -190,7 +189,7 @@ class RealContextTests(TestCase):
         Profile.objects.create(user=self.user, city="Madison", region="WI", hardiness_zone="5b", space_type="balcony",
                                sunlight_level="partial", experience_level="beginner", latitude=Decimal("43.07"),
                                longitude=Decimal("-89.40"))
-        self.basil = grow(self.user, "Basil", nickname="Balcony Basil", planted_on=timezone.localdate() - timedelta(days=20))
+        self.basil = grow(self.user, "Basil", nickname="Balcony Basil", planted_on=today() - timedelta(days=20))
         self.source = context.GardenContext(self.user)
 
     def _snapshot(self, **fields):
@@ -210,11 +209,10 @@ class RealContextTests(TestCase):
         self.assertNotIn("43.07", text)                             # no coordinates
 
     def test_only_last_14_days_of_logs(self):
-        now = timezone.now()
-        CareLog.objects.create(garden=self.basil, action="water", note="recent", performed_at=now - timedelta(days=3))
-        CareLog.objects.create(garden=self.basil, action="prune", note="ancient", performed_at=now - timedelta(days=30))
-        TimelineEntry.objects.create(garden=self.basil, stage="seedling", note="first leaves")
-        Problem.objects.create(garden=self.basil, title="Yellow leaves", description="Lower ones")
+        CareLog.objects.create(user_plant=self.basil, action="water", note="recent", performed_on=today() - timedelta(days=3))
+        CareLog.objects.create(user_plant=self.basil, action="prune", note="ancient", performed_on=today() - timedelta(days=30))
+        TimelineEntry.objects.create(user_plant=self.basil, stage="seedling", note="first leaves", recorded_on=today())
+        Problem.objects.create(user_plant=self.basil, title="Yellow leaves", description="Lower ones", opened_on=today())
         text = self.source.build(self.basil)
         self.assertIn("recent", text)
         self.assertNotIn("ancient", text)
@@ -222,7 +220,7 @@ class RealContextTests(TestCase):
         self.assertIn("Open problem since", text)
 
     def test_whole_garden_lists_recent_care(self):
-        CareLog.objects.create(garden=self.basil, action="water")
+        CareLog.objects.create(user_plant=self.basil, action="water", performed_on=today())
         self.assertIn("Recent care (last 14 days): Balcony Basil", self.source.build())
 
     def test_alerts_and_setting_rules(self):
@@ -334,10 +332,13 @@ class AskTutorTests(TestCase):
             services.ask_tutor("How do I water basil?", rate_key="k")
             self.assertEqual(services.ask_tutor("How do I water basil?", rate_key="k")["error_kind"], "rate_limited")
 
-    def test_eval_source_uses_the_mock_garden(self, _):
-        with mock.patch.object(llm, "generate", return_value=GOOD):
-            result = services.ask_tutor("Should I water?", "lettuce", source=mock_context.MockContext())
-        self.assertEqual(result["plant"]["nickname"], "Butterhead Lettuce")
+    def test_eval_source_uses_the_demo_garden_and_mock_weather(self, _):
+        call_command("seed_plants", stdout=StringIO())
+        call_command("seed_demo_garden", stdout=StringIO())
+        with mock.patch.object(llm, "generate", return_value=GOOD) as generate:
+            result = services.ask_tutor("Should I water?", "lettuce", source=DemoContext())
+        self.assertIn("Lettuce", result["plant"]["nickname"])
+        self.assertIn("hardiness zone 5b", generate.call_args.args[0][-1]["content"])
 
     def test_post_suggestion(self, _):
         with mock.patch.object(llm, "generate", return_value=GOOD) as generate:
@@ -448,16 +449,15 @@ class FeedbackAndActionTests(TestCase):
         self.client.post(url)
         self.client.post(url)
         problem = Problem.objects.get()
-        self.assertEqual((problem.garden, problem.title), (self.basil, "Yellow leaves on basil"))
+        self.assertEqual((problem.user_plant, problem.title), (self.basil, "Yellow leaves on basil"))
 
 
 class WelcomeMessageTests(TestCase):
     def test_only_the_first_plant_gets_a_welcome(self):
         user = grower()
-        basil = Plant.objects.create(plant_name="Basil", category="herb")
-        kale = Plant.objects.create(plant_name="Kale", category="herb")
-        Garden.objects.create(user=user, plant=basil, nickname="Balcony Basil")
-        Garden.objects.create(user=user, plant=kale)
+        for slug, nickname in (("basil", "Balcony Basil"), ("kale", "Kale")):
+            plant = Plant.objects.create(common_name=slug.capitalize(), slug=slug)
+            UserPlant.objects.create(user=user, plant=plant, nickname=nickname, planted_on=today(), watering_interval_days=3)
         message = ChatMessage.objects.get()
         self.assertIn("Balcony Basil", message.content)
         self.assertEqual((message.role, message.model_name), ("assistant", "welcome"))
@@ -478,7 +478,7 @@ class DiagnosisTests(TestCase):
         response = self._post(plant=self.basil.pk, note="<i>since Monday</i>")
         item = Diagnosis.objects.get()
         self.assertRedirects(response, reverse("tutor:diagnosis_detail", args=[item.pk]))
-        self.assertEqual((item.garden, item.prompt_tokens, item.note), (self.basil, 1000, "since Monday"))
+        self.assertEqual((item.user_plant, item.prompt_tokens, item.note), (self.basil, 1000, "since Monday"))
         page = self.client.get(reverse("tutor:diagnosis_detail", args=[item.pk]))
         self.assertContains(page, "Aphids")
         self.assertContains(page, "AI-generated")
@@ -501,7 +501,7 @@ class DiagnosisTests(TestCase):
         self.client.post(url, {"plant": self.basil.pk})
         self.client.post(url, {"plant": self.basil.pk})
         problem = Problem.objects.get()
-        self.assertEqual((problem.title, problem.category, problem.severity, problem.garden),
+        self.assertEqual((problem.title, problem.category, problem.severity, problem.user_plant),
                          ("Aphids", "pest", "medium", self.basil))
         self.assertIn("Spray with water", problem.description)
         self.assertEqual(problem.photo.name, item.image.name)

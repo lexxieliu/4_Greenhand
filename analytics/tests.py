@@ -7,13 +7,20 @@ from django.core.management import call_command
 from django.db import DatabaseError
 from django.test import TestCase
 from django.utils import timezone
+from django.utils.text import slugify
 
-from garden.models import CareLog, Garden, Harvest
+from garden.models import CareLog, Harvest, UserPlant
+from greenhand.clock import today
 from plants.models import Plant
 
 from . import queries
 from .models import AnalyticsEvent
 from .services import track
+
+
+def grow(user, name, status):
+    plant = Plant.objects.create(common_name=name, slug=slugify(name))
+    return UserPlant.objects.create(user=user, plant=plant, nickname=name, planted_on=today(), status=status, watering_interval_days=3)
 
 
 def user_joined(name, days_ago):
@@ -37,9 +44,9 @@ class TrackTests(TestCase):
 class SignalTests(TestCase):
     def test_garden_activity_is_tracked(self):
         user = User.objects.create_user("u")
-        garden = Garden.objects.create(user=user, plant=Plant.objects.create(plant_name="Basil", category="herb"))
-        CareLog.objects.create(garden=garden, action="water")
-        Harvest.objects.create(garden=garden)
+        plant = grow(user, "Basil", "growing")
+        CareLog.objects.create(user_plant=plant, action="water", performed_on=today())
+        Harvest.objects.create(user_plant=plant, harvested_on=today())
         names = set(AnalyticsEvent.objects.values_list("name", flat=True))
         self.assertEqual(names, {"plant_started", "care_logged", "harvest_logged"})
 
@@ -49,19 +56,18 @@ class NorthStarTests(TestCase):
         self.user = User.objects.create_user("u")
 
     def _plant(self, name, status, harvests=0):
-        garden = Garden.objects.create(user=self.user, status=status, plant=Plant.objects.create(plant_name=name, category="x"))
+        plant = grow(self.user, name, status)
         for _ in range(harvests):
-            Harvest.objects.create(garden=garden)
+            Harvest.objects.create(user_plant=plant, harvested_on=today())
 
-    def test_needs_harvested_status_and_a_log_and_counts_plants_once(self):
-        self._plant("Two harvests", "harvested", 2)
-        self._plant("No log", "harvested", 0)
-        self._plant("Still growing", "growing", 1)
+    def test_counts_plants_with_a_harvest_log_once(self):
+        self._plant("Two harvests", "producing", 2)
+        self._plant("No log", "growing", 0)
         self.assertEqual(queries.north_star(), 1)
 
     def test_success_rate(self):
         self.assertIsNone(queries.harvest_success_rate())
-        self._plant("A", "harvested", 1)
+        self._plant("A", "completed", 1)
         self._plant("B", "failed")
         self.assertEqual(queries.harvest_success_rate(), 0.5)
 
