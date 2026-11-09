@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -11,6 +12,7 @@ from greenhand import mock_data as data
 from . import services
 
 
+@login_required
 def plant_list(request):
     params = request.GET
     plants = services.filter_catalog(params)
@@ -27,6 +29,7 @@ def plant_list(request):
     })
 
 
+@login_required
 def plant_detail(request, slug):
     if slug not in data.CATALOG_BY_SLUG:
         raise Http404("Plant not found")
@@ -41,6 +44,7 @@ def plant_detail(request, slug):
     })
 
 
+@login_required
 @require_POST
 def start_growing(request, slug):
     """FR-13: add the plant to My Garden. The preview appends to the in-memory garden."""

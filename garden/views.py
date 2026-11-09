@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from greenhand import mock_data as data
 from . import services
 
+@login_required
 def dashboard(request):
     featured = next(p for p in data.GARDEN if p["id"] == "tomato")
     same_plant_slugs = {p["plant_slug"] for p in data.GARDEN}
@@ -28,6 +30,7 @@ def dashboard(request):
         },
     })
 
+@login_required
 def my_garden(request):
     return render(request, "garden/my_garden.html", {
         "stats": services.stats(),

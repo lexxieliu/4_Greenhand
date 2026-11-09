@@ -4,6 +4,7 @@
 # --- Web app ---
 Django==6.1.1
 django-environ==0.14.0
+Pillow==13.0.0          # avatar uploads (ImageField, EXIF stripping)
 
 # --- AI Gardening Tutor (local, public Hugging Face models; weights download on first use) ---
 torch==2.14.1

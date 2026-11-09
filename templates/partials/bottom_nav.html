@@ -5,6 +5,6 @@
     <li><a href="{% url 'plants:list' %}" {% if 'plants:' in nav %}aria-current="page"{% endif %} class="bottom-link flex flex-col items-center gap-1 py-2.5"><svg class="ic h-5 w-5"><use href="#i-search"/></svg>Plants<span class="bottom-dot h-1 w-1 rounded-full bg-forest"></span></a></li>
     <li><a href="{% url 'tutor:ask' %}" {% if 'tutor:' in nav %}aria-current="page"{% endif %} class="bottom-link flex flex-col items-center gap-1 py-2.5"><svg class="ic h-5 w-5"><use href="#i-sparkles"/></svg>Tutor<span class="bottom-dot h-1 w-1 rounded-full bg-forest"></span></a></li>
     <li><a href="{% url 'community:feed' %}" {% if 'community:' in nav %}aria-current="page"{% endif %} class="bottom-link flex flex-col items-center gap-1 py-2.5"><svg class="ic h-5 w-5"><use href="#i-post"/></svg>Posts<span class="bottom-dot h-1 w-1 rounded-full bg-forest"></span></a></li>
-    <li><a href="#" class="bottom-link flex flex-col items-center gap-1 py-2.5"><svg class="ic h-5 w-5"><use href="#i-user"/></svg>Profile<span class="bottom-dot h-1 w-1 rounded-full bg-forest"></span></a></li>
+    <li><a href="{% url 'userprofile:profile' %}" {% if 'userprofile:profile' in nav %}aria-current="page"{% endif %} class="bottom-link flex flex-col items-center gap-1 py-2.5"><svg class="ic h-5 w-5"><use href="#i-user"/></svg>Profile<span class="bottom-dot h-1 w-1 rounded-full bg-forest"></span></a></li>
   </ul>
 </nav>

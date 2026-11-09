@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from greenhand import mock_data as data
@@ -36,6 +37,7 @@ def _impact(plant):
     }
 
 
+@login_required
 def weather(request):
     plants = [p for p in data.GARDEN if p["status"] in ACTIVE or p["status"] in ("harvested", "planned")]
     impacts = [_impact(p) for p in plants]

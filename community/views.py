@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -29,6 +30,7 @@ def _decorate(p):
     }
 
 
+@login_required
 def post_list(request):
     feed = request.GET.get("feed", "latest")
     post_type = request.GET.get("type", "")
@@ -51,6 +53,7 @@ def post_list(request):
     })
 
 
+@login_required
 @require_POST
 def create_post(request):
     body = request.POST.get("body", "").strip()
@@ -73,6 +76,7 @@ def create_post(request):
     return redirect(f"{reverse('community:feed')}#post-{new_id}")
 
 
+@login_required
 @require_POST
 def add_comment(request, post_id):
     post = _post(post_id)
@@ -83,6 +87,7 @@ def add_comment(request, post_id):
     return redirect(f"{reverse('community:feed')}?{request.GET.urlencode()}#post-{post_id}")
 
 
+@login_required
 @require_POST
 def toggle(request, post_id, field):
     """Like / save toggles (FR-52). Returns JSON for the page script."""
@@ -93,6 +98,7 @@ def toggle(request, post_id, field):
     return JsonResponse({"active": post[flag], "count": post[counter]})
 
 
+@login_required
 @require_POST
 def report_post(request, post_id):
     _post(post_id)

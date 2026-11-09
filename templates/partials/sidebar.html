@@ -55,7 +55,7 @@
     </div>
 
     <ul class="space-y-0.5 py-3">
-      <li><a href="#" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-user"/></svg>Profile</a></li>
+      <li><a href="{% url 'userprofile:profile' %}" {% if 'userprofile:profile' in nav %}aria-current="page"{% endif %} class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5"><svg class="ic h-[18px] w-[18px] text-muted"><use href="#i-user"/></svg>Profile</a></li>
       <li>
         <form method="post" action="{% url 'userprofile:logout' %}">
           {% csrf_token %}

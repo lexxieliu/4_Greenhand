@@ -125,7 +125,17 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# User uploads (avatars). Local disk for now; PRD 6.1 moves this to S3/R2 via django-storages.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_URL = "userprofile:login"
+LOGIN_REDIRECT_URL = "garden:dashboard"
+LOGOUT_REDIRECT_URL = "userprofile:login"
+
+DEFAULT_FROM_EMAIL = "Greenhand <no-reply@greenhand.local>"
 
 # AI Gardening Tutor (tutor app). Public Hugging Face models, downloaded to ~/.cache/huggingface on first use.
 LOCAL_MODEL_ID = env("LOCAL_MODEL_ID", default="Qwen/Qwen2.5-3B-Instruct")

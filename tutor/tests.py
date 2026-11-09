@@ -197,6 +197,7 @@ class AskTutorTests(TestCase):
 class TutorViewTests(TestCase):
     def setUp(self):
         cache.clear()
+        self.client.force_login(User.objects.create(username="grower"))
 
     def test_page_renders_with_plant_scope_prefilled(self, *_):
         response = self.client.get(reverse("tutor:ask"), {"plant": "lettuce", "q": "Water today?"})
@@ -234,3 +235,13 @@ class TutorViewTests(TestCase):
         response = self.client.post(reverse("tutor:api_ask"), {"question": "Should I water?"}, content_type="application/json")
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["message"], services.UNAVAILABLE_MESSAGE)
+
+    def test_anonymous_cannot_use_tutor(self, generate, _):
+        self.client.logout()
+        page = self.client.get(reverse("tutor:ask"))
+        self.assertRedirects(page, f"{reverse('userprofile:login')}?next={reverse('tutor:ask')}")
+        api = self.client.post(reverse("tutor:api_ask"), {"question": "Should I water?"}, content_type="application/json")
+        self.assertEqual(api.status_code, 401)
+        self.assertEqual(api.json()["error_kind"], "unauthenticated")
+        generate.assert_not_called()
+        self.assertFalse(User.objects.filter(username="balcony_maya").exists())

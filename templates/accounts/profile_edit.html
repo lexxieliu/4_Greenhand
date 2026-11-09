@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Edit profile — Greenhand{% endblock %}
+{% block page_title %}Edit profile{% endblock %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data" novalidate class="max-w-2xl space-y-6 rounded-2xl bg-white p-6 shadow-card">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-[13.5px] text-rose-900" role="alert">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <div class="flex items-start gap-4">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Current profile photo" class="h-20 w-20 rounded-full object-cover" />
+      {% else %}
+        <span class="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[28px] font-semibold text-forest" aria-hidden="true">{{ profile.display_name|default:request.user.username|slice:":1"|upper }}</span>
+      {% endif %}
+      <div class="min-w-0 flex-1">
+        <label for="{{ form.avatar.id_for_label }}" class="mb-1.5 block text-[13.5px] font-medium">Profile photo</label>
+        <input type="file" id="{{ form.avatar.id_for_label }}" name="avatar" accept="image/jpeg,image/png,image/webp" class="block w-full text-[13.5px] file:mr-3 file:rounded-lg file:border-0 file:bg-mist file:px-3 file:py-2 file:text-[13.5px] file:font-medium hover:file:bg-leaf-soft" />
+        <p class="mt-1 text-[12.5px] text-muted">JPEG, PNG or WebP, up to 10 MB. Location data in photos is removed automatically.</p>
+        {% if profile.avatar %}<label class="mt-2 flex items-center gap-2 text-[13.5px] text-muted"><input type="checkbox" name="avatar-clear" class="check" /> Remove current photo</label>{% endif %}
+        {% for error in form.avatar.errors %}<p class="mt-1.5 text-[12.5px] text-rose-600" role="alert">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      {% for field in form %}
+        {% if field.name != "avatar" %}
+          <div {% if field.name == "bio" %}class="sm:col-span-2"{% endif %}>
+            <label for="{{ field.id_for_label }}" class="mb-1.5 block text-[13.5px] font-medium">{{ field.label }}{% if field.name == "birthdate" %} <span class="font-normal text-muted">(optional, private)</span>{% endif %}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="mt-1.5 text-[12.5px] text-rose-600" role="alert">{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <p class="text-[13.5px] text-muted">Your growing location lives on the <a href="{% url 'userprofile:location_edit' %}" class="font-medium text-forest hover:text-leaf">location page</a>.</p>
+
+    <div class="flex gap-3">
+      <button type="submit" class="h-11 rounded-lg bg-ink px-5 text-[15px] font-medium text-white shadow-sm hover:bg-forest-900">Save changes</button>
+      <a href="{% url 'userprofile:profile' %}" class="flex h-11 items-center rounded-lg border border-line bg-white px-5 text-[15px] font-medium shadow-card hover:bg-mist">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

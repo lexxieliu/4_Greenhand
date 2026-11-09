@@ -12,6 +12,9 @@ __pycache__/
 # django (collectstatic output is rebuilt on the server)
 staticfiles/
 
+# user uploads
+media/
+
 # model weights and caches: never commit them. Hugging Face downloads the tutor's models to
 # ~/.cache/huggingface on first use (see README.md, "AI models").
 *.bin
