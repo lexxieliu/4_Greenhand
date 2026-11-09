@@ -1,0 +1,5 @@
+{# 👍/👎 (FR-36). The page script posts the value to data-rating. #}
+<div class="mt-3 flex items-center gap-1" role="group" aria-label="Rate this answer" data-rating="{{ feedback_url }}">
+  <button type="button" value="1" aria-label="Helpful" aria-pressed="{% if current == 1 %}true{% else %}false{% endif %}" class="rounded-lg px-2 py-1 ring-1 ring-current/20 aria-pressed:bg-lime-300 aria-pressed:text-forest-900">👍</button>
+  <button type="button" value="-1" aria-label="Not helpful" aria-pressed="{% if current == -1 %}true{% else %}false{% endif %}" class="rounded-lg px-2 py-1 ring-1 ring-current/20 aria-pressed:bg-lime-300 aria-pressed:text-forest-900">👎</button>
+</div>

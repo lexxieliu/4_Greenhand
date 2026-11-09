@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Photo diagnosis — Greenhand{% endblock %}
+{% block description %}Upload a plant photo and get likely issues, confidence and next steps from Greenhand's AI.{% endblock %}
+{% block breadcrumb %}{% url 'tutor:ask' as tutor_url %}{% include "partials/breadcrumb.html" with parent="AI Tutor" parent_url=tutor_url current="Photo diagnosis" %}{% endblock %}
+{% block page_title %}Photo diagnosis{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">Photos are sent to Anthropic's Claude API for analysis. Location data is removed first.</p>{% endblock %}
+
+{% block content %}
+<section class="max-w-2xl rounded-2xl bg-white p-5 shadow-card" aria-labelledby="diagnose-title">
+  <h2 id="diagnose-title" class="font-display text-[17px] font-semibold tracking-tight">What's wrong with my plant?</h2>
+  <form method="post" enctype="multipart/form-data" id="diagnoseForm" class="mt-4 space-y-3">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="mb-1.5 block text-[13px] font-medium">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<p class="mt-1 text-[13px] text-rose-700" role="alert">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <p class="text-[12.5px] text-muted">JPEG, PNG or WebP, up to 10 MB. 10 diagnoses per day.</p>
+    <button type="submit" id="diagnoseSubmit" class="inline-flex h-11 items-center justify-center rounded-lg bg-forest px-5 text-[14px] font-medium text-white hover:bg-forest-900 disabled:opacity-60">Diagnose photo</button>
+    <p id="diagnoseWait" class="hidden text-[12.5px] text-muted" aria-live="polite">Looking at your photo&hellip; this can take up to 30 seconds.</p>
+  </form>
+</section>
+{% endblock %}
+
+{% block page_js %}
+  <script>
+    document.getElementById('diagnoseForm').addEventListener('submit', () => {
+      document.getElementById('diagnoseSubmit').disabled = true;
+      document.getElementById('diagnoseWait').classList.remove('hidden');
+    });
+  </script>
+{% endblock %}

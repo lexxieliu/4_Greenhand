@@ -11,4 +11,5 @@ urlpatterns = [
     path("<int:post_id>/like/", views.toggle, {"field": "like"}, name="like"),
     path("<int:post_id>/save/", views.toggle, {"field": "save"}, name="save"),
     path("<int:post_id>/report/", views.report_post, name="report"),
+    path("comments/<int:comment_id>/report/", views.report_comment, name="report_comment"),
 ]

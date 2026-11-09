@@ -33,7 +33,7 @@ def clean_photo(upload):
             image = ImageOps.exif_transpose(image)          # apply the camera rotation before EXIF is dropped
             image.thumbnail((MAX_SIDE_PX, MAX_SIDE_PX))
             clean = image.convert("RGB")                    # new pixel buffer: no EXIF, GPS or other metadata
-    except (UnidentifiedImageError, OSError, SyntaxError) as exc:
+    except (UnidentifiedImageError, OSError, SyntaxError, Image.DecompressionBombError) as exc:
         raise ValidationError("That file is not a valid image.") from exc
     out = io.BytesIO()
     clean.save(out, format="JPEG", quality=JPEG_QUALITY, optimize=True)

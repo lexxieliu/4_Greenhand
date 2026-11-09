@@ -1,0 +1,22 @@
+# Render blueprint (PRD 6.1). Set the secret values in the Render dashboard.
+# The local tutor model needs about 6 GB of RAM, so choose an instance size to match.
+services:
+  - type: web
+    name: greenhand
+    runtime: docker
+    healthCheckPath: /
+    disk:
+      name: media
+      mountPath: /app/media
+      sizeGB: 5
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

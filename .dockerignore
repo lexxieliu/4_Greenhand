@@ -1,0 +1,11 @@
+.git
+.idea
+.env
+venv
+.venv
+media
+staticfiles
+__pycache__
+llm_test
+llm-test
+data

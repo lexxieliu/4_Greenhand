@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = ["*/migrations/*", "llm_test", "llm-test"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]   # the codebase uses long lines deliberately
+
+[tool.ruff.lint.per-file-ignores]
+"greenhand/settings/*" = ["F403", "F405", "E402"]
+"tutor/eval/mock_context.py" = ["E731"]
+
+[tool.coverage.run]
+source = ["tutor", "community", "analytics", "garden", "weather", "userprofile"]
+omit = ["*/migrations/*", "*/management/commands/evaluate_*", "*/management/commands/warmup_model.py", "tutor/eval/*", "*/tests.py", "tutor/llm.py"]
+
+[tool.coverage.report]
+fail_under = 70

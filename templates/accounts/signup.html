@@ -19,7 +19,7 @@
     <div>
       <label for="username" class="mb-1.5 block text-[13.5px] font-medium">Username</label>
       <div class="relative">
-        <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-user"/></svg>
+        <svg aria-hidden="true" class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-user"/></svg>
         <input id="username" name="username" type="text" autocomplete="username" placeholder="balcony_grower" maxlength="30" value="{{ form.username.value|default_if_none:'' }}"
                class="field-input has-icon" required aria-describedby="username-hint username-error" {% if form.username.errors %}aria-invalid="true"{% endif %} />
       </div>
@@ -30,7 +30,7 @@
     <div>
       <label for="email" class="mb-1.5 block text-[13.5px] font-medium">Email</label>
       <div class="relative">
-        <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-mail"/></svg>
+        <svg aria-hidden="true" class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-mail"/></svg>
         <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" value="{{ form.email.value|default_if_none:'' }}"
                class="field-input has-icon" required aria-describedby="email-error" {% if form.email.errors %}aria-invalid="true"{% endif %} />
       </div>
@@ -40,12 +40,12 @@
     <div>
       <label for="password" class="mb-1.5 block text-[13.5px] font-medium">Password</label>
       <div class="relative">
-        <svg class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-lock"/></svg>
+        <svg aria-hidden="true" class="ic pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"><use href="#i-lock"/></svg>
         <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a password"
                class="field-input has-icon has-action" required data-strength aria-describedby="password-strength password-error" {% if form.password.errors %}aria-invalid="true"{% endif %} />
         <button type="button" class="absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-mist hover:text-ink"
                 data-toggle-password="password" aria-label="Show password" aria-pressed="false">
-          <svg class="ic h-4 w-4"><use href="#i-eye"/></svg>
+          <svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-eye"/></svg>
         </button>
       </div>
       <div id="password-strength" class="mt-2.5">
@@ -74,11 +74,11 @@
 
     <button type="submit" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-ink text-[15px] font-medium text-white shadow-sm transition hover:bg-forest-900">
       <span class="btn-label">Create account</span>
-      <svg class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
+      <svg aria-hidden="true" class="ic btn-arrow h-4 w-4"><use href="#i-arrow-right"/></svg>
     </button>
 
     <p class="flex items-start gap-2 text-[12.5px] leading-relaxed text-muted">
-      <svg class="ic mt-0.5 h-3.5 w-3.5 text-forest"><use href="#i-shield"/></svg>
+      <svg aria-hidden="true" class="ic mt-0.5 h-3.5 w-3.5 text-forest"><use href="#i-shield"/></svg>
       We store your location at city level only and strip GPS data from photos. You can delete your account anytime.
     </p>
   </form>
@@ -98,13 +98,13 @@
   </div>
   <div class="mt-10 space-y-3">
     <ol class="rounded-xl bg-white p-2 shadow-float">
-      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-leaf-soft text-forest"><svg class="ic h-4 w-4"><use href="#i-pin"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your location</div><div class="text-muted">For local weather &amp; climate</div></div><span class="font-mono text-[11px] text-muted">01</span></li>
-      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-100 text-forest"><svg class="ic h-4 w-4"><use href="#i-home"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your growing space</div><div class="text-muted">Backyard, balcony, windowsill, indoor</div></div><span class="font-mono text-[11px] text-muted">02</span></li>
-      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-amber-100 text-amber-800"><svg class="ic h-4 w-4"><use href="#i-sun"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your sunlight</div><div class="text-muted">Full sun, partial, or shade</div></div><span class="font-mono text-[11px] text-muted">03</span></li>
-      <li class="flex items-center gap-3 rounded-lg bg-mist p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-forest text-lime-300"><svg class="ic h-4 w-4"><use href="#i-sprout"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your experience</div><div class="text-muted">Then: pick your first plant</div></div><span class="font-mono text-[11px] text-muted">04</span></li>
+      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-leaf-soft text-forest"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-pin"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your location</div><div class="text-muted">For local weather &amp; climate</div></div><span class="font-mono text-[11px] text-muted">01</span></li>
+      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-100 text-forest"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-home"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your growing space</div><div class="text-muted">Backyard, balcony, windowsill, indoor</div></div><span class="font-mono text-[11px] text-muted">02</span></li>
+      <li class="flex items-center gap-3 rounded-lg p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-amber-100 text-amber-800"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-sun"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your sunlight</div><div class="text-muted">Full sun, partial, or shade</div></div><span class="font-mono text-[11px] text-muted">03</span></li>
+      <li class="flex items-center gap-3 rounded-lg bg-mist p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-forest text-lime-300"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-sprout"/></svg></span><div class="flex-1 text-[13.5px]"><div class="font-medium">Your experience</div><div class="text-muted">Then: pick your first plant</div></div><span class="font-mono text-[11px] text-muted">04</span></li>
     </ol>
     <div class="float-slow rounded-xl bg-[#0d1f14] p-4 text-emerald-50 shadow-float">
-      <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-lime-300"><svg class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg> Greenhand Tutor</div>
+      <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-lime-300"><svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-sparkles"/></svg> Greenhand Tutor</div>
       <p class="mt-2 text-[13.5px] leading-relaxed text-emerald-50/85">Hi! Once I know your space and climate, I&rsquo;ll suggest plants you can grow right now &mdash; and walk you through every step.</p>
     </div>
   </div>

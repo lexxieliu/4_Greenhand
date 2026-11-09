@@ -5,6 +5,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from tutor.eval.mock_context import DemoContext
 from tutor.services import ask_tutor
 
 CASES = Path(__file__).resolve().parents[2] / "eval" / "test_cases.json"
@@ -60,7 +61,7 @@ class Command(BaseCommand):
         rows = []
         for case in cases:
             start = time.perf_counter()
-            result = ask_tutor(case["question"], case["plant"])
+            result = ask_tutor(case["question"], case["plant"], source=DemoContext())
             seconds = round(time.perf_counter() - start, 2)
             failures = check(case, result)
             rows.append({"case": case, "result": result, "seconds": seconds, "failures": failures})
