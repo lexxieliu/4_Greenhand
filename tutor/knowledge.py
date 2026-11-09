@@ -71,8 +71,9 @@ def _plant_chunks(plant):
     profile = (
         f"{name} ({plant['scientific_name']}) is a {plant['category'].replace('_', ' ')} rated {plant['difficulty']} "
         f"for beginners. {plant['description']} Light: {plant['sunlight_requirement'].replace('_', ' ')}. "
-        f"Water about every {plant['watering_interval_days']} days. Grows between {plant['min_temp_c']:g} and "
-        f"{plant['max_temp_c']:g} °C and {frost}. "
+        f"Water about every {plant['watering_interval_days']} days. "
+        + (f"Grows between {plant['min_temp_c']:g} and {plant['max_temp_c']:g} °C and {frost}. "
+           if plant["min_temp_c"] is not None and plant["max_temp_c"] is not None else f"It {frost}. ")
         + (f"Seeds sprout in {germination[0]}–{germination[1]} days; " if germination[0] else "")
         + f"first harvest {plant['days_to_harvest'][0]}–"
         f"{plant['days_to_harvest'][1]} days after planting. Space plants {plant['spacing_cm']} cm apart. "

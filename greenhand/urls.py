@@ -35,10 +35,5 @@ urlpatterns = [
     path("tutor/", include('tutor.urls')),
 ]
 
-<<<<<<< HEAD
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-=======
-# Serve uploaded photos while developing (production serves them from object storage).
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5

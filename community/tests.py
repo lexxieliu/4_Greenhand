@@ -68,15 +68,12 @@ class FeedTests(CommunityBase):
         self.assertNotContains(self.client.get(self.feed, {"feed": "saved"}), "other one")
         self.assertNotContains(self.client.get(self.feed, {"type": "tip"}), "other one")
 
-    def test_anonymous_can_read_but_not_write(self):
+    def test_anonymous_is_sent_to_login_and_cannot_write(self):
         post = self.post(body="public post")
-        self.client.logout()
-        response = self.client.get(self.feed, {"feed": "saved"})
-        self.assertContains(response, "public post")
-        self.assertContains(response, "Log in")
-        self.assertNotContains(response, 'id="composer"')
+        self.client.logout()                       # team decision (Area 1): every app page needs sign-in
+        self.assertEqual(self.client.get(self.feed).status_code, 302)
         self.assertEqual(self.client.post(reverse("community:create"), {"body": "x"}).status_code, 302)
-        self.assertEqual(self.client.post(reverse("community:like", args=[post.pk])).status_code, 401)
+        self.assertEqual(self.client.post(reverse("community:like", args=[post.pk])).status_code, 302)
         self.assertEqual(Post.objects.count(), 1)
 
     def test_images_render_with_alt_text(self):

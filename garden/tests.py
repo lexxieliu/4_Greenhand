@@ -211,6 +211,7 @@ class EndpointTests(GardenTestCase):
         return self.client.post(reverse(f"garden:{name}", args=args), data)
 
     def test_pages_render_from_the_database(self):
+        self.client.force_login(self.demo)
         for name in ("garden:my_garden", "weather:index", "community:feed", "plants:list"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
         self.assertContains(self.client.get(reverse("garden:my_garden")), "Balcony Basil")

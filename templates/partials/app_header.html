@@ -53,28 +53,17 @@
     <!-- Account -->
     <div class="relative" data-popover>
       <button class="flex items-center gap-2 rounded-full bg-leaf-soft p-1 pr-2.5 text-forest transition hover:bg-forest hover:text-lime-300" data-popover-trigger aria-expanded="false" aria-controls="accountPanel" aria-label="Account menu">
-<<<<<<< HEAD
         {% if gh_user.avatar_url %}<img src="{{ gh_user.avatar_url }}" alt="" class="h-8 w-8 rounded-full object-cover ring-2 ring-white" />{% else %}<span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[13px] font-semibold text-forest ring-2 ring-white">{{ gh_user.initial }}</span>{% endif %}
-        <svg class="ic h-[18px] w-[18px]"><use href="#i-settings"/></svg>
-=======
-        <span class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-lime-200 to-emerald-400 text-[13px] font-semibold text-forest ring-2 ring-white">{{ gh_user.initial }}</span>
         <svg aria-hidden="true" class="ic h-[18px] w-[18px]"><use href="#i-settings"/></svg>
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
       </button>
       <div id="accountPanel" class="popover absolute right-0 top-full mt-3 hidden w-64 rounded-2xl bg-white p-1.5 shadow-float" role="menu" aria-label="Account">
         <div class="border-b border-line px-3 pb-3 pt-2">
           <div class="text-[15px]"><span id="greeting">Hello</span>, <span class="font-semibold">{{ gh_user.display_name }}</span></div>
           <div class="text-[12.5px] text-muted">@{{ gh_user.username }} · {{ gh_user.experience_level }} · {{ gh_user.space_type }}</div>
         </div>
-<<<<<<< HEAD
-        <a href="{% url 'userprofile:profile' %}" role="menuitem" class="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-user"/></svg>Profile</a>
-        <a href="{% url 'userprofile:location_edit' %}" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-pin"/></svg>Location &amp; growing space</a>
-        <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg class="ic h-4 w-4 text-muted"><use href="#i-settings"/></svg>Notification settings</a>
-=======
-        <a href="#" role="menuitem" class="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4 text-muted"><use href="#i-user"/></svg>Profile</a>
-        <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4 text-muted"><use href="#i-pin"/></svg>Location &amp; growing space</a>
+        <a href="{% url 'userprofile:profile' %}" role="menuitem" class="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4 text-muted"><use href="#i-user"/></svg>Profile</a>
+        <a href="{% url 'userprofile:location_edit' %}" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4 text-muted"><use href="#i-pin"/></svg>Location &amp; growing space</a>
         <a href="#" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4 text-muted"><use href="#i-settings"/></svg>Notification settings</a>
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
         <form method="post" action="{% url 'userprofile:logout' %}">
           {% csrf_token %}
           <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[14px] text-rose-700 hover:bg-rose-50"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-logout"/></svg>Sign out</button>

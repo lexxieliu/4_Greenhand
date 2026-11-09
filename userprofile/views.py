@@ -2,7 +2,6 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -24,20 +23,6 @@ def _safe_next(request):
     if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         return target
     return "garden:dashboard"
-=======
-from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
-from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
-
-from .forms import LoginForm, SignupForm
-from .models import Profile
-
-
-def _authenticate_by_email(request, email, password):
-    account = User.objects.filter(email__iexact=email).first()
-    return authenticate(request, username=account.username, password=password) if account else None
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 
 def login_view(request):
@@ -45,7 +30,6 @@ def login_view(request):
         return redirect("userprofile:onboarding")
     form = LoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-<<<<<<< HEAD
         # The form asks for an email, but Django authenticates by username.
         account = User.objects.filter(email__iexact=form.cleaned_data["email"]).first()
         user = account and authenticate(request, username=account.username, password=form.cleaned_data["password"])
@@ -59,33 +43,14 @@ def login_view(request):
             return redirect(_safe_next(request))
     return render(request, "accounts/login.html", {"form": form, "next": request.GET.get("next", "")})
 
-=======
-        user = _authenticate_by_email(request, form.cleaned_data["email"], form.cleaned_data["password"])
-        if user is None:
-            form.add_error(None, "That email and password don’t match.")
-        else:
-            login(request, user)
-            if not form.cleaned_data["remember"]:
-                request.session.set_expiry(0)       # ends when the browser closes
-            next_url = request.POST.get("next", "")
-            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
-                return redirect(next_url)
-            return redirect("garden:dashboard")
-    return render(request, "accounts/login.html", {"form": form})
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 def signup_view(request):
     if request.user.is_authenticated:
         return redirect("garden:dashboard")
     form = SignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-<<<<<<< HEAD
         data = form.cleaned_data
         User.objects.create_user(username=data["username"], email=data["email"], password=data["password"])
-=======
-        user = User.objects.create_user(form.cleaned_data["username"], form.cleaned_data["email"], form.cleaned_data["password"])
-        Profile.objects.create(user=user)
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
         messages.success(request, "Account created successfully. Sign in to setup your garden and pick your first plant")
         return redirect("userprofile:login")
     return render(request, "accounts/signup.html", {"form": form})
@@ -96,7 +61,6 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have successfully logged out")
     return redirect("userprofile:login")
-<<<<<<< HEAD
 
 
 # ---------- Onboarding wizard: location -> space -> sunlight -> experience (PRD 3.1) ----------
@@ -178,7 +142,7 @@ def profile(request):
     return render(request, "accounts/profile.html", {
         "profile": profile,
         "location": GrowingLocation.objects.filter(user=request.user).first(),
-        "plant_count": request.user.my_garden_plants.count(),
+        "plant_count": request.user.user_plants.count(),
     })
 
 
@@ -202,5 +166,3 @@ def location_edit(request):
         messages.success(request, "Location updated.")
         return done
     return render(request, "accounts/onboarding.html", {**context, "step": 1, "standalone": True})
-=======
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5

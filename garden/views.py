@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
-=======
 from django.http import JsonResponse
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -49,11 +46,7 @@ def dashboard(request):
         },
     })
 
-<<<<<<< HEAD
 @login_required
-=======
-
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 def my_garden(request):
     user = current_user(request)
     payload = {**selectors.garden_payload(user), "api": reverse("garden:dashboard"),

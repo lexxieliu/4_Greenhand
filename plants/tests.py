@@ -60,10 +60,19 @@ class FilterTests(CatalogTestCase):
     def test_unpublished_plants_are_hidden(self):
         Plant.objects.filter(slug="basil").update(is_published=False)
         self.assertNotIn("basil", self.slugs())
+        self.client.force_login(User.objects.create_user("browser", "browser@example.com", "pass12345"))
         self.assertEqual(self.client.get(reverse("plants:detail", args=["basil"])).status_code, 404)
 
 
 class PageTests(CatalogTestCase):
+    def setUp(self):
+        self.client.force_login(User.objects.create_user("browser", "browser@example.com", "pass12345"))
+
+    def sign_in(self):
+        user = User.objects.create_user(username=DEMO_USERNAME, password="pass12345")
+        self.client.force_login(user)
+        return user
+
     def test_list_and_detail_render(self):
         self.assertContains(self.client.get(reverse("plants:list"), {"category": "fruit"}), "Blueberries")
         detail = self.client.get(reverse("plants:detail", args=["raspberries"]))   # no germination data
@@ -71,6 +80,7 @@ class PageTests(CatalogTestCase):
         self.assertContains(detail, "Japanese beetles")
 
     def test_start_growing_saves_the_plant_with_a_schedule(self):
+        self.sign_in()
         response = self.client.post(reverse("plants:start", args=["kale"]), {
             "planted_on": today().isoformat(), "start_method": "seed", "setting": "outdoor", "nickname": "Winter kale",
         })
@@ -79,6 +89,7 @@ class PageTests(CatalogTestCase):
         self.assertEqual(user_plant.reminders.count(), 2)
 
     def test_start_growing_rejects_bad_dates(self):
+        self.sign_in()
         too_far = (today() + timedelta(days=400)).isoformat()
         response = self.client.post(reverse("plants:start", args=["kale"]), {"planted_on": too_far, "start_method": "seed",
                                                                               "setting": "outdoor"}, follow=True)
@@ -87,7 +98,13 @@ class PageTests(CatalogTestCase):
         self.assertEqual(self.client.post(reverse("plants:start", args=["no-such-plant"]), {}).status_code, 404)
 
     def test_in_garden_shows_on_the_plant_page(self):
-        user = User.objects.create(username=DEMO_USERNAME)
-        UserPlant.objects.create(user=user, plant=Plant.objects.get(slug="mint"), nickname="Tea mint",
+        UserPlant.objects.create(user=self.sign_in(), plant=Plant.objects.get(slug="mint"), nickname="Tea mint",
                                  planted_on=today(), watering_interval_days=3, status="growing")
         self.assertContains(self.client.get(reverse("plants:detail", args=["mint"])), "Tea mint")
+
+    def test_start_growing_needs_sign_in(self):
+        self.client.logout()
+        response = self.client.post(reverse("plants:start", args=["kale"]), {
+            "planted_on": today().isoformat(), "start_method": "seed", "setting": "outdoor"})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserPlant.objects.exists())

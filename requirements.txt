@@ -2,13 +2,7 @@
 # These are the versions the team tested together; install with:  pip install -r requirements.txt
 
 # --- Web app ---
-<<<<<<< HEAD
-Django==6.1.1
-django-environ==0.14.0
-Pillow==13.0.0          # avatar uploads (ImageField, EXIF stripping)
-=======
 -r requirements-web.txt
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 
 # --- AI Gardening Tutor (local, public Hugging Face models; weights download on first use) ---
 torch==2.14.1

@@ -2,6 +2,7 @@ from datetime import timedelta
 from decimal import Decimal
 from unittest import mock
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -62,4 +63,7 @@ class SnapshotTests(TestCase):
 
 class PageTests(TestCase):
     def test_weather_page_renders(self):
+        self.client.force_login(User.objects.create_user("grower", "grower@example.com", "pass12345"))
         self.assertEqual(self.client.get(reverse("weather:index")).status_code, 200)
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse("weather:index")).status_code, 302)   # personal page

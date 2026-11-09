@@ -1,16 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
-from django.http import Http404, JsonResponse
-from django.shortcuts import redirect, render
-=======
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
 from django.urls import reverse
 from django.utils.timesince import timesince
 from django.views.decorators.http import require_POST
@@ -158,14 +153,7 @@ def toggle(request, post_id, field):
     return JsonResponse({"active": created, "count": model.objects.filter(post=post).count()})
 
 
-<<<<<<< HEAD
-@login_required
-@require_POST
-def report_post(request, post_id):
-    _post(post_id)
-=======
 def _report(request, target, anchor_post_id):
->>>>>>> ce515f7437e8d5811a6b3a8dd968ddea18c7d2f5
     reason = request.POST.get("reason")
     if reason not in REPORT_REASONS:
         messages.error(request, "Please choose a reason.")
