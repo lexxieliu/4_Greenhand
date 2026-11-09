@@ -42,7 +42,9 @@ class Migration(migrations.Migration):
         migrations.AlterField("plant", "common_name", models.CharField(max_length=100, unique=True)),
         migrations.AlterField("plant", "scientific_name", models.CharField(blank=True, max_length=150)),
         migrations.AlterModelOptions("plant", {"ordering": ["common_name"]}),
-        migrations.AddField("plant", "slug", models.SlugField(max_length=100, null=True)),
+        # Added without an index first: on PostgreSQL an indexed SlugField gets a "_like" index, and the
+        # unique AlterField below creates that same index again ("relation ... already exists").
+        migrations.AddField("plant", "slug", models.SlugField(max_length=100, null=True, db_index=False)),
         migrations.RunPython(fill_slugs_and_categories, migrations.RunPython.noop),
         migrations.AlterField("plant", "slug", models.SlugField(max_length=100, unique=True)),
         migrations.AlterField("plant", "category", models.CharField(
