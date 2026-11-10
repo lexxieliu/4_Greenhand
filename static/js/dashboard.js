@@ -278,7 +278,6 @@
 
   // ---------- Weather alerts (rendered only when the rule engine raised one) ----------
   const rainAlert = $('#rainAlert');
-  const basilTask = $('.task[data-skipped="rain"]') || $('[data-task="water-basil"]');
 
   if (rainAlert) {
     $('#rainAck').addEventListener('click', () => {
@@ -287,13 +286,16 @@
     });
     $('#rainOverride').addEventListener('click', () => {
       rainAlert.classList.add('is-dismissed');
-      if (basilTask) {
-        const badge = $('.task-badge', basilTask);
-        badge.className = 'task-badge inline-flex items-center gap-1 rounded-full bg-mist px-2 py-0.5 text-[11.5px] font-medium text-muted';
-        badge.textContent = 'Overridden';
-        basilTask.dataset.care = 'water'; // from now on, ticking it counts as watering
-        setTaskDone(basilTask, false);
-      }
+      $$('.task[data-skipped="rain"]').forEach((task) => {
+        post(`reminders/${task.dataset.task}/unskip/`, new FormData());
+        const badge = $('.task-badge', task);
+        if (badge) {
+          badge.className = 'task-badge inline-flex items-center gap-1 rounded-full bg-mist px-2 py-0.5 text-[11.5px] font-medium text-muted';
+          badge.textContent = 'Overridden';
+        }
+        task.dataset.care = 'water'; // from now on, ticking it counts as watering
+        setTaskDone(task, false);
+      });
       toast('Watering added back for today', { icon: 'i-drop' });
     });
   }

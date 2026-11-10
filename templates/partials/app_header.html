@@ -22,7 +22,7 @@
 
   <div class="ml-auto flex items-center gap-2.5">
     <a href="{% url 'weather:index' %}" class="hidden items-center gap-1.5 rounded-lg bg-mist px-2.5 py-2 text-[13px] text-muted ring-1 ring-line hover:text-forest xl:inline-flex">
-      <svg aria-hidden="true" class="ic h-3.5 w-3.5 text-sky-600"><use href="#{{ gh_weather_now.icon }}"/></svg>{{ gh_weather_now.temp_c }}&deg;C · {{ gh_location.label }}
+      {% if gh_weather_now %}<svg aria-hidden="true" class="ic h-3.5 w-3.5 text-sky-600"><use href="#{{ gh_weather_now.icon }}"/></svg>{{ gh_weather_now.temp_c }}&deg;C · {% else %}Weather unavailable · {% endif %}{{ gh_location.label }}
     </a>
 
     <!-- Notifications -->
@@ -34,14 +34,16 @@
       <div id="notifPanel" class="popover absolute right-0 top-full mt-3 hidden w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-float" role="dialog" aria-label="Notifications">
         <div class="flex items-center justify-between border-b border-line px-4 py-3">
           <span class="text-[14px] font-medium">Notifications</span>
-          <button id="markAllRead" class="text-[12.5px] font-medium text-forest hover:text-leaf">Mark all as read</button>
+          <button id="markAllRead" data-url="{% url 'notifications:read_all' %}" class="text-[12.5px] font-medium text-forest hover:text-leaf">Mark all as read</button>
         </div>
         <ul class="scroll-thin max-h-[360px] divide-y divide-line overflow-y-auto text-[13px]">
           {% for n in gh_notifications %}
-            <li class="notif flex gap-3 px-4 py-3 {% if n.unread %}bg-leaf-soft/40{% endif %}" data-unread="{{ n.unread|yesno:'true,false' }}">
-              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg {{ n.tint }}"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#{{ n.icon }}"/></svg></span>
-              <div class="flex-1"><div class="font-medium">{{ n.title }}</div><div class="text-muted">{{ n.body }}</div></div>
-              {% if n.unread %}<span class="notif-dot mt-1.5 h-2 w-2 rounded-full bg-leaf"></span>{% endif %}
+            <li class="notif {% if n.unread %}bg-leaf-soft/40{% endif %}" data-unread="{{ n.unread|yesno:'true,false' }}">
+              <a href="{{ n.url }}" class="flex gap-3 px-4 py-3 hover:bg-mist">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg {{ n.tint }}"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#{{ n.icon }}"/></svg></span>
+                <div class="flex-1"><div class="font-medium">{{ n.title }}</div><div class="text-muted">{{ n.body }}</div></div>
+                {% if n.unread %}<span class="notif-dot mt-1.5 h-2 w-2 rounded-full bg-leaf"></span>{% endif %}
+              </a>
             </li>
           {% empty %}
             <li class="px-4 py-6 text-center text-muted">You’re all caught up.</li>

@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from datetime import timedelta
 from io import StringIO
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -12,11 +13,15 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from PIL import Image
 
 from greenhand.clock import today
 from greenhand.users import DEMO_USERNAME
 from plants.models import Plant
+from userprofile.models import GrowingLocation
+from weather import services as weather_services
+from weather.tests import live_payload
 
 from . import selectors, services
 from .images import clean_photo
@@ -211,12 +216,14 @@ class EndpointTests(GardenTestCase):
         return self.client.post(reverse(f"garden:{name}", args=args), data)
 
     def test_pages_render_from_the_database(self):
+        GrowingLocation.objects.create(user=self.demo, city="Chicago", region="IL", latitude="41.88", longitude="-87.63")
         self.client.force_login(self.demo)
-        for name in ("garden:my_garden", "weather:index", "community:feed", "plants:list"):
-            self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
-        self.assertContains(self.client.get(reverse("garden:my_garden")), "Balcony Basil")
-        self.assertContains(self.client.get(reverse("weather:index")), "Balcony Basil")
-        dashboard = self.client.get(reverse("garden:dashboard"))
+        with mock.patch.object(weather_services, "_fetch", return_value=live_payload(timezone.now())):
+            for name in ("garden:my_garden", "weather:index", "community:feed", "plants:list"):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
+            self.assertContains(self.client.get(reverse("garden:my_garden")), "Balcony Basil")
+            self.assertContains(self.client.get(reverse("weather:index")), "Balcony Basil")
+            dashboard = self.client.get(reverse("garden:dashboard"))
         self.assertContains(dashboard, "Balcony Basil")
         self.assertNotContains(dashboard, "Not yours")
 

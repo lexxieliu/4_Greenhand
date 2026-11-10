@@ -15,6 +15,8 @@ from garden.images import clean_photo
 from garden.models import UserPlant
 from greenhand import mock_data as data
 from plants.models import Plant
+from notifications.models import Notification
+from notifications.services import notify
 from tutor.guardrails import rate_limited
 
 from .models import MAX_POST_IMAGES, Comment, Post, PostImage, PostLike, PostSave, Report
@@ -134,6 +136,9 @@ def add_comment(request, post_id):
     body = request.POST.get("body", "").strip()
     if body:
         Comment.objects.create(post=post, author=request.user, body=body[:1000])
+        if post.author_id != request.user.pk:
+            notify(post.author, Notification.Type.COMMENT, f"{request.user.username} commented on your post", body[:100],
+                   f"{reverse('community:feed')}#post-{post.pk}")
         track("comment_created", request.user, post_id=post.pk)
         messages.success(request, "Comment added.")
     return redirect(f"{reverse('community:feed')}?{request.GET.urlencode()}#post-{post_id}")
@@ -150,6 +155,9 @@ def toggle(request, post_id, field):
     row, created = model.objects.get_or_create(user=request.user, post=post)
     if not created:
         row.delete()
+    elif field == "like" and post.author_id != request.user.pk:
+        notify(post.author, Notification.Type.LIKE, f"{request.user.username} liked your post", post.body[:100],
+               f"{reverse('community:feed')}#post-{post.pk}", dedupe_key=f"like-{post.pk}-{request.user.pk}")
     return JsonResponse({"active": created, "count": model.objects.filter(post=post).count()})
 
 

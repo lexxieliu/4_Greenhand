@@ -11,6 +11,7 @@ from greenhand import mock_data
 from greenhand.clock import today
 from plants import selectors as plant_selectors
 from plants.services import suitability
+from weather import services as weather_services
 
 from .models import Problem, Reminder, UserPlant
 from .services import ACTIVE
@@ -136,13 +137,19 @@ def garden_catalog():
     }
 
 
-def weather_summary():
-    """Rain-skip / frost info for plant badges. Mock weather until the weather area lands."""
-    alerts = {a["alert_type"]: a for a in mock_data.WEATHER_ALERTS}
-    frost_day = next((d for d in mock_data.WEATHER["daily"] if d["frost"]), None)
+def weather_alerts(weather, plants, catalog):
+    """Live rain-skip / frost alerts (FR-41/42) for the user's active outdoor plants."""
+    outdoor = [p for p in plants if p["setting"] == "outdoor" and p["status"] in ACTIVE]
+    fragile = [p["nickname"] for p in outdoor if not catalog[p["plant_slug"]]["frost_tolerant"]]
+    return weather_services.alerts_for(weather, [p["nickname"] for p in outdoor], fragile)
+
+
+def weather_summary(weather, alerts):
+    """Rain-skip / frost info for plant badges, from the live forecast (nothing when there is none)."""
+    frost_day = next((d for d in weather["daily"] if d["frost"]), None) if weather else None
     return {
-        "rainToday": "rain_skip" in alerts,
-        "rainMm": mock_data.WEATHER["current"]["rain_last_24h_mm"],
+        "rainToday": any(a["alert_type"] == "rain_skip" for a in alerts),
+        "rainMm": weather["current"]["rain_last_24h_mm"] if weather else 0,
         "frostDate": frost_day["date"] if frost_day else None,
         "frostLow": frost_day["low"] if frost_day else None,
         "frostThreshold": mock_data.FROST_THRESHOLD_C,
@@ -151,7 +158,10 @@ def weather_summary():
 
 def garden_payload(user):
     """Everything the My Garden page script needs, passed with |json_script."""
-    return {"today": today().isoformat(), "plants": garden(user), "catalog": garden_catalog(), "weather": weather_summary()}
+    plants, catalog = garden(user), plant_selectors.catalog_by_slug()
+    weather = weather_services.weather_for(user)
+    return {"today": today().isoformat(), "plants": plants, "catalog": garden_catalog(),
+            "weather": weather_summary(weather, weather_alerts(weather, plants, catalog))}
 
 
 # ---------------------------------------------------------------------------
@@ -346,7 +356,7 @@ CARE_LABEL = {"water": "Watered", "fertilize": "Fed", "prune": "Pruned", "treat_
 REMINDER_EVENT = {"water": "water", "fertilize": "growth", "check_problem": "problem", "harvest_check": "harvest", "custom": "growth"}
 
 
-def calendar_events(plants, days_ahead=60):
+def calendar_events(plants, weather=None, days_ahead=60):
     """Garden-wide icon calendar (FR-23) as {"YYYY-MM-DD": [{type, label, icon}]}.
     Types match the dashboard legend: water, growth, harvest, weather, problem."""
     events = {}
@@ -378,7 +388,7 @@ def calendar_events(plants, days_ahead=60):
                 if not r["every"]:
                     break
                 due += timedelta(days=r["every"])
-    for d in mock_data.WEATHER["daily"]:
+    for d in (weather["daily"] if weather else []):
         if d["frost"]:
             add(d["date"], "weather", f"Frost risk tonight · {d['low']} °C")
     return events

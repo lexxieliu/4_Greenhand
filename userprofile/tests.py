@@ -346,3 +346,26 @@ class AccessControlTests(TestCase):
     def test_landing_and_auth_pages_stay_public(self):
         for name in ("landing", "userprofile:login", "userprofile:signup", "userprofile:password_reset"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
+
+
+class SeedMockDataTests(TestCase):
+    def run_seed(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        call_command("seed_mock_data", stdout=StringIO())
+
+    def test_creates_two_accounts_that_can_sign_in_and_is_repeatable(self):
+        from community.models import Post
+        from garden.models import UserPlant
+
+        self.run_seed()
+        counts = (Post.objects.count(), UserPlant.objects.count(), User.objects.count())
+        self.run_seed()
+        self.assertEqual((Post.objects.count(), UserPlant.objects.count(), User.objects.count()), counts)
+        self.assertGreater(counts[0], 0)
+        self.assertGreater(counts[1], 0)
+        for email in ("maya@example.com", "dave@example.com"):
+            response = self.client.post(reverse("userprofile:login"), {"email": email, "password": "Sprout123"})
+            self.assertRedirects(response, reverse("garden:dashboard"), fetch_redirect_response=False)
+            self.client.logout()

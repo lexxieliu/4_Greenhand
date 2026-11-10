@@ -68,10 +68,15 @@
   <div class="grid gap-5 md:col-span-2 md:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
     <a href="{% url 'weather:index' %}" class="stat-card is-small flex items-center gap-4 rounded-2xl bg-[#0d1f14] p-5 text-emerald-50">
       <span class="orb orb-a bg-[#173523]"></span><span class="orb orb-b bg-[#1f4a2f]"></span>
-      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 text-sky-300"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#{{ weather.current.icon }}"/></svg></span>
+      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 text-sky-300"><svg aria-hidden="true" class="ic h-5 w-5"><use href="#{% if weather %}{{ weather.current.icon }}{% else %}i-cloud{% endif %}"/></svg></span>
       <span>
+        {% if weather %}
         <span class="block text-[17px] font-semibold">{{ weather.current.temp_c }}&deg;C · {{ weather.current.condition }}</span>
-        <span class="block text-[13px] text-emerald-50/65">{{ weather.current.rain_last_24h_mm }} mm today{% if alerts.frost %} · frost risk Thu{% endif %}</span>
+        <span class="block text-[13px] text-emerald-50/65">{{ weather.current.rain_last_24h_mm }} mm in 24h{% if alerts.frost %} · frost risk {{ alerts.frost.when }}{% endif %}</span>
+        {% else %}
+        <span class="block text-[17px] font-semibold">Weather unavailable</span>
+        <span class="block text-[13px] text-emerald-50/65">Set your growing location or try again soon</span>
+        {% endif %}
       </span>
     </a>
     <a href="{{ my_garden_url }}#tab=problems" class="stat-card is-small flex items-center gap-4 rounded-2xl bg-white p-5 shadow-card">
@@ -233,6 +238,12 @@
 
   <div class="min-w-0 space-y-5 xl:col-span-4">
     <section id="weather" aria-labelledby="weather-title" class="scroll-mt-24 overflow-hidden rounded-2xl bg-white shadow-card">
+      {% if not weather %}
+      <div class="p-5">
+        <h2 id="weather-title" class="font-display text-[17px] font-semibold tracking-tight">Weather unavailable</h2>
+        <p class="mt-1 text-[13px] text-muted">We could not load the forecast. Check that your growing location is set, or try again in a few minutes.</p>
+      </div>
+      {% else %}
       <div class="canvas-gradient p-5">
         <div class="flex items-start justify-between">
           <div>
@@ -260,6 +271,7 @@
       <a href="{% url 'weather:index' %}" class="flex items-center justify-between border-t border-line px-4 py-2.5 text-[12px] text-muted hover:text-forest">
         <span>Updated {{ weather.updated }} · checked every 3 hours</span><span class="inline-flex items-center gap-0.5 font-medium text-forest">Details<svg aria-hidden="true" class="ic h-3.5 w-3.5"><use href="#i-chev-right"/></svg></span>
       </a>
+      {% endif %}
     </section>
 
     <section aria-labelledby="community-title" class="rounded-2xl bg-white shadow-card">

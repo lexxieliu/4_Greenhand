@@ -116,6 +116,35 @@ def _mark_occurrence_done(reminder, done_on, interval_days):
 
 
 @transaction.atomic
+def skip_watering_for_rain(user, reason):
+    """FR-41: rain did the watering. Skip today's due watering reminders of the user's outdoor plants that follow the
+    weather. Returns how many were skipped."""
+    day = today()
+    due = Reminder.objects.filter(user=user, type=Reminder.Type.WATER, is_active=True, weather_aware=True,
+                                  next_due_on__lte=day, user_plant__setting="outdoor", user_plant__status__in=ACTIVE)
+    count = 0
+    for reminder in due:
+        ReminderOccurrence.objects.create(reminder=reminder, due_on=day, status=ReminderOccurrence.Status.SKIPPED_RAIN,
+                                          reason=reason)
+        if reminder.interval_days:
+            reminder.next_due_on = day + timedelta(days=reminder.interval_days)
+            reminder.save(update_fields=["next_due_on", "updated_at"])
+        count += 1
+    return count
+
+
+@transaction.atomic
+def undo_rain_skip(reminder):
+    """The user's override: put today's rain-skipped watering back on the list."""
+    skipped = reminder.occurrences.filter(status=ReminderOccurrence.Status.SKIPPED_RAIN, due_on=today()).first()
+    if not skipped:
+        raise GardenError("This watering was not skipped for rain.")
+    reminder.next_due_on = skipped.due_on
+    reminder.save(update_fields=["next_due_on", "updated_at"])
+    skipped.delete()
+
+
+@transaction.atomic
 def log_care(user_plant, *, action, performed_on, amount="", note="", source=CareLog.Source.MANUAL):
     """FR-22. Watering also completes a watering reminder that is due by the next day."""
     log = CareLog.objects.create(user_plant=user_plant, action=action, performed_on=performed_on, amount=amount,

@@ -18,4 +18,5 @@ urlpatterns = [
     path('problems/<int:problem_id>/status/', views.set_problem_status, name='set_problem_status'),
     path('reminders/<int:reminder_id>/', views.set_reminder_flag, name='set_reminder_flag'),
     path('reminders/<int:reminder_id>/done/', views.complete_reminder, name='complete_reminder'),
+    path('reminders/<int:reminder_id>/unskip/', views.unskip_reminder, name='unskip_reminder'),
 ]

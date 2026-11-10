@@ -6,12 +6,19 @@
 
 {% block breadcrumb %}{% url 'garden:dashboard' as dash_url %}{% include "partials/breadcrumb.html" with parent="Learn" parent_url=dash_url current="Weather" %}{% endblock %}
 {% block page_title %}Weather{% endblock %}
-{% block page_subtitle %}<p class="text-[13px] text-muted">{{ weather.location }} · Updated {{ weather.updated }} · {{ weather.provider }}</p>{% endblock %}
+{% block page_subtitle %}<p class="text-[13px] text-muted">{% if weather %}{{ weather.location }} · Updated {{ weather.updated }} · {{ weather.provider }}{% else %}Weather unavailable{% endif %}</p>{% endblock %}
 {% block page_actions %}
   <a href="#" class="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium shadow-card hover:bg-mist"><svg aria-hidden="true" class="ic h-4 w-4"><use href="#i-pin"/></svg>Change location</a>
 {% endblock %}
 
 {% block content %}
+{% if not weather %}
+<section class="rounded-2xl bg-white p-6 shadow-card">
+  <h2 class="font-display text-[17px] font-semibold tracking-tight">We could not load the forecast</h2>
+  <p class="mt-1 text-[13.5px] text-muted">Greenhand needs your growing location and a connection to Open-Meteo. Check that your location is set in your profile, or try again in a few minutes.</p>
+  <a href="{% url 'userprofile:location_edit' %}" class="mt-4 inline-flex h-10 items-center rounded-lg bg-forest px-4 text-[14px] font-medium text-white hover:bg-leaf">Set growing location</a>
+</section>
+{% else %}
 <!-- ===== Row 1: current conditions + key numbers (FR-40) ===== -->
 <div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
   <section class="stat-card rounded-2xl bg-[#0d1f14] p-6 text-emerald-50 xl:col-span-5" aria-labelledby="now-title">
@@ -205,9 +212,12 @@
     </ul>
   </section>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block page_js %}
+  {% if weather %}
   {{ chart_data|json_script:"weather-data" }}
   <script src="{% static 'js/weather.js' %}"></script>
+  {% endif %}
 {% endblock %}

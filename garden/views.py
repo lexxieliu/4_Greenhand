@@ -6,7 +6,9 @@ from django.views.decorators.http import require_POST
 
 from greenhand import mock_data as data
 from greenhand.users import current_user
+from notifications import services as notification_services
 from plants.selectors import catalog_by_slug
+from weather import services as weather_services
 
 from . import selectors, services
 from .forms import (CareLogForm, HarvestForm, ProblemForm, ProblemStatusForm, ReminderFlagForm, ReminderForm,
@@ -17,9 +19,11 @@ from .models import UserPlant
 @login_required
 def dashboard(request):
     user = current_user(request)
+    notification_services.sync_weather(user)     # may skip today's watering after rain, so run it before reading tasks
     plants = selectors.garden(user)
     catalog = catalog_by_slug()
     featured = selectors.featured(plants)
+    weather = weather_services.weather_for(user)
     same_plant_slugs = {p["plant_slug"] for p in plants}
     community = [
         {**p, "author_info": data.AUTHORS[p["author"]], "type_info": data.POST_TYPES[p["post_type"]],
@@ -30,8 +34,8 @@ def dashboard(request):
         "stats": selectors.stats(plants),
         "plant_rows": selectors.dashboard_rows(plants, catalog),
         "tasks": selectors.tasks(plants),
-        "alerts": {a["alert_type"]: a for a in data.WEATHER_ALERTS},
-        "weather": data.WEATHER,
+        "alerts": {a["alert_type"]: a for a in selectors.weather_alerts(weather, plants, catalog)},
+        "weather": weather,
         "tips": data.TUTOR_WEEKLY_TIPS,
         "activity": selectors.activity(plants),
         "community": community,
@@ -42,7 +46,7 @@ def dashboard(request):
         "dashboard_data": {
             "care": selectors.care_chart(plants),
             "featured": selectors.weekly_care(featured) if featured else [],
-            "events": selectors.calendar_events(plants),
+            "events": selectors.calendar_events(plants, weather),
         },
     })
 
@@ -208,4 +212,12 @@ def complete_reminder(request, reminder_id):
     reminder = selectors.get_reminder(user, reminder_id)
     services.complete_reminder(reminder)
     return _plant_response(user, reminder.user_plant_id, f"Done: {reminder.title}")
+
+
+@require_POST
+def unskip_reminder(request, reminder_id):
+    """"Water anyway": put today's rain-skipped watering back (FR-41 override)."""
+    user = current_user(request)
+    reminder = selectors.get_reminder(user, reminder_id)
+    return _run(user, reminder.user_plant_id, lambda: services.undo_rain_skip(reminder) or "Watering added back for today")
 

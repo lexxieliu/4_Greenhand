@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'post',
     'weather',
     'community',
+    'notifications',
     'analytics',
 ]
 

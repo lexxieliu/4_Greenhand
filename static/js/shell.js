@@ -130,6 +130,7 @@
   }
 
   $('#markAllRead')?.addEventListener('click', () => {
+    fetch($('#markAllRead').dataset.url, { method: 'POST', headers: { 'X-CSRFToken': csrfToken() } });
     $$('.notif[data-unread="true"]').forEach((n) => {
       n.dataset.unread = 'false';
       n.classList.remove('bg-leaf-soft/40');

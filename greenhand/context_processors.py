@@ -1,4 +1,7 @@
 """Context shared by every template (header, sidebar, notifications, weather chip)."""
+from notifications.services import panel
+from weather.services import weather_for
+
 from . import mock_data as data
 
 
@@ -27,15 +30,16 @@ def _real_user(request):
 
 def app_shell(request):
     match = getattr(request, "resolver_match", None)
-    unread = sum(1 for n in data.NOTIFICATIONS if n["unread"])
+    notifications, unread = panel(request.user) if request.user.is_authenticated else ([], 0)
     usage = data.TUTOR_USAGE
     gh_user, gh_location = _real_user(request) if request.user.is_authenticated else (None, None)
+    weather = weather_for(request.user) if hasattr(request, "user") else None
     return {
         "gh_today": data.TODAY,
         "gh_user": gh_user or data.USER,
         "gh_location": gh_location or data.LOCATION,
-        "gh_weather_now": data.WEATHER["current"],
-        "gh_notifications": data.NOTIFICATIONS,
+        "gh_weather_now": weather["current"] if weather else None,
+        "gh_notifications": notifications,
         "gh_unread": unread,
         "gh_tutor": {**usage, "pct": round(usage["used"] / usage["limit"] * 100)},
         # e.g. "garden:dashboard" — used to mark the current nav item

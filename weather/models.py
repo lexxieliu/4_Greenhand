@@ -11,7 +11,8 @@ class WeatherSnapshot(models.Model):
     precip_prob_next_12h = models.PositiveSmallIntegerField()
     min_temp_next_48h_c = models.DecimalField(max_digits=4, decimal_places=1)
     max_temp_next_48h_c = models.DecimalField(max_digits=4, decimal_places=1)
-    forecast = models.JSONField(default=list)      # [{"date", "high", "low", "precip_prob"}]
+    forecast = models.JSONField(default=list)      # [{"date", "high", "low", "precip_prob", "precip_mm", "code"}]
+    details = models.JSONField(default=dict, blank=True)   # {"current", "hourly", "utc_offset"} for the weather page
     provider = models.CharField(max_length=30, default="open_meteo")
 
     class Meta:

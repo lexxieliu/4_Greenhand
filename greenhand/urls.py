@@ -33,6 +33,7 @@ urlpatterns = [
     path("weather/", include('weather.urls')),
     path("community/", include('community.urls')),
     path("tutor/", include('tutor.urls')),
+    path("notifications/", include('notifications.urls')),
 ]
 
 if settings.DEBUG:
